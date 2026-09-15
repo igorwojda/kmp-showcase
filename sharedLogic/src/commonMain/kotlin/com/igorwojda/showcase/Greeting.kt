@@ -1,9 +1,12 @@
 package com.igorwojda.showcase
 
-class Greeting {
-    private val platform = getPlatform()
+import kotlin.random.Random
 
-    fun greet(): String {
-        return sayHello(platform.name)
+class Greeting {
+    private val platform: Platform = getPlatform()
+
+    fun greet(): List<String> = buildList {
+        add(if (Random.nextBoolean()) "Hi!" else "Hello!")
+        add("Guess what this is! > ${platform.name.reversed()}!")
     }
 }
