@@ -1,8 +1,17 @@
 import SwiftUI
+import KMPObservableViewModelSwiftUI
 import SharedLogic
 
 struct ContentView: View {
-    let phrases = Greeting().greet()
+    @StateViewModel var mainViewModel = MainViewModel()
+
+    var body: some View {
+        ListView(phrases: mainViewModel.greetings)
+    }
+}
+
+struct ListView: View {
+    let phrases: Array<String>
 
     var body: some View {
         List(phrases, id: \.self) {

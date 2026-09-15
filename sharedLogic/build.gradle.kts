@@ -34,7 +34,13 @@ kotlin {
     }
     
     sourceSets {
+        all {
+            languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
+        }
         commonMain.dependencies {
+            api(libs.androidx.lifecycle.viewmodel)
+            api(libs.kmp.observableviewmodel.core)
+
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines)
             implementation(libs.ktor.client.core)
@@ -45,7 +51,6 @@ kotlin {
             implementation(libs.kotlin.test)
         }
         androidMain.dependencies {
-            implementation(libs.androidx.lifecycle.viewmodel.ktx)
             // Provides the Android engine for Ktor
             implementation(libs.ktor.client.android)
         }

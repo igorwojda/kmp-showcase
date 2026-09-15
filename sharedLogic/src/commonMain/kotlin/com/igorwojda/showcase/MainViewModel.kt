@@ -1,15 +1,14 @@
 package com.igorwojda.showcase
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.rickclephas.kmp.observableviewmodel.MutableStateFlow
+import com.rickclephas.kmp.observableviewmodel.ViewModel
+import com.rickclephas.kmp.observableviewmodel.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
     val greetingList: StateFlow<List<String>>
-        field = MutableStateFlow<List<String>>(listOf())
+        field = MutableStateFlow<List<String>>(viewModelScope, listOf())
 
     init {
         viewModelScope.launch {
