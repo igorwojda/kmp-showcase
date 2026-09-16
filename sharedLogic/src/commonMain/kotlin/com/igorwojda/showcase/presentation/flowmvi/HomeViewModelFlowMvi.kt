@@ -5,6 +5,8 @@ import com.rickclephas.kmp.observableviewmodel.ViewModel
 import com.rickclephas.kmp.observableviewmodel.coroutineScope
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.Container
+import pro.respawn.flowmvi.api.MVIIntent
+import pro.respawn.flowmvi.api.MVIState
 import pro.respawn.flowmvi.api.PipelineContext
 import pro.respawn.flowmvi.dsl.store
 import pro.respawn.flowmvi.plugins.init
@@ -56,4 +58,14 @@ class HomeViewModelFlowMvi(
         val phrase = repository.launchPhrase()
         updateState { HomeState.Content(phrase) }
     }
+}
+
+sealed interface HomeState : MVIState {
+    data object Loading : HomeState
+    data class Content(val launchPhrase: String) : HomeState
+    data class Error(val message: String) : HomeState
+}
+
+sealed interface HomeIntent : MVIIntent {
+    data object Reload : HomeIntent
 }
