@@ -6,23 +6,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class GreetingRepository {
+class GreetingRepository(
+    private val rocketRepository: RocketRepository = RocketRepository(),
+) {
     private val platform: Platform = getPlatform()
 
-    private val rocketComponent = RocketRepository()
-
-    fun greet(): List<String> = buildList {
-        add(if (Random.nextBoolean()) "Hi!" else "Hello!")
-        add("Guess what this is! > ${platform.name.reversed()}!")
-        add(daysPhrase())
-    }
-
+    /**
+     * Emits greetings one by one. Network failures from [RocketRepository] propagate
+     * as flow exceptions so callers decide how to surface them (e.g. FlowMvi `recover`).
+     */
     fun greetFlow(): Flow<String> = flow {
         emit(if (Random.nextBoolean()) "Hi!" else "Hello!")
         delay(1.seconds)
         emit("Guess what this is! > ${platform.name.reversed()}")
         delay(1.seconds)
         emit(daysPhrase())
-        emit(rocketComponent.launchPhrase())
+        emit(rocketRepository.launchPhrase())
     }
 }

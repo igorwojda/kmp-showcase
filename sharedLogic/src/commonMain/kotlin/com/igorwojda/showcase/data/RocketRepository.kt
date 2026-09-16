@@ -32,11 +32,7 @@ class RocketRepository {
         return "${date.month} ${date.day}, ${date.year}"
     }
 
+    /** Throws on network / parsing failure. */
     suspend fun launchPhrase(): String =
-        try {
-            "The last successful launch was on ${getDateOfLastSuccessfulLaunch()} 🚀"
-        } catch (e: Exception) {
-            println("Exception during getting the date of the last successful launch $e")
-            "Error occurred"
-        }
+        "The last successful launch was on ${getDateOfLastSuccessfulLaunch()} 🚀"
 }

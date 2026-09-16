@@ -24,23 +24,31 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pro.respawn.flowmvi.api.IntentReceiver
 
 @Composable
-fun App(viewModelStateFlow: ViewModelStateFlow = viewModel()) {
+fun App() {
     MaterialTheme {
-        val greetings by viewModelStateFlow.greetingList.collectAsStateWithLifecycle()
+        HomeScreen()
+    }
+}
 
-        Column(
-            modifier = Modifier
-                .padding(all = 10.dp)
-                .safeContentPadding()
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            greetings.forEach { greeting ->
-                Text(greeting)
-                HorizontalDivider()
-            }
+@Composable
+fun HomeScreen(
+    homeViewModelStateFlow: HomeViewModelStateFlow = viewModel()
+) {
+    val greetings by homeViewModelStateFlow.greetingList.collectAsStateWithLifecycle()
+
+    Column(
+        modifier = Modifier
+            .padding(all = 10.dp)
+            .safeContentPadding()
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        greetings.forEach { greeting ->
+            Text(greeting)
+            HorizontalDivider()
         }
     }
 }
