@@ -40,6 +40,7 @@ kotlin {
         commonMain.dependencies {
             api(libs.androidx.lifecycle.viewmodel)
             api(libs.kmp.observableviewmodel.core)
+            api(libs.flowmvi.compose)
 
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines)

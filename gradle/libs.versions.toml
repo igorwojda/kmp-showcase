@@ -19,6 +19,8 @@ ktorVersion = "3.5.2"
 # Allows you to use AndroidX/Kotlin ViewModels with SwiftUI
 kmpObservableViewModel = "1.1.0"
 
+flowmvi = "3.3.0-alpha03"
+
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -46,6 +48,7 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorVersion" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 kmp-observableviewmodel-core = { module = "com.rickclephas.kmp:kmp-observableviewmodel-core", version.ref = "kmpObservableViewModel" }
+flowmvi-compose = { module = "pro.respawn.flowmvi:compose", version.ref = "flowmvi" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
