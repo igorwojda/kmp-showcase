@@ -9,6 +9,7 @@ import pro.respawn.flowmvi.api.MVIAction
 import pro.respawn.flowmvi.api.MVIIntent
 import pro.respawn.flowmvi.api.MVIState
 import pro.respawn.flowmvi.api.PipelineContext
+import pro.respawn.flowmvi.debugger.plugin.enableRemoteDebugging
 import pro.respawn.flowmvi.dsl.store
 import pro.respawn.flowmvi.plugins.enableLogging
 import pro.respawn.flowmvi.plugins.init
@@ -43,6 +44,12 @@ class HomeViewModelFlowMvi(
         }
 
         enableLogging()
+        // Streams state/intent/action history to the FlowMVI debugger (Android Studio plugin or desktop app).
+        // Throws if `debuggable` is false, so keep the flag above in sync.
+        // Host is loopback on every platform: iOS simulator reaches the Mac directly; Android (emulator or
+        // USB device) needs `adb reverse tcp:9684 tcp:9684` first – the default `10.0.2.2` is emulator-only
+        // and the IDE server listens on 127.0.0.1 only, so a LAN IP is refused.
+        enableRemoteDebugging(host = "127.0.0.1")
 
         recover { e ->
             updateState { HomeState.Error(e.message ?: "Unknown error") }

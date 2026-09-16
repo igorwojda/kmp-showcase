@@ -41,6 +41,9 @@ kotlin {
             api(libs.androidx.lifecycle.viewmodel)
             api(libs.kmp.observableviewmodel.core)
             api(libs.flowmvi.compose)
+            // Remote debugger (IDE plugin / desktop app). sharedLogic uses the KMP android library plugin,
+            // which has no debug/release source sets, so it ships in release builds too.
+            implementation(libs.flowmvi.debugger)
 
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines)
