@@ -1,6 +1,6 @@
 package com.igorwojda.showcase.flowmvi
 
-import com.igorwojda.showcase.data.GreetingRepository
+import com.igorwojda.showcase.data.RocketRepository
 import com.rickclephas.kmp.observableviewmodel.ViewModel
 import com.rickclephas.kmp.observableviewmodel.coroutineScope
 import pro.respawn.flowmvi.api.ActionShareBehavior
@@ -12,52 +12,48 @@ import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
 /**
- * Same data source ([GreetingRepository]), but the state is a single LCE sealed type driven by a
+ * Same data source ([RocketRepository]), but the state is a single LCE sealed type driven by a
  * FlowMvi [pro.respawn.flowmvi.api.Store]:
  * - `init`    – kicks off loading when the store starts
- * - `reduce`  – handles [GreetingIntent] sent by the UI (`store.intent(Reload)`)
- * - `recover` – maps any exception thrown inside the pipeline to [GreetingState.Error]
+ * - `reduce`  – handles [HomeIntent] sent by the UI (`store.intent(Reload)`)
+ * - `recover` – maps any exception thrown inside the pipeline to [HomeState.Error]
  *
  * UI subscribes via `store.states` (or `store.subscribe { … }` from `flowmvi-compose`).
  * No actions (one-off events) are used, hence `Nothing` as the action type.
  */
 class HomeViewModelFlowMvi(
-    private val repository: GreetingRepository = GreetingRepository(),
-) : ViewModel(), Container<GreetingState, GreetingIntent, Nothing> {
+    private val repository: RocketRepository = RocketRepository(),
+) : ViewModel(), Container<HomeState, HomeIntent, Nothing> {
 
     // Store is bound to the ViewModel's scope, so it starts here and stops on onCleared().
     override val store = store(
-        initial = GreetingState.Loading,
+        initial = HomeState.Loading,
         scope = viewModelScope.coroutineScope,
     ) {
         configure {
-            name = "Greeting"
+            name = "Home"
             debuggable = true
             actionShareBehavior = ActionShareBehavior.Disabled
         }
 
         recover { e ->
-            updateState { GreetingState.Error(e.message ?: "Unknown error") }
+            updateState { HomeState.Error(e.message ?: "Unknown error") }
             null // exception handled – don't rethrow
         }
 
-        init { loadGreetings() }
+        init { loadLaunchPhrase() }
 
         reduce { intent ->
             when (intent) {
-                GreetingIntent.Reload -> loadGreetings()
+                HomeIntent.Reload -> loadLaunchPhrase()
             }
         }
     }
 
-    /** Loading → Content(accumulated); any exception is routed to `recover` above. */
-    private suspend fun PipelineContext<GreetingState, GreetingIntent, Nothing>.loadGreetings() {
-        updateState { GreetingState.Loading }
-        repository.greetFlow().collect { phrase ->
-            updateState {
-                val current = (this as? GreetingState.Content)?.greetings.orEmpty()
-                GreetingState.Content(current + phrase)
-            }
-        }
+    /** Loading → Content; any exception is routed to `recover` above. */
+    private suspend fun PipelineContext<HomeState, HomeIntent, Nothing>.loadLaunchPhrase() {
+        updateState { HomeState.Loading }
+        val phrase = repository.launchPhrase()
+        updateState { HomeState.Content(phrase) }
     }
 }

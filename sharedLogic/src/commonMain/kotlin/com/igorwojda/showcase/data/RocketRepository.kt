@@ -3,25 +3,14 @@ package com.igorwojda.showcase.data
 import LaunchListResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
-import io.ktor.serialization.kotlinx.json.json
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.json.Json
 
-class RocketRepository {
-    private val httpClient = HttpClient {
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
-        }
-    }
-
+class RocketRepository(
+    private val httpClient: HttpClient = createHttpClient(),
+) {
     private suspend fun getDateOfLastSuccessfulLaunch(): String {
         val response: LaunchListResponse =
             httpClient.get("https://lldev.thespacedevs.com/2.3.0/launches/previous/?mode=list&limit=10&format=json").body()

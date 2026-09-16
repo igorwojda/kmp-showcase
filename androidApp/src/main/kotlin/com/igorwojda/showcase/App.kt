@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.igorwojda.showcase.flowmvi.GreetingIntent
-import com.igorwojda.showcase.flowmvi.GreetingState
+import com.igorwojda.showcase.flowmvi.HomeIntent
+import com.igorwojda.showcase.flowmvi.HomeState
 import com.igorwojda.showcase.flowmvi.HomeViewModelFlowMvi
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
@@ -35,18 +34,19 @@ fun App() {
 fun HomeScreenStateFlow(
     homeViewModelStateFlow: HomeViewModelStateFlow = viewModel()
 ) {
-    val greetings by homeViewModelStateFlow.greetingList.collectAsStateWithLifecycle()
+    val launchPhrase by homeViewModelStateFlow.launchPhrase.collectAsStateWithLifecycle()
 
-    Column(
+    Box(
         modifier = Modifier
             .padding(all = 10.dp)
             .safeContentPadding()
             .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        greetings.forEach { greeting ->
-            Text(greeting)
-            HorizontalDivider()
+        val phrase = launchPhrase
+        if (phrase == null) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else {
+            Text(text = phrase, modifier = Modifier.align(Alignment.Center))
         }
     }
 }
@@ -65,26 +65,22 @@ fun HomeScreenFlowMvi(
             .fillMaxSize(),
     ) {
         when (val s = state) {
-            GreetingState.Loading -> CircularProgressIndicator(
+            HomeState.Loading -> CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
             )
 
-            is GreetingState.Content -> Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                s.greetings.forEach { greeting ->
-                    Text(greeting)
-                    HorizontalDivider()
-                }
-            }
+            is HomeState.Content -> Text(
+                text = s.launchPhrase,
+                modifier = Modifier.align(Alignment.Center),
+            )
 
-            is GreetingState.Error -> Column(
+            is HomeState.Error -> Column(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(s.message, color = MaterialTheme.colorScheme.error)
-                Button(onClick = { store.intent(GreetingIntent.Reload) }) {
+                Button(onClick = { store.intent(HomeIntent.Reload) }) {
                     Text("Reload")
                 }
             }

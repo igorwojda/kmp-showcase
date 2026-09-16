@@ -6,16 +6,10 @@ struct ContentView: View {
     @StateViewModel var homeViewModelStateFlow = HomeViewModelStateFlow()
 
     var body: some View {
-        ListView(phrases: homeViewModelStateFlow.greetings)
-    }
-}
-
-struct ListView: View {
-    let phrases: Array<String>
-
-    var body: some View {
-        List(phrases, id: \.self) {
-            Text($0)
+        if let phrase = homeViewModelStateFlow.launchPhraseValue {
+            Text(phrase)
+        } else {
+            ProgressView()
         }
     }
 }
