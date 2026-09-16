@@ -42,6 +42,8 @@ class HomeViewModelFlowMvi(
             actionShareBehavior = ActionShareBehavior.Distribute()
         }
 
+        enableLogging()
+
         recover { e ->
             updateState { HomeState.Error(e.message ?: "Unknown error") }
             null // exception handled – don't rethrow
