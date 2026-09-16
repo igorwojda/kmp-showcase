@@ -1,4 +1,4 @@
-package com.igorwojda.showcase
+package com.igorwojda.showcase.presentation.stateflow
 
 import com.igorwojda.showcase.data.RocketRepository
 import com.rickclephas.kmp.observableviewmodel.MutableStateFlow

@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.flowmvi
+package com.igorwojda.showcase.presentation.flowmvi
 
 import pro.respawn.flowmvi.api.MVIIntent
 import pro.respawn.flowmvi.api.MVIState

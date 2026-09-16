@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.flowmvi
+package com.igorwojda.showcase.presentation.flowmvi
 
 import com.igorwojda.showcase.data.RocketRepository
 import com.rickclephas.kmp.observableviewmodel.ViewModel

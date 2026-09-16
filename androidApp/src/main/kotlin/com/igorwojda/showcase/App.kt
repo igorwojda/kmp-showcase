@@ -17,9 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.igorwojda.showcase.flowmvi.HomeIntent
-import com.igorwojda.showcase.flowmvi.HomeState
-import com.igorwojda.showcase.flowmvi.HomeViewModelFlowMvi
+import com.igorwojda.showcase.presentation.flowmvi.HomeIntent
+import com.igorwojda.showcase.presentation.flowmvi.HomeState
+import com.igorwojda.showcase.presentation.flowmvi.HomeViewModelFlowMvi
+import com.igorwojda.showcase.presentation.stateflow.HomeViewModelStateFlow
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
