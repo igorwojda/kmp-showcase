@@ -6,7 +6,7 @@ import com.rickclephas.kmp.observableviewmodel.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
-class MainViewModel : ViewModel() {
+class ViewModelStateFlow : ViewModel() {
     val greetingList: StateFlow<List<String>>
         field = MutableStateFlow<List<String>>(viewModelScope, listOf())
 

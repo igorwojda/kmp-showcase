@@ -26,9 +26,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun App(mainViewModel: MainViewModel = viewModel()) {
+fun App(viewModelStateFlow: ViewModelStateFlow = viewModel()) {
     MaterialTheme {
-        val greetings by mainViewModel.greetingList.collectAsStateWithLifecycle()
+        val greetings by viewModelStateFlow.greetingList.collectAsStateWithLifecycle()
 
         Column(
             modifier = Modifier

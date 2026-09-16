@@ -3,10 +3,10 @@ import KMPObservableViewModelSwiftUI
 import SharedLogic
 
 struct ContentView: View {
-    @StateViewModel var mainViewModel = MainViewModel()
+    @StateViewModel var viewModelStateFlow = ViewModelStateFlow()
 
     var body: some View {
-        ListView(phrases: mainViewModel.greetings)
+        ListView(phrases: viewModelStateFlow.greetings)
     }
 }
 
