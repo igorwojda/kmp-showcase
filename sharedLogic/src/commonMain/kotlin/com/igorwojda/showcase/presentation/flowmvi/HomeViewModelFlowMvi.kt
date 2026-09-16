@@ -16,20 +16,11 @@ import pro.respawn.flowmvi.plugins.init
 import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
-/**
- * Same data source ([RocketRepository]), but the state is a single LCE sealed type driven by a
- * FlowMvi [pro.respawn.flowmvi.api.Store]:
- * - `init`    – kicks off loading when the store starts
- * - `reduce`  – handles [HomeIntent] sent by the UI (`store.intent(Reload)`)
- * - `recover` – maps any exception thrown inside the pipeline to [HomeState.Error]
- *
- * UI subscribes via `store.states` (or `store.subscribe { … }` from `flowmvi-compose`).
- * [HomeAction] carries one-off events that must not be replayed on recomposition – here a toast
- * confirming a manual reload.
- */
 class HomeViewModelFlowMvi(
-    private val repository: RocketRepository = RocketRepository(),
+    private val repository: RocketRepository,
 ) : ViewModel(), Container<HomeState, HomeIntent, HomeAction> {
+    // Kotlin/Native doesn't export default arguments to Swift, so expose an explicit no-arg init.
+    constructor() : this(RocketRepository())
 
     // Store is bound to the ViewModel's scope, so it starts here and stops on onCleared().
     override val store = store(

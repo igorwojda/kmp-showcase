@@ -7,8 +7,11 @@ import com.rickclephas.kmp.observableviewmodel.launch
 import kotlinx.coroutines.flow.StateFlow
 
 class HomeViewModelStateFlow(
-    private val rocketRepository: RocketRepository = RocketRepository(),
+    private val rocketRepository: RocketRepository,
 ) : ViewModel() {
+    // Kotlin/Native doesn't export default arguments to Swift, so expose an explicit no-arg init.
+    constructor() : this(RocketRepository())
+
     /** `null` while loading. */
     val launchPhrase: StateFlow<String?>
         field = MutableStateFlow<String?>(viewModelScope, null)
