@@ -38,17 +38,17 @@ class HomeViewModelFlowMvi(
             actionShareBehavior = ActionShareBehavior.Disabled
         }
 
-        recover { e ->
-            updateState { HomeState.Error(e.message ?: "Unknown error") }
-            null // exception handled – don't rethrow
-        }
-
         init { loadLaunchPhrase() }
 
         reduce { intent ->
             when (intent) {
                 HomeIntent.Reload -> loadLaunchPhrase()
             }
+        }
+
+        recover { e ->
+            updateState { HomeState.Error(e.message ?: "Unknown error") }
+            null // exception handled – don't rethrow
         }
     }
 
