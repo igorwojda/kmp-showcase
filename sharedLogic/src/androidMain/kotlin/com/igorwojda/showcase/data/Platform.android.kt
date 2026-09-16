@@ -1,4 +1,4 @@
-package com.igorwojda.showcase
+package com.igorwojda.showcase.data
 
 import android.os.Build
 

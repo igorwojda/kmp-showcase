@@ -1,5 +1,6 @@
 package com.igorwojda.showcase
 
+import com.igorwojda.showcase.data.GreetingRepository
 import com.rickclephas.kmp.observableviewmodel.MutableStateFlow
 import com.rickclephas.kmp.observableviewmodel.ViewModel
 import com.rickclephas.kmp.observableviewmodel.launch
@@ -12,7 +13,7 @@ class ViewModelStateFlow : ViewModel() {
 
     init {
         viewModelScope.launch {
-            Greeting().greetFlow().collect { phrase ->
+            GreetingRepository().greetFlow().collect { phrase ->
                 greetingList.update { list -> list + phrase }
             }
         }

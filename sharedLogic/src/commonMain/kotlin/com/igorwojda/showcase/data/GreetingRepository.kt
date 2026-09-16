@@ -1,4 +1,4 @@
-package com.igorwojda.showcase
+package com.igorwojda.showcase.data
 
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
@@ -6,10 +6,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class Greeting {
+class GreetingRepository {
     private val platform: Platform = getPlatform()
 
-    private val rocketComponent = RocketComponent()
+    private val rocketComponent = RocketRepository()
 
     fun greet(): List<String> = buildList {
         add(if (Random.nextBoolean()) "Hi!" else "Hello!")

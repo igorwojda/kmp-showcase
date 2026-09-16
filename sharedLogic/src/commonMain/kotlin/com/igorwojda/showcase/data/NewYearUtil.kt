@@ -1,4 +1,4 @@
-package com.igorwojda.showcase
+package com.igorwojda.showcase.data
 
 import kotlin.time.Clock
 import kotlinx.datetime.LocalDate

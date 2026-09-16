@@ -1,7 +1,6 @@
-package com.igorwojda.showcase
+package com.igorwojda.showcase.data
 
 import LaunchListResponse
-import RocketLaunch
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -12,7 +11,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 
-class RocketComponent {
+class RocketRepository {
     private val httpClient = HttpClient {
         install(ContentNegotiation) {
             json(Json {
