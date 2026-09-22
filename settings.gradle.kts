@@ -1,4 +1,4 @@
-rootProject.name = "Kmpshowcase"
+rootProject.name = "kmp-showcase"
 
 pluginManagement {
     repositories {
