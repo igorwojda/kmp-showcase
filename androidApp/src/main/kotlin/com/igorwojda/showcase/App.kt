@@ -19,26 +19,26 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.igorwojda.showcase.presentation.flowmvi.HomeAction
-import com.igorwojda.showcase.presentation.flowmvi.HomeIntent
-import com.igorwojda.showcase.presentation.flowmvi.HomeState
-import com.igorwojda.showcase.presentation.flowmvi.HomeViewModelFlowMvi
-import com.igorwojda.showcase.presentation.stateflow.HomeViewModelStateFlow
+import com.igorwojda.showcase.presentation.flowmvi.ForecastAction
+import com.igorwojda.showcase.presentation.flowmvi.ForecastIntent
+import com.igorwojda.showcase.presentation.flowmvi.ForecastState
+import com.igorwojda.showcase.presentation.flowmvi.ForecastViewModelFlowMvi
+import com.igorwojda.showcase.presentation.stateflow.ForecastViewModelStateFlow
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
 fun App() {
     MaterialTheme {
-//        HomeScreenStateFlow()
-        HomeScreenFlowMvi()
+//        ForecastScreenStateFlow()
+        ForecastScreenFlowMvi()
     }
 }
 
 @Composable
-fun HomeScreenStateFlow(
-    homeViewModelStateFlow: HomeViewModelStateFlow = viewModel()
+fun ForecastScreenStateFlow(
+    forecastViewModelStateFlow: ForecastViewModelStateFlow = viewModel()
 ) {
-    val launchPhrase by homeViewModelStateFlow.launchPhrase.collectAsStateWithLifecycle()
+    val launchPhrase by forecastViewModelStateFlow.launchPhrase.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier
@@ -56,8 +56,8 @@ fun HomeScreenStateFlow(
 }
 
 @Composable
-fun HomeScreenFlowMvi(
-    viewModel: HomeViewModelFlowMvi = viewModel()
+fun ForecastScreenFlowMvi(
+    viewModel: ForecastViewModelFlowMvi = viewModel()
 ) {
     val store = viewModel.store
     val context = LocalContext.current
@@ -65,7 +65,7 @@ fun HomeScreenFlowMvi(
     // The lambda consumes MVIActions as they arrive; it only runs while the UI is visible.
     val state by store.subscribe { action ->
         when (action) {
-            is HomeAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+            is ForecastAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -76,28 +76,28 @@ fun HomeScreenFlowMvi(
             .fillMaxSize(),
     ) {
         when (val s = state) {
-            HomeState.Loading -> CircularProgressIndicator(
+            ForecastState.Loading -> CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
             )
 
-            is HomeState.Content -> Column(
+            is ForecastState.Content -> Column(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(text = s.launchPhrase)
-                Button(onClick = { store.intent(HomeIntent.Reload) }) {
+                Button(onClick = { store.intent(ForecastIntent.Reload) }) {
                     Text("Reload")
                 }
             }
 
-            is HomeState.Error -> Column(
+            is ForecastState.Error -> Column(
                 modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(s.message, color = MaterialTheme.colorScheme.error)
-                Button(onClick = { store.intent(HomeIntent.Reload) }) {
+                Button(onClick = { store.intent(ForecastIntent.Reload) }) {
                     Text("Reload")
                 }
             }

@@ -3,10 +3,10 @@ import KMPObservableViewModelSwiftUI
 import SharedLogic
 
 struct ContentView: View {
-    @StateViewModel var homeViewModelStateFlow = HomeViewModelStateFlow()
+    @StateViewModel var forecastViewModelStateFlow = ForecastViewModelStateFlow()
 
     var body: some View {
-        if let phrase = homeViewModelStateFlow.launchPhraseValue {
+        if let phrase = forecastViewModelStateFlow.launchPhraseValue {
             Text(phrase)
         } else {
             ProgressView()

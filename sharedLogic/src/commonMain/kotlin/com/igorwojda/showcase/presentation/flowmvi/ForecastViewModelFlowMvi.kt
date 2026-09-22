@@ -16,19 +16,19 @@ import pro.respawn.flowmvi.plugins.init
 import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
-class HomeViewModelFlowMvi(
+class ForecastViewModelFlowMvi(
     private val repository: RocketRepository,
-) : ViewModel(), Container<HomeState, HomeIntent, HomeAction> {
+) : ViewModel(), Container<ForecastState, ForecastIntent, ForecastAction> {
     // Kotlin/Native doesn't export default arguments to Swift, so expose an explicit no-arg init.
     constructor() : this(RocketRepository())
 
     // Store is bound to the ViewModel's scope, so it starts here and stops on onCleared().
     override val store = store(
-        initial = HomeState.Loading,
+        initial = ForecastState.Loading,
         scope = viewModelScope.coroutineScope,
     ) {
         configure {
-            name = "Home"
+            name = "Forecast"
             debuggable = true
             // Actions are delivered to a single subscriber (the screen) – the default behavior.
             actionShareBehavior = ActionShareBehavior.Distribute()
@@ -43,7 +43,7 @@ class HomeViewModelFlowMvi(
         enableRemoteDebugging(host = "127.0.0.1")
 
         recover { e ->
-            updateState { HomeState.Error(e.message ?: "Unknown error") }
+            updateState { ForecastState.Error(e.message ?: "Unknown error") }
             null // exception handled – don't rethrow
         }
 
@@ -51,33 +51,33 @@ class HomeViewModelFlowMvi(
 
         reduce { intent ->
             when (intent) {
-                HomeIntent.Reload -> {
+                ForecastIntent.Reload -> {
                     loadLaunchPhrase()
                     // One-off event: shown once, never replayed when the UI recomposes.
-                    action(HomeAction.ShowToast("Reloaded"))
+                    action(ForecastAction.ShowToast("Reloaded"))
                 }
             }
         }
     }
 
     /** Loading → Content; any exception is routed to `recover` above. */
-    private suspend fun PipelineContext<HomeState, HomeIntent, HomeAction>.loadLaunchPhrase() {
-        updateState { HomeState.Loading }
+    private suspend fun PipelineContext<ForecastState, ForecastIntent, ForecastAction>.loadLaunchPhrase() {
+        updateState { ForecastState.Loading }
         val phrase = repository.launchPhrase()
-        updateState { HomeState.Content(phrase) }
+        updateState { ForecastState.Content(phrase) }
     }
 }
 
-sealed interface HomeState : MVIState {
-    data object Loading : HomeState
-    data class Content(val launchPhrase: String) : HomeState
-    data class Error(val message: String) : HomeState
+sealed interface ForecastState : MVIState {
+    data object Loading : ForecastState
+    data class Content(val launchPhrase: String) : ForecastState
+    data class Error(val message: String) : ForecastState
 }
 
-sealed interface HomeIntent : MVIIntent {
-    data object Reload : HomeIntent
+sealed interface ForecastIntent : MVIIntent {
+    data object Reload : ForecastIntent
 }
 
-sealed interface HomeAction : MVIAction {
-    data class ShowToast(val message: String) : HomeAction
+sealed interface ForecastAction : MVIAction {
+    data class ShowToast(val message: String) : ForecastAction
 }

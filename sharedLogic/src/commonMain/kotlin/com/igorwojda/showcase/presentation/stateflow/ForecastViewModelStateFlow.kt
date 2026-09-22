@@ -6,7 +6,7 @@ import com.rickclephas.kmp.observableviewmodel.ViewModel
 import com.rickclephas.kmp.observableviewmodel.launch
 import kotlinx.coroutines.flow.StateFlow
 
-class HomeViewModelStateFlow(
+class ForecastViewModelStateFlow(
     private val rocketRepository: RocketRepository,
 ) : ViewModel() {
     // Kotlin/Native doesn't export default arguments to Swift, so expose an explicit no-arg init.
