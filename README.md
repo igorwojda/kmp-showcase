@@ -1,4 +1,26 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# KMP Showcase
+
+A Kotlin Multiplatform sample app for Android and iOS. Data, domain and presentation logic live in
+a shared Kotlin module (multiplatform); the UI is native on each platform — Jetpack Compose on Android, SwiftUI on iOS.
+
+```mermaid
+flowchart TB
+    subgraph native["Native UI"]
+        android["androidApp<br/>Jetpack Compose"]
+        ios["iosApp<br/>SwiftUI"]
+    end
+
+    subgraph shared["sharedLogic (Kotlin Multiplatform)"]
+        presentation["presentation<br/>ViewModels, state"]
+        domain["domain<br/>models, business logic"]
+        data["data<br/>repositories, API"]
+    end
+
+    android --> presentation
+    ios --> presentation
+    presentation --> domain
+    data --> domain
+```
 
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
