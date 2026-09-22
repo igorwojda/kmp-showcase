@@ -2,7 +2,7 @@ import SwiftUI
 import KMPObservableViewModelSwiftUI
 import SharedLogic
 
-struct ContentView: View {
+struct ForecastScreen: View {
     @StateViewModel var forecastViewModelStateFlow = ForecastViewModelStateFlow()
 
     var body: some View {
@@ -14,8 +14,6 @@ struct ContentView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+#Preview {
+    ForecastScreen()
 }
