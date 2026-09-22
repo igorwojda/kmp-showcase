@@ -8,7 +8,7 @@ import org.koin.dsl.KoinAppDeclaration
  *
  * Platform entry points pass their own [config] (Android adds the context and logger).
  */
-fun initKoin(config: KoinAppDeclaration? = null) {
+fun initializeKoin(config: KoinAppDeclaration? = null) {
     startKoin {
         config?.invoke(this)
         modules(sharedLogicModule)

@@ -74,7 +74,7 @@ To make debugging work on Android physical device run `adb reverse tcp:9684 tcp:
 ([`sharedLogicModule`](./sharedLogic/src/commonMain/kotlin/com/igorwojda/showcase/di/SharedLogicModule.kt)),
 so both platforms resolve the same instances:
 
-- Android: `ShowcaseApplication.onCreate()` calls `initKoin { androidLogger(); androidContext(...) }`;
+- Android: `ShowcaseApplication.onCreate()` calls `initializeKoin { androidLogger(); androidContext(...) }`;
   composables get their ViewModel with `koinViewModel()`.
 - iOS: `KMPShowcaseApplication.init()` calls `doInitKoin(config: nil)` — SKIE exposes the top-level
   Kotlin `initKoin` as a top-level Swift function. Swift can't use Koin's reified `get()`,
