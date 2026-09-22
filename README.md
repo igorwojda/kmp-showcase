@@ -60,6 +60,18 @@ provides [Remote Debugging](https://opensource.respawn.pro/FlowMVI/plugins/debug
 In this project remote debugging host is set to `"127.0.0.1"` ip address (`enableRemoteDebugging(host = "127.0.0.1")`). 
 To make debugging work on Android physical device run `adb reverse tcp:9684 tcp:9684` command.
 
+### Dependency injection
+
+[Koin](https://insert-koin.io) wires the graph. All definitions live in shared code
+([`sharedLogicModule`](./sharedLogic/src/commonMain/kotlin/com/igorwojda/showcase/di/SharedLogicModule.kt)),
+so both platforms resolve the same instances:
+
+- Android: `ShowcaseApplication.onCreate()` calls `initKoin { androidLogger(); androidContext(...) }`;
+  composables get their ViewModel with `koinViewModel()`.
+- iOS: `iOSApp.init()` calls `KoinIosKt.doInitKoinIos()`. Swift can't use Koin's reified `get()`,
+  so each resolved type gets an explicit accessor in
+  [`KoinIos.kt`](./sharedLogic/src/iosMain/kotlin/com/igorwojda/showcase/di/KoinIos.kt).
+
 ### Conventions
 
 ## Screens vs Components.

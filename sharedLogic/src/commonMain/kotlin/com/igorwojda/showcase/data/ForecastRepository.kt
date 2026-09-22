@@ -10,7 +10,7 @@ import io.ktor.client.request.get
 
 /** Downloads weather data from the Open-Meteo API. */
 class ForecastRepository(
-    private val httpClient: HttpClient = createHttpClient(),
+    private val httpClient: HttpClient,
 ) {
     /**
      * Current weather plus a [forecastDays]-day daily forecast for the given coordinates.

@@ -27,9 +27,6 @@ class ForecastViewModel(
     private val forecastRepository: ForecastRepository,
 ) : ViewModel(), Container<ForecastState, ForecastIntent, ForecastAction> {
 
-    //TODO: // Kotlin/Native doesn't export default arguments to Swift, so expose an explicit no-arg init.
-    constructor() : this(ForecastRepository())
-
     override val store = store(
         initial = ForecastState.Loading,
         scope = viewModelScope.coroutineScope,

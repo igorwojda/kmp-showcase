@@ -48,6 +48,11 @@ kotlin {
             // which has no debug/release source sets, so it ships in release builds too.
             implementation(libs.flowmvi.debugger)
 
+            // Koin is exposed as api so platform entry points can configure the container.
+            api(project.dependencies.platform(libs.koin.bom))
+            api(libs.koin.core)
+            api(libs.koin.core.viewmodel)
+
             api(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines)
             implementation(libs.ktor.client.core)
@@ -60,6 +65,8 @@ kotlin {
         androidMain.dependencies {
             // Provides the Android engine for Ktor
             implementation(libs.ktor.client.android)
+            // androidContext() / androidLogger(), used by the app module when starting Koin
+            api(libs.koin.android)
         }
         iosMain.dependencies {
             // Provides the Darwin engine for Ktor
