@@ -25,10 +25,10 @@ import pro.respawn.flowmvi.plugins.reduce
 class ForecastViewModel(
     private val repository: RocketRepository,
 ) : ViewModel(), Container<ForecastState, ForecastIntent, ForecastAction> {
-    // Kotlin/Native doesn't export default arguments to Swift, so expose an explicit no-arg init.
+
+    //TODO: // Kotlin/Native doesn't export default arguments to Swift, so expose an explicit no-arg init.
     constructor() : this(RocketRepository())
 
-    // Store is bound to the ViewModel's scope, so it starts here and stops on onCleared().
     override val store = store(
         initial = ForecastState.Loading,
         scope = viewModelScope.coroutineScope,
