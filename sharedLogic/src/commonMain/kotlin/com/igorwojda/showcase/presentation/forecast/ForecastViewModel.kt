@@ -54,7 +54,6 @@ class ForecastViewModel(
             when (intent) {
                 ForecastIntent.Reload -> {
                     loadLaunchPhrase()
-                    // One-off event: shown once, never replayed when the UI recomposes.
                     action(ForecastAction.ShowToast("Reloaded"))
                 }
             }
@@ -66,8 +65,6 @@ class ForecastViewModel(
         field = MutableStateFlow(viewModelScope, store.states.value)
 
     init {
-        // `scope` was passed to the `store(...)` builder above, so the pipeline already started;
-        // just forward each emitted state into `uiState`.
         viewModelScope.coroutineScope.launch {
             store.states.collect { uiState.value = it }
         }
