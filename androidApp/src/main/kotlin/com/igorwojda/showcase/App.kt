@@ -18,10 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.igorwojda.showcase.presentation.flowmvi.ForecastAction
-import com.igorwojda.showcase.presentation.flowmvi.ForecastIntent
-import com.igorwojda.showcase.presentation.flowmvi.ForecastState
-import com.igorwojda.showcase.presentation.flowmvi.ForecastViewModelFlowMvi
+import com.igorwojda.showcase.presentation.forecast.ForecastAction
+import com.igorwojda.showcase.presentation.forecast.ForecastIntent
+import com.igorwojda.showcase.presentation.forecast.ForecastState
+import com.igorwojda.showcase.presentation.forecast.ForecastViewModelFlowMvi
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable

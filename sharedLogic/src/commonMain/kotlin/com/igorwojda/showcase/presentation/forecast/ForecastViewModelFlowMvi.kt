@@ -1,6 +1,6 @@
 @file:OptIn(InternalFlowMVIAPI::class)
 
-package com.igorwojda.showcase.presentation.flowmvi
+package com.igorwojda.showcase.presentation.forecast
 
 import com.igorwojda.showcase.data.RocketRepository
 import com.rickclephas.kmp.observableviewmodel.MutableStateFlow
