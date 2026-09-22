@@ -47,6 +47,7 @@ import com.igorwojda.showcase.presentation.forecast.ForecastAction
 import com.igorwojda.showcase.presentation.forecast.ForecastIntent
 import com.igorwojda.showcase.presentation.forecast.ForecastState
 import com.igorwojda.showcase.presentation.forecast.ForecastViewModel
+import com.igorwojda.showcase.presentation.forecast.WeatherCondition
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDate

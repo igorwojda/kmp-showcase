@@ -107,7 +107,7 @@ private struct CurrentWeatherCard: View {
     let longitude: Double
 
     var body: some View {
-        let condition = WeatherCondition(code: current.weatherCode)
+        let condition = WeatherCondition.companion.fromCode(code: current.weatherCode)
 
         VStack(spacing: 4) {
             Text(condition.symbol)
@@ -157,7 +157,7 @@ private struct DailyForecastRow: View {
     let scaleMax: Double
 
     var body: some View {
-        let condition = WeatherCondition(code: day.weatherCode)
+        let condition = WeatherCondition.companion.fromCode(code: day.weatherCode)
 
         HStack(spacing: 12) {
             VStack(alignment: .leading) {

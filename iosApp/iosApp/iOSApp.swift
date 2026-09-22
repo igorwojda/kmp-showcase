@@ -5,8 +5,6 @@ import SharedLogic
 struct iOSApp: App {
 
     init() {
-        // TODO: Where this ficntion is defined?
-        // SKIE exposes top-level Kotlin functions as top-level Swift functions.
         initializeKoin(config: nil)
     }
 
