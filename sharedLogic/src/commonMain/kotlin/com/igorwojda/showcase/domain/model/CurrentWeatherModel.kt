@@ -1,8 +1,9 @@
 package com.igorwojda.showcase.domain.model
 
+import kotlinx.datetime.LocalDateTime
+
 data class CurrentWeatherModel(
-    /** ISO-8601 local time of the measurement, e.g. `2026-09-22T14:00`. */
-    val time: String,
+    val time: LocalDateTime,
     val temperature: Double,
     val temperatureUnit: String,
     val windSpeed: Double,

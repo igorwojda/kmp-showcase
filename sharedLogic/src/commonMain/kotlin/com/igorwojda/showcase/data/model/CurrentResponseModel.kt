@@ -1,12 +1,13 @@
 package com.igorwojda.showcase.data.model
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class CurrentResponseModel(
     @SerialName("time")
-    val time: String,
+    val time: LocalDateTime,
     @SerialName("temperature_2m")
     val temperature: Double,
     @SerialName("wind_speed_10m")

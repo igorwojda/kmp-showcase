@@ -1,8 +1,10 @@
 package com.igorwojda.showcase.domain.model
 
+import kotlinx.datetime.LocalDate
+
 data class DailyWeatherModel(
-    /** ISO-8601 local date, e.g. `2026-09-22`. */
-    val date: String,
+    /** Local date of the forecast, in the location's own time zone. */
+    val date: LocalDate,
     val temperatureMin: Double,
     val temperatureMax: Double,
     val temperatureUnit: String,

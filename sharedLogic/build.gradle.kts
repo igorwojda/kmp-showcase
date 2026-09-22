@@ -14,6 +14,8 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "SharedLogic"
             isStatic = true
+            // Domain models expose LocalDate / LocalDateTime, so the types must be visible to Swift.
+            export(libs.kotlinx.datetime)
         }
     }
     
@@ -38,6 +40,7 @@ kotlin {
             languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
         commonMain.dependencies {
+            //TODO: Libs as API?
             api(libs.androidx.lifecycle.viewmodel)
             api(libs.kmp.observableviewmodel.core)
             api(libs.flowmvi.compose)
@@ -45,7 +48,7 @@ kotlin {
             // which has no debug/release source sets, so it ships in release builds too.
             implementation(libs.flowmvi.debugger)
 
-            implementation(libs.kotlinx.datetime)
+            api(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
