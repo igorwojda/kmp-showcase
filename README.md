@@ -40,10 +40,18 @@ flowchart TB
 
 ### Running the apps
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+Open project in [Android Studio](https://developer.android.com/studio), select platform and run the applicaiton.
 
-- Android app: `./gradlew :androidApp:assembleDebug`
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+### Tech-Stack
+
+Built with modern Android development tools and libraries, prioritizing, project structure stability,\
+and production-readiness.
+
+ToDo:
+
+**Core Technologies:**
+- [SKIE](https://skie.touchlab.co) post-processes the Kotlin/Native framework so the generated
+  Objective-C API reads like Swift. It's applied in
 
 ### Running tests
 
@@ -68,10 +76,11 @@ so both platforms resolve the same instances:
 
 - Android: `ShowcaseApplication.onCreate()` calls `initializeKoin { androidLogger(); androidContext(...) }`;
   composables get their ViewModel with `koinViewModel()`.
-- iOS: `iOSApp.init()` calls `initializeKoin(config: nil)` – SKIE exposes top-level Kotlin functions
-  as top-level Swift functions. Swift can't use Koin's reified `get()`, so each resolved type gets an
-  explicit accessor in
+- iOS: `KMPShowcaseApplication.init()` calls `doInitKoin(config: nil)` — SKIE exposes the top-level
+  Kotlin `initKoin` as a top-level Swift function. Swift can't use Koin's reified `get()`,
+  so each resolved type gets an explicit accessor in
   [`KoinIos.kt`](./sharedLogic/src/iosMain/kotlin/com/igorwojda/showcase/di/KoinIos.kt).
+
 
 ### Conventions
 
