@@ -4,11 +4,11 @@ package com.igorwojda.showcase.presentation.forecast
 
 import com.igorwojda.showcase.data.ForecastRepository
 import com.igorwojda.showcase.domain.model.ForecastModel
-import com.rickclephas.kmp.observableviewmodel.MutableStateFlow
 import com.rickclephas.kmp.observableviewmodel.ViewModel
 import com.rickclephas.kmp.observableviewmodel.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.channelFlow
 import pro.respawn.flowmvi.annotation.InternalFlowMVIAPI
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.Container
@@ -58,16 +58,18 @@ class ForecastViewModel(
         }
     }
 
-    //TODO: Needed?
-    /** Mirrors `store.states` so SwiftUI (`@StateViewModel`) can observe it without a FlowMVI/Compose bridge. */
-    val uiState: StateFlow<ForecastState>
-        field = MutableStateFlow(viewModelScope, store.states.value)
+    // TODO: Needed?
+    /** Store state, typed so SKIE exposes it to Swift as an `AsyncSequence` of [ForecastState]. */
+    val states: StateFlow<ForecastState> get() = store.states
 
-    init {
-        //TODO: Is there a better way?
-        viewModelScope.coroutineScope.launch {
-            store.states.collect { uiState.value = it }
-        }
+    /**
+     * One-off [ForecastAction]s as a cold flow, which SKIE turns into a Swift `AsyncSequence`.
+     *
+     * Collecting opens a real store subscription, so [ActionShareBehavior.Distribute] still sees the
+     * screen arrive and leave. Inside [subscribe], `actions` is the store's flow, not this property.
+     */
+    val actions: Flow<ForecastAction> = channelFlow {
+        with(store) { subscribe { actions.collect { send(it) } } }.join()
     }
 
     /** Loading → Content; any exception is routed to `recover` above. */

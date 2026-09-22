@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.skie)
 }
 
 kotlin {
@@ -72,5 +73,12 @@ kotlin {
             // Provides the Darwin engine for Ktor
             implementation(libs.ktor.client.darwin)
         }
+    }
+}
+
+skie {
+    features {
+        // https://skie.touchlab.co/features/flows-in-swiftui
+        enableSwiftUIObservingPreview = true
     }
 }

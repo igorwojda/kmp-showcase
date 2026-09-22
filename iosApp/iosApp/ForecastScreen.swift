@@ -13,22 +13,20 @@ private let temperatureGradient = LinearGradient(
 )
 
 struct ForecastScreen: View {
-    @StateViewModel private var viewModel = KoinIosKt.forecastViewModel()
+    @StateViewModel private var viewModel = forecastViewModel()
     @State private var toast: String?
-    @State private var actionsJob: (any Kotlinx_coroutines_coreJob)?
-
-    private var state: ForecastState? {
-        viewModel.uiState.value as? ForecastState
-    }
 
     var body: some View {
         NavigationStack {
-            Group {
-                if let content = state as? ForecastStateContent {
+            // SKIE turns `states` into an AsyncSequence, so SwiftUI can observe the store directly.
+            Observing(viewModel.states) { state in
+                // `onEnum(of:)` makes the sealed interface exhaustive – a new state stops compiling here.
+                switch onEnum(of: state) {
+                case .content(let content):
                     ForecastContentView(forecast: content.forecast)
-                } else if let error = state as? ForecastStateError {
+                case .error(let error):
                     ErrorView(message: error.message, onRetry: reload)
-                } else {
+                case .loading:
                     ProgressView()
                 }
             }
@@ -52,25 +50,19 @@ struct ForecastScreen: View {
             try? await Task.sleep(for: .seconds(2))
             toast = nil
         }
-        // Actions are only delivered while the screen is visible, like `subscribe` on Android.
-        .onAppear(perform: subscribeActions)
-        .onDisappear {
-            actionsJob?.cancel(cause: nil)
-            actionsJob = nil
+        // `.task` runs while the screen is visible, so the store sees the subscriber come and go.
+        .task {
+            for await action in viewModel.actions {
+                switch onEnum(of: action) {
+                case .showToast(let showToast):
+                    toast = showToast.message
+                }
+            }
         }
     }
 
     private func reload() {
         viewModel.store.intent(intent: ForecastIntentReload.shared)
-    }
-
-    private func subscribeActions() {
-        actionsJob?.cancel(cause: nil)
-        actionsJob = viewModel.subscribeActions { action in
-            if let showToast = action as? ForecastActionShowToast {
-                toast = showToast.message
-            }
-        }
     }
 }
 
