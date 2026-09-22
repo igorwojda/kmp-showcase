@@ -1,8 +1,14 @@
+@file:OptIn(InternalFlowMVIAPI::class)
+
 package com.igorwojda.showcase.presentation.flowmvi
 
 import com.igorwojda.showcase.data.RocketRepository
+import com.rickclephas.kmp.observableviewmodel.MutableStateFlow
 import com.rickclephas.kmp.observableviewmodel.ViewModel
 import com.rickclephas.kmp.observableviewmodel.coroutineScope
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import pro.respawn.flowmvi.annotation.InternalFlowMVIAPI
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.MVIAction
@@ -57,6 +63,18 @@ class ForecastViewModelFlowMvi(
                     action(ForecastAction.ShowToast("Reloaded"))
                 }
             }
+        }
+    }
+
+    /** Mirrors `store.states` so SwiftUI (`@StateViewModel`) can observe it without a FlowMVI/Compose bridge. */
+    val uiState: StateFlow<ForecastState>
+        field = MutableStateFlow(viewModelScope, store.states.value)
+
+    init {
+        // `scope` was passed to the `store(...)` builder above, so the pipeline already started;
+        // just forward each emitted state into `uiState`.
+        viewModelScope.coroutineScope.launch {
+            store.states.collect { uiState.value = it }
         }
     }
 

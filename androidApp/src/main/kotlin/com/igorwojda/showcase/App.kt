@@ -17,41 +17,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.igorwojda.showcase.presentation.flowmvi.ForecastAction
 import com.igorwojda.showcase.presentation.flowmvi.ForecastIntent
 import com.igorwojda.showcase.presentation.flowmvi.ForecastState
 import com.igorwojda.showcase.presentation.flowmvi.ForecastViewModelFlowMvi
-import com.igorwojda.showcase.presentation.stateflow.ForecastViewModelStateFlow
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
 fun App() {
     MaterialTheme {
-//        ForecastScreenStateFlow()
         ForecastScreenFlowMvi()
-    }
-}
-
-@Composable
-fun ForecastScreenStateFlow(
-    forecastViewModelStateFlow: ForecastViewModelStateFlow = viewModel()
-) {
-    val launchPhrase by forecastViewModelStateFlow.launchPhrase.collectAsStateWithLifecycle()
-
-    Box(
-        modifier = Modifier
-            .padding(all = 10.dp)
-            .safeContentPadding()
-            .fillMaxSize(),
-    ) {
-        val phrase = launchPhrase
-        if (phrase == null) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else {
-            Text(text = phrase, modifier = Modifier.align(Alignment.Center))
-        }
     }
 }
 
