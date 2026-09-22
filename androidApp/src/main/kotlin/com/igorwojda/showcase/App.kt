@@ -61,7 +61,7 @@ fun ForecastScreenFlowMvi(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(text = s.launchPhrase)
+                Text(text = "${s.forecast.current.temperature}${s.forecast.current.temperatureUnit}")
                 Button(onClick = { store.intent(ForecastIntent.Reload) }) {
                     Text("Reload")
                 }

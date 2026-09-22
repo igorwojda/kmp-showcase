@@ -2,7 +2,8 @@
 
 package com.igorwojda.showcase.presentation.forecast
 
-import com.igorwojda.showcase.data.RocketRepository
+import com.igorwojda.showcase.data.ForecastRepository
+import com.igorwojda.showcase.data.model.ForecastModel
 import com.rickclephas.kmp.observableviewmodel.MutableStateFlow
 import com.rickclephas.kmp.observableviewmodel.ViewModel
 import com.rickclephas.kmp.observableviewmodel.coroutineScope
@@ -23,11 +24,11 @@ import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
 class ForecastViewModel(
-    private val repository: RocketRepository,
+    private val forecastRepository: ForecastRepository,
 ) : ViewModel(), Container<ForecastState, ForecastIntent, ForecastAction> {
 
     //TODO: // Kotlin/Native doesn't export default arguments to Swift, so expose an explicit no-arg init.
-    constructor() : this(RocketRepository())
+    constructor() : this(ForecastRepository())
 
     override val store = store(
         initial = ForecastState.Loading,
@@ -48,12 +49,12 @@ class ForecastViewModel(
             null // exception handled – don't rethrow
         }
 
-        init { loadLaunchPhrase() }
+        init { loadForecast() }
 
         reduce { intent ->
             when (intent) {
                 ForecastIntent.Reload -> {
-                    loadLaunchPhrase()
+                    loadForecast()
                     action(ForecastAction.ShowToast("Reloaded"))
                 }
             }
@@ -73,16 +74,16 @@ class ForecastViewModel(
     }
 
     /** Loading → Content; any exception is routed to `recover` above. */
-    private suspend fun PipelineContext<ForecastState, ForecastIntent, ForecastAction>.loadLaunchPhrase() {
+    private suspend fun PipelineContext<ForecastState, ForecastIntent, ForecastAction>.loadForecast() {
         updateState { ForecastState.Loading }
-        val phrase = repository.launchPhrase()
-        updateState { ForecastState.Content(phrase) }
+        val forecast = forecastRepository.getForecast()
+        updateState { ForecastState.Content(forecast) }
     }
 }
 
 sealed interface ForecastState : MVIState {
     data object Loading : ForecastState
-    data class Content(val launchPhrase: String) : ForecastState
+    data class Content(val forecast: ForecastModel) : ForecastState
     data class Error(val message: String) : ForecastState
 }
 
