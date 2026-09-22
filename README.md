@@ -30,6 +30,25 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 - Android tests: `./gradlew :sharedUI:testAndroidHostTest :sharedLogic:testAndroidHostTest`
 - iOS tests: `./gradlew :sharedLogic:iosSimulatorArm64Test`
 
+### Conventions
+
+## Screens vs Components.
+
+UI types are named by role, consistently on both platforms:
+
+- **`…Screen`** — a full destination the user navigates to. Owns its root state
+  (a ViewModel), takes no state from a parent, and appears in the routing layer.
+  SwiftUI: `ForecastScreen`. Compose: `ForecastScreenFlowMvi`.
+- **Everything else** — reusable parts and leaf components, named after what they are
+  (`ForecastHeaderView`, `TemperatureBadge`). They take values from a parent and own
+  no root state.
+
+On the iOS side this deviates from Apple's idiom, where every view type is suffixed
+`View` (`ContentView`, `SettingsView`) regardless of scope. The deviation is deliberate:
+it keeps vocabulary aligned across the two platforms, and makes "is this navigable?"
+answerable from the type name instead of only from ViewModel ownership and folder
+placement. Apply it to every destination without exception.
+
 ---
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
