@@ -19,7 +19,16 @@
 		6D23F29A03BC495D6D4ADA12 /* Exceptions for "iosApp" folder in "iosApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				CLAUDE.md,
 				Info.plist,
+			);
+			target = D0893C615006C37C05642F5C /* iosApp */;
+		};
+		6D23F29A03BC495D6D4ADA13 /* Exceptions for "Configuration" folder in "iosApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				CLAUDE.md,
+				Config.xcconfig,
 			);
 			target = D0893C615006C37C05642F5C /* iosApp */;
 		};
@@ -36,6 +45,9 @@
 		};
 		33AA92F8E7B8E0E08F14EA5C /* Configuration */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				6D23F29A03BC495D6D4ADA13 /* Exceptions for "Configuration" folder in "iosApp" target */,
+			);
 			path = Configuration;
 			sourceTree = "<group>";
 		};
@@ -88,6 +100,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				33AA92F8E7B8E0E08F14EA5C /* Configuration */,
 				65577DFE0ACE5993767067E8 /* iosApp */,
 			);
 			name = iosApp;
