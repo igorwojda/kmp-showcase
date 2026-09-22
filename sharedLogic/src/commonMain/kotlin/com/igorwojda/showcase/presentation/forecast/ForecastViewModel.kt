@@ -60,11 +60,13 @@ class ForecastViewModel(
         }
     }
 
+    //TODO: Needed?
     /** Mirrors `store.states` so SwiftUI (`@StateViewModel`) can observe it without a FlowMVI/Compose bridge. */
     val uiState: StateFlow<ForecastState>
         field = MutableStateFlow(viewModelScope, store.states.value)
 
     init {
+        //TODO: Is there a better way?
         viewModelScope.coroutineScope.launch {
             store.states.collect { uiState.value = it }
         }
