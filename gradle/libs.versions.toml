@@ -14,7 +14,6 @@ junit = "4.13.2"
 koin = "4.2.2"
 # Held at 2.4.10: SKIE 0.10.14 supports Kotlin 2.0.0 – 2.4.10 and refuses to build on anything newer.
 kotlin = "2.4.10"
-kotlinx-datetime = "0.8.0"
 
 # Swift-friendly API on top of the Kotlin/Native framework (sealed enums, flows as AsyncSequence).
 skie = "0.10.14"
@@ -44,9 +43,7 @@ androidx-compose-uiTooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-uiToolingPreview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-lifecycle-runtimeCompose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
-# strictly: Ktor's ktor-openapi-schema pulls "0.8.0-0.6.x-compat", which Gradle ranks ABOVE "0.8.0".
-# That silently breaks `export(libs.kotlinx.datetime)` in sharedLogic (LocalDate then exports as
-# Kotlinx_datetimeLocalDate and Swift can't see it), so the version is pinned.
+# strictly: Ktor pulls "0.8.0-0.6.x-compat", which outranks "0.8.0" and silently breaks export() to Swift.
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = { strictly = "0.8.0" } }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVersion" }
