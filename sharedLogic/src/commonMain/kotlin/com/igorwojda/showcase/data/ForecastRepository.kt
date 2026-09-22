@@ -23,6 +23,7 @@ class ForecastRepository(
         forecastDays: Int = DEFAULT_FORECAST_DAYS,
     ): ForecastModel {
         val response: ForecastResponseModel = httpClient.get(BASE_URL) {
+            // TODO: Use object to build query parameters instead of appending them manually.
             url.parameters.apply {
                 append("latitude", latitude.toString())
                 append("longitude", longitude.toString())
@@ -44,6 +45,7 @@ class ForecastRepository(
     }
 }
 
+// TODO: Nested Mappers?
 private fun ForecastResponseModel.toForecast() = ForecastModel(
     latitude = latitude,
     longitude = longitude,
