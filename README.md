@@ -30,6 +30,14 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 - Android tests: `./gradlew :sharedUI:testAndroidHostTest :sharedLogic:testAndroidHostTest`
 - iOS tests: `./gradlew :sharedLogic:iosSimulatorArm64Test`
 
+### Debugging FlowMVI
+
+[FlowMVI](https://github.com/respawn-llc/FlowMVI) 
+provides [Remote Debugging](https://opensource.respawn.pro/FlowMVI/plugins/debugging).
+
+In this project remote debugging host is set to `"127.0.0.1"` ip address (`enableRemoteDebugging(host = "127.0.0.1")`). 
+To make debugging work on Android physical device run `adb reverse tcp:9684 tcp:9684` command.
+
 ### Conventions
 
 ## Screens vs Components.
