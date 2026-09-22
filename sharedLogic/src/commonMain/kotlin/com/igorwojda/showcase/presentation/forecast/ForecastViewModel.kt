@@ -22,7 +22,7 @@ import pro.respawn.flowmvi.plugins.init
 import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
-class ForecastViewModelFlowMvi(
+class ForecastViewModel(
     private val repository: RocketRepository,
 ) : ViewModel(), Container<ForecastState, ForecastIntent, ForecastAction> {
     // Kotlin/Native doesn't export default arguments to Swift, so expose an explicit no-arg init.

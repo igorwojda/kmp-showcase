@@ -21,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.igorwojda.showcase.presentation.forecast.ForecastAction
 import com.igorwojda.showcase.presentation.forecast.ForecastIntent
 import com.igorwojda.showcase.presentation.forecast.ForecastState
-import com.igorwojda.showcase.presentation.forecast.ForecastViewModelFlowMvi
+import com.igorwojda.showcase.presentation.forecast.ForecastViewModel
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
@@ -33,7 +33,7 @@ fun App() {
 
 @Composable
 fun ForecastScreenFlowMvi(
-    viewModel: ForecastViewModelFlowMvi = viewModel()
+    viewModel: ForecastViewModel = viewModel()
 ) {
     val store = viewModel.store
     val context = LocalContext.current
