@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.data.model
+package com.igorwojda.showcase.domain.model
 
 data class DailyWeatherModel(
     /** ISO-8601 local date, e.g. `2026-09-22`. */

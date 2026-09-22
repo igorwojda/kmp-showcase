@@ -1,9 +1,9 @@
 package com.igorwojda.showcase.data
 
-import com.igorwojda.showcase.data.model.CurrentWeatherModel
-import com.igorwojda.showcase.data.model.DailyWeatherModel
-import com.igorwojda.showcase.data.model.ForecastModel
 import com.igorwojda.showcase.data.model.ForecastResponseModel
+import com.igorwojda.showcase.domain.model.CurrentWeatherModel
+import com.igorwojda.showcase.domain.model.DailyWeatherModel
+import com.igorwojda.showcase.domain.model.ForecastModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get

@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.data.model
+package com.igorwojda.showcase.domain.model
 
 /** Weather forecast for a single location. */
 data class ForecastModel(

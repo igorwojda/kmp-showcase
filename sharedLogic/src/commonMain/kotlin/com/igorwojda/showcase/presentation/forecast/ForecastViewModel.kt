@@ -3,7 +3,7 @@
 package com.igorwojda.showcase.presentation.forecast
 
 import com.igorwojda.showcase.data.ForecastRepository
-import com.igorwojda.showcase.data.model.ForecastModel
+import com.igorwojda.showcase.domain.model.ForecastModel
 import com.rickclephas.kmp.observableviewmodel.MutableStateFlow
 import com.rickclephas.kmp.observableviewmodel.ViewModel
 import com.rickclephas.kmp.observableviewmodel.coroutineScope

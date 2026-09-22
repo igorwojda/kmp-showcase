@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.data.model
+package com.igorwojda.showcase.domain.model
 
 data class CurrentWeatherModel(
     /** ISO-8601 local time of the measurement, e.g. `2026-09-22T14:00`. */
