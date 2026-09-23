@@ -58,9 +58,11 @@ class ForecastViewModel(
         }
     }
 
-    // TODO: Needed?
-    /** Store state, typed so SKIE exposes it to Swift as an `AsyncSequence` of [ForecastState]. */
-    val states: StateFlow<ForecastState> get() = store.states
+    /**
+     * Typed re-exposure of the store's state. `Store` is an interface (an ObjC protocol), so its generics
+     * are erased in Swift; this keeps SKIE's `AsyncSequence` typed as [ForecastState].
+     */
+    val states: StateFlow<ForecastState> = store.states
 
     /**
      * One-off [ForecastAction]s as a cold flow, which SKIE turns into a Swift `AsyncSequence`.
