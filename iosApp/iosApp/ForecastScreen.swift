@@ -62,7 +62,7 @@ struct ForecastScreen: View {
     }
 
     private func reload() {
-        viewModel.store.intent(intent: ForecastIntentReload.shared)
+        viewModel.sendIntent(intent: ForecastIntentReload.shared)
     }
 }
 

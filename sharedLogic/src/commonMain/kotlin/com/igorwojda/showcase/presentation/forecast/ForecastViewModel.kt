@@ -64,6 +64,9 @@ class ForecastViewModel(
      */
     val states: StateFlow<ForecastState> = store.states
 
+    /** Typed entry point for Swift; `store.intent` accepts any [MVIIntent] once generics are erased. */
+    fun sendIntent(intent: ForecastIntent) = store.intent(intent)
+
     /**
      * One-off [ForecastAction]s as a cold flow, which SKIE turns into a Swift `AsyncSequence`.
      *
