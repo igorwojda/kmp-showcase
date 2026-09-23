@@ -6,7 +6,6 @@ import kotlinx.datetime.LocalDate
 import org.koin.core.parameter.parametersOf
 import org.koin.mp.KoinPlatform
 
-// TODO: Another way to provide instance? Perhaps delegate exists?
 /** Swift can't use Koin's reified `get()`, so every resolved type needs an explicit accessor. */
 fun provideForecastViewModel(): ForecastViewModel = KoinPlatform.getKoin().get()
 
