@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,26 +47,25 @@ import com.igorwojda.showcase.presentation.forecast.ForecastIntent
 import com.igorwojda.showcase.presentation.forecast.ForecastState
 import com.igorwojda.showcase.presentation.forecast.ForecastViewModel
 import com.igorwojda.showcase.presentation.forecast.WeatherCondition
+import com.igorwojda.showcase.ui.common.ErrorContent
+import com.igorwojda.showcase.ui.common.dayOfMonthFormatter
+import com.igorwojda.showcase.ui.common.dayOfWeekFormatter
+import com.igorwojda.showcase.ui.common.format
+import com.igorwojda.showcase.ui.common.timeFormatter
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.toJavaLocalDate
-import kotlinx.datetime.toJavaLocalDateTime
 import org.koin.androidx.compose.koinViewModel
 import pro.respawn.flowmvi.compose.dsl.subscribe
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
 
 /** Cold-to-warm gradient used by the daily temperature range bars. */
 private val temperatureGradient = listOf(Color(0xFF4FC3F7), Color(0xFFFFB74D))
 
-private val dayOfWeekFormatter = DateTimeFormatter.ofPattern("EEE", Locale.getDefault())
-private val dayOfMonthFormatter = DateTimeFormatter.ofPattern("d MMM", Locale.getDefault())
-private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForecastScreen(
+    onDayClick: (LocalDate) -> Unit,
     viewModel: ForecastViewModel = koinViewModel(),
 ) {
     val store = viewModel.store
@@ -104,6 +102,7 @@ fun ForecastScreen(
 
                 is ForecastState.Content -> ForecastContent(
                     forecast = currentState.forecast,
+                    onDayClick = onDayClick,
                     modifier = Modifier.fillMaxSize(),
                 )
 
@@ -120,6 +119,7 @@ fun ForecastScreen(
 @Composable
 private fun ForecastContent(
     forecast: ForecastModel,
+    onDayClick: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // A shared scale keeps the range bars of all days comparable.
@@ -153,6 +153,7 @@ private fun ForecastContent(
                 dayLabel = dayLabel(day.date, index),
                 scaleMin = scaleMin,
                 scaleMax = scaleMax,
+                onClick = { onDayClick(day.date) },
             )
         }
     }
@@ -242,11 +243,15 @@ private fun DailyForecastRow(
     dayLabel: String,
     scaleMin: Double,
     scaleMax: Double,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val condition = WeatherCondition.fromCode(day.weatherCode)
 
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -334,29 +339,6 @@ private fun TemperatureRangeBar(
     }
 }
 
-@Composable
-private fun ErrorContent(
-    message: String,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier.padding(all = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(text = "⚠️", fontSize = 40.sp)
-        Text(
-            text = message,
-            color = MaterialTheme.colorScheme.error,
-            textAlign = TextAlign.Center,
-        )
-        Button(onClick = onRetry) {
-            Text("Reload")
-        }
-    }
-}
-
 /** "Today" / "Tomorrow" for the first two days of the forecast, a weekday name for the rest. */
 private fun dayLabel(date: LocalDate, index: Int): String = when (index) {
     0 -> "Today"
@@ -377,23 +359,11 @@ private fun coordinatesLabel(latitude: Double, longitude: Double): String {
     )
 }
 
-private fun LocalDate.format(formatter: DateTimeFormatter): String = toJavaLocalDate().format(formatter)
-
-private fun LocalDateTime.format(formatter: DateTimeFormatter): String = toJavaLocalDateTime().format(formatter)
-
 @Preview(showBackground = true)
 @Composable
 private fun ForecastContentPreview() {
     MaterialTheme {
-        ForecastContent(forecast = previewForecast)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ErrorContentPreview() {
-    MaterialTheme {
-        ErrorContent(message = "Unable to reach the weather service", onRetry = {})
+        ForecastContent(forecast = previewForecast, onDayClick = {})
     }
 }
 
@@ -409,10 +379,26 @@ private val previewForecast = ForecastModel(
         weatherCode = 2,
     ),
     daily = listOf(
-        DailyWeatherModel(LocalDate(2026, 9, 22), 11.0, 19.0, "°C", 2),
-        DailyWeatherModel(LocalDate(2026, 9, 23), 9.5, 17.0, "°C", 61),
-        DailyWeatherModel(LocalDate(2026, 9, 24), 8.0, 15.5, "°C", 3),
-        DailyWeatherModel(LocalDate(2026, 9, 25), 10.0, 21.0, "°C", 0),
-        DailyWeatherModel(LocalDate(2026, 9, 26), 12.0, 23.5, "°C", 1),
+        previewDay(LocalDate(2026, 9, 22), 11.0, 19.0, 2),
+        previewDay(LocalDate(2026, 9, 23), 9.5, 17.0, 61),
+        previewDay(LocalDate(2026, 9, 24), 8.0, 15.5, 3),
+        previewDay(LocalDate(2026, 9, 25), 10.0, 21.0, 0),
+        previewDay(LocalDate(2026, 9, 26), 12.0, 23.5, 1),
     ),
+)
+
+private fun previewDay(date: LocalDate, min: Double, max: Double, weatherCode: Int) = DailyWeatherModel(
+    date = date,
+    temperatureMin = min,
+    temperatureMax = max,
+    temperatureUnit = "°C",
+    weatherCode = weatherCode,
+    sunrise = LocalDateTime(date.year, date.month, date.day, 6, 32),
+    sunset = LocalDateTime(date.year, date.month, date.day, 18, 41),
+    precipitationSum = 0.0,
+    precipitationUnit = "mm",
+    precipitationProbabilityMax = 10,
+    windSpeedMax = 14.0,
+    windSpeedUnit = "km/h",
+    hourlyTemperatures = emptyList(),
 )

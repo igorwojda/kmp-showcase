@@ -17,4 +17,6 @@ internal data class ForecastResponseModel(
     val daily: DailyResponseModel,
     @SerialName("daily_units")
     val dailyUnits: DailyUnitsResponseModel,
+    @SerialName("hourly")
+    val hourly: HourlyResponseModel,
 )

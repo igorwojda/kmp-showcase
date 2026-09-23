@@ -107,6 +107,24 @@ module's build script only declares what's specific to it:
 - Versions come from the shared [version catalog](./gradle/libs.versions.toml), which `build-logic` reads too.
 - A new feature module needs only `alias(libs.plugins.showcase.kmp.feature)` plus its own dependencies.
 
+### Navigation
+
+Navigation is native on each platform and stays out of shared code. Shared ViewModels don't know about
+routes or screens; a screen reports a user event through a callback (`onDayClick`), and the platform's
+UI layer decides where to go.
+
+| Platform | Library | Back stack | ViewModel lifetime |
+|----------|---------|------------|--------------------|
+| Android | [Navigation 3](https://developer.android.com/guide/navigation/navigation-3) | `rememberNavBackStack` of `@Serializable` `NavKey` routes in [`App`](./androidApp/src/main/kotlin/com/igorwojda/showcase/App.kt) | scoped to the back stack entry (`rememberViewModelStoreNavEntryDecorator`) |
+| iOS | SwiftUI `NavigationStack` | `NavigationLink(value: day.date)` + `.navigationDestination(for: LocalDate.self)` in `ForecastScreen` | owned by the destination view (`@StateViewModel`) |
+
+- **Routes carry IDs, not data.** `ForecastDayRoute` holds only the `LocalDate`. `ForecastDayViewModel` gets it as
+  a Koin parameter (`parametersOf(date)`; on iOS `provideForecastDayViewModel(date:)`) and reads the day from the
+  repository cache (see [Caching](#caching)). Routes stay small enough to save and restore, and the screen can
+  load its own data on its own, e.g. after process death.
+- **One ViewModel per destination.** Each opened day gets its own `ForecastDayViewModel`, which is cleared when
+  the screen is popped, on both platforms.
+
 ## Dependency Injection
 
 [Koin](https://insert-koin.io) wires the graph. All definitions live in shared code
@@ -121,6 +139,13 @@ so both platforms resolve the same instances:
   [`Koin.ios.kt`](./feature/forecast/src/iosMain/kotlin/com/igorwojda/showcase/di/Koin.ios.kt).
 
 
+## Caching
+
+[`ForecastRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepository.kt)
+keeps downloaded forecasts in an in-memory cache (per request parameters, guarded by a `Mutex`). The first request
+hits the network; `ForecastDayViewModel` then reads the day from the cache. `ForecastIntent.Reload` bypasses the cache
+(`forceRefresh = true`) and replaces the cached value. The cache lives as long as the process.
+
 ## Naming Conventions
 
 ### Screens vs Components.
@@ -129,7 +154,7 @@ UI types are named by role, consistently on both platforms:
 
 - **`…Screen`** — a full destination the user navigates to. Owns its root state
   (a ViewModel), takes no state from a parent, and appears in the routing layer.
-  `ForecastScreen` on both platforms.
+  `ForecastScreen` and `ForecastDayScreen` on both platforms.
 - **Everything else** — reusable parts and leaf components, named after what they are
   (`CurrentWeatherCard`, `TemperatureRangeBar`). They take values from a parent and own
   no root state.

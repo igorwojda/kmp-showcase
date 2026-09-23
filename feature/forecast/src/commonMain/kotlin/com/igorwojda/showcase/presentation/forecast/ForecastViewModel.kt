@@ -44,16 +44,18 @@ class ForecastViewModel(
         reduce { intent ->
             when (intent) {
                 ForecastIntent.Reload -> {
-                    loadForecast()
+                    loadForecast(forceRefresh = true)
                     action(ForecastAction.ShowToast("Reloaded"))
                 }
             }
         }
     }
 
-    private suspend fun PipelineContext<ForecastState, ForecastIntent, ForecastAction>.loadForecast() {
+    private suspend fun PipelineContext<ForecastState, ForecastIntent, ForecastAction>.loadForecast(
+        forceRefresh: Boolean = false,
+    ) {
         updateState { ForecastState.Loading }
-        val forecast = forecastRepository.getForecast()
+        val forecast = forecastRepository.getForecast(forceRefresh = forceRefresh)
         updateState { ForecastState.Content(forecast) }
     }
 }

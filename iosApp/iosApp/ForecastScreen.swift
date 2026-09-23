@@ -32,6 +32,9 @@ struct ForecastScreen: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("Weather")
+            .navigationDestination(for: LocalDate.self) { date in
+                ForecastDayScreen(date: date)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Reload", action: reload)
@@ -88,12 +91,15 @@ private struct ForecastContentView: View {
                     .padding(.top, 8)
 
                 ForEach(Array(forecast.daily.enumerated()), id: \.offset) { index, day in
-                    DailyForecastRow(
-                        day: day,
-                        dayLabel: dayLabel(for: day.date, at: index),
-                        scaleMin: scaleMin,
-                        scaleMax: scaleMax
-                    )
+                    NavigationLink(value: day.date) {
+                        DailyForecastRow(
+                            day: day,
+                            dayLabel: dayLabel(for: day.date, at: index),
+                            scaleMin: scaleMin,
+                            scaleMax: scaleMax
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(16)
@@ -223,24 +229,6 @@ private struct TemperatureRangeBar: View {
     }
 }
 
-private struct ErrorView: View {
-    let message: String
-    let onRetry: () -> Void
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Text("⚠️")
-                .font(.system(size: 40))
-            Text(message)
-                .foregroundStyle(.red)
-                .multilineTextAlignment(.center)
-            Button("Reload", action: onRetry)
-                .buttonStyle(.borderedProminent)
-        }
-        .padding(24)
-    }
-}
-
 /// SwiftUI has no toast; a bottom capsule that the screen dismisses after a short delay stands in for it.
 private struct ToastView: View {
     let message: String
@@ -271,42 +259,8 @@ private func coordinatesLabel(latitude: Double, longitude: Double) -> String {
     return String(format: "%.2f°%@ %.2f°%@", abs(latitude), latitudeHemisphere, abs(longitude), longitudeHemisphere)
 }
 
-private extension Date {
-    /// "22 Sep" (order follows the device locale).
-    var dayOfMonthLabel: String { formatted(.dateTime.day().month(.abbreviated)) }
-    /// "14:30", always 24-hour like the Android screen.
-    var timeOfDayLabel: String { formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits)) }
-}
-
-private extension LocalDate {
-    /// The date at midnight in the device time zone, so `Calendar`-based formatting keeps the same calendar day.
-    var foundationDate: Date {
-        Calendar.current.date(from: DateComponents(
-            year: Int(year),
-            month: Int(month.ordinal) + 1,
-            day: Int(day)
-        )) ?? .distantPast
-    }
-}
-
-private extension LocalDateTime {
-    var foundationDate: Date {
-        Calendar.current.date(from: DateComponents(
-            year: Int(year),
-            month: Int(month.ordinal) + 1,
-            day: Int(day),
-            hour: Int(hour),
-            minute: Int(minute)
-        )) ?? .distantPast
-    }
-}
-
 #Preview("Content") {
     ForecastContentView(forecast: previewForecast)
-}
-
-#Preview("Error") {
-    ErrorView(message: "Unable to reach the weather service", onRetry: {})
 }
 
 private let previewForecast = ForecastModel(
@@ -321,10 +275,28 @@ private let previewForecast = ForecastModel(
         weatherCode: 2
     ),
     daily: [
-        DailyWeatherModel(date: LocalDate(year: 2026, month: 9, day: 22), temperatureMin: 11.0, temperatureMax: 19.0, temperatureUnit: "°C", weatherCode: 2),
-        DailyWeatherModel(date: LocalDate(year: 2026, month: 9, day: 23), temperatureMin: 9.5, temperatureMax: 17.0, temperatureUnit: "°C", weatherCode: 61),
-        DailyWeatherModel(date: LocalDate(year: 2026, month: 9, day: 24), temperatureMin: 8.0, temperatureMax: 15.5, temperatureUnit: "°C", weatherCode: 3),
-        DailyWeatherModel(date: LocalDate(year: 2026, month: 9, day: 25), temperatureMin: 10.0, temperatureMax: 21.0, temperatureUnit: "°C", weatherCode: 0),
-        DailyWeatherModel(date: LocalDate(year: 2026, month: 9, day: 26), temperatureMin: 12.0, temperatureMax: 23.5, temperatureUnit: "°C", weatherCode: 1),
+        previewDay(month: 9, day: 22, min: 11.0, max: 19.0, weatherCode: 2),
+        previewDay(month: 9, day: 23, min: 9.5, max: 17.0, weatherCode: 61),
+        previewDay(month: 9, day: 24, min: 8.0, max: 15.5, weatherCode: 3),
+        previewDay(month: 9, day: 25, min: 10.0, max: 21.0, weatherCode: 0),
+        previewDay(month: 9, day: 26, min: 12.0, max: 23.5, weatherCode: 1),
     ]
 )
+
+private func previewDay(month: Int32, day: Int32, min: Double, max: Double, weatherCode: Int32) -> DailyWeatherModel {
+    DailyWeatherModel(
+        date: LocalDate(year: 2026, month: month, day: day),
+        temperatureMin: min,
+        temperatureMax: max,
+        temperatureUnit: "°C",
+        weatherCode: weatherCode,
+        sunrise: LocalDateTime(year: 2026, month: month, day: day, hour: 6, minute: 32, second: 0, nanosecond: 0),
+        sunset: LocalDateTime(year: 2026, month: month, day: day, hour: 18, minute: 41, second: 0, nanosecond: 0),
+        precipitationSum: 0,
+        precipitationUnit: "mm",
+        precipitationProbabilityMax: KotlinInt(int: 10),
+        windSpeedMax: 14,
+        windSpeedUnit: "km/h",
+        hourlyTemperatures: []
+    )
+}
