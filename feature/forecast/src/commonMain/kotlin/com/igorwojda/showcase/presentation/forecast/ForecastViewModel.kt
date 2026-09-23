@@ -2,16 +2,12 @@ package com.igorwojda.showcase.presentation.forecast
 
 import com.igorwojda.showcase.data.ForecastRepository
 import com.igorwojda.showcase.domain.model.ForecastModel
-import com.igorwojda.showcase.feature.base.presentation.StoreViewModel
-import com.rickclephas.kmp.observableviewmodel.coroutineScope
-import pro.respawn.flowmvi.api.ActionShareBehavior
+import com.igorwojda.showcase.feature.base.presentation.flowmvi.StoreViewModel
+import com.igorwojda.showcase.feature.base.presentation.flowmvi.configuredStore
 import pro.respawn.flowmvi.api.MVIAction
 import pro.respawn.flowmvi.api.MVIIntent
 import pro.respawn.flowmvi.api.MVIState
 import pro.respawn.flowmvi.api.PipelineContext
-import pro.respawn.flowmvi.debugger.plugin.enableRemoteDebugging
-import pro.respawn.flowmvi.dsl.store
-import pro.respawn.flowmvi.plugins.enableLogging
 import pro.respawn.flowmvi.plugins.init
 import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
@@ -20,20 +16,7 @@ class ForecastViewModel(
     private val forecastRepository: ForecastRepository,
 ) : StoreViewModel<ForecastState, ForecastIntent, ForecastAction>() {
 
-    override val store = store(
-        initial = ForecastState.Loading,
-        scope = viewModelScope.coroutineScope,
-    ) {
-        configure {
-            name = "Forecast"
-            debuggable = true
-            // Actions are delivered to a single subscriber (the screen) – the default behavior.
-            actionShareBehavior = ActionShareBehavior.Distribute()
-        }
-
-        enableLogging()
-        enableRemoteDebugging(host = "127.0.0.1")
-
+    override val store = configuredStore(initial = ForecastState.Loading, name = "Forecast") {
         recover { e ->
             updateState { ForecastState.Error(e.message ?: "Unknown error") }
             null // exception handled – don't rethrow

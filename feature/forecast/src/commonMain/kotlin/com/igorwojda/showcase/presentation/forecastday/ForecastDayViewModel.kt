@@ -2,16 +2,13 @@ package com.igorwojda.showcase.presentation.forecastday
 
 import com.igorwojda.showcase.data.ForecastRepository
 import com.igorwojda.showcase.domain.model.DailyWeatherModel
-import com.igorwojda.showcase.feature.base.presentation.StoreViewModel
-import com.rickclephas.kmp.observableviewmodel.coroutineScope
+import com.igorwojda.showcase.feature.base.presentation.flowmvi.StoreViewModel
+import com.igorwojda.showcase.feature.base.presentation.flowmvi.configuredStore
 import kotlinx.datetime.LocalDate
 import pro.respawn.flowmvi.api.MVIAction
 import pro.respawn.flowmvi.api.MVIIntent
 import pro.respawn.flowmvi.api.MVIState
 import pro.respawn.flowmvi.api.PipelineContext
-import pro.respawn.flowmvi.debugger.plugin.enableRemoteDebugging
-import pro.respawn.flowmvi.dsl.store
-import pro.respawn.flowmvi.plugins.enableLogging
 import pro.respawn.flowmvi.plugins.init
 import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
@@ -22,18 +19,7 @@ class ForecastDayViewModel(
     private val forecastRepository: ForecastRepository,
 ) : StoreViewModel<ForecastDayState, ForecastDayIntent, ForecastDayAction>() {
 
-    override val store = store(
-        initial = ForecastDayState.Loading,
-        scope = viewModelScope.coroutineScope,
-    ) {
-        configure {
-            name = "ForecastDay"
-            debuggable = true
-        }
-
-        enableLogging()
-        enableRemoteDebugging(host = "127.0.0.1")
-
+    override val store = configuredStore(initial = ForecastDayState.Loading, name = "ForecastDay") {
         recover { e ->
             updateState { ForecastDayState.Error(e.message ?: "Unknown error") }
             null // exception handled – don't rethrow

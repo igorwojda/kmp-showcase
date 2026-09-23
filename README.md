@@ -77,7 +77,7 @@ flowchart LR
 ### Consuming Common ViewModels
 
 ViewModels extend [`StoreViewModel`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/StoreViewModel.kt),
-which owns a FlowMVI `store`. Each platform consumes it through a different API:
+which owns a FlowMVI `store` (built with [`configuredStore`](#shared-store-setup)). Each platform consumes it through a different API:
 
 | Consumer | State                                                    | Actions | Intents |
 |----------|----------------------------------------------------------|---------|---------|
@@ -94,6 +94,31 @@ protocol, and protocols lose their generic types. Swift would see `store.states`
 - `onIntent`: accepts only the screen's own intent type.
 
 Android should keep using `store`, which ties the subscription to the Compose lifecycle.
+
+### Shared Store Setup
+
+Every store is built with
+[`configuredStore`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/ConfiguredStore.kt)
+instead of FlowMVI's `store`. It launches the store in `viewModelScope`, sets `name` and `debuggable`, and installs
+logging and [remote debugging](#debugging-flowmvi). The ViewModel adds only its own plugins:
+
+```kotlin
+override val store = configuredStore(initial = ForecastState.Loading, name = "Forecast") {
+    recover { … }
+    init { … }
+    reduce { … }
+}
+```
+
+- **One place for cross-cutting setup.** A new ViewModel can't forget logging or debugging, and a change (e.g. an
+  extra plugin) happens once instead of in every ViewModel.
+- **Only non-default config is set.** FlowMVI defaults (e.g. `ActionShareBehavior.Distribute`) aren't repeated.
+- **Custom builder over a base-class hook.** A plain extension on `StoreViewModel` wraps FlowMVI's `store` DSL
+  without changing it, so ViewModels still use the standard plugins (`init`, `reduce`, `recover`).
+
+**Known issue:** `debuggable` is hardcoded to `true`, so logging and remote debugging also run in release builds. The
+fix is to take a debug flag from the app and install both only when it's set. `enableRemoteDebugging` throws on
+a non-debuggable store, so both must change together.
 
 ### Convention Plugins
 
@@ -213,5 +238,5 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 [FlowMVI](https://github.com/respawn-llc/FlowMVI) 
 provides [Remote Debugging](https://opensource.respawn.pro/FlowMVI/plugins/debugging).
 
-In this project remote debugging host is set to `"127.0.0.1"` ip address (`enableRemoteDebugging(host = "127.0.0.1")`). 
+In this project remote debugging host is set to `"127.0.0.1"` ip address (`enableRemoteDebugging(host = "127.0.0.1")` in `configuredStore`). 
 To make debugging work on Android physical device run `adb reverse tcp:9684 tcp:9684` command.

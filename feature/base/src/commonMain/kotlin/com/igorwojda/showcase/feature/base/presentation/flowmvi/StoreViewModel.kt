@@ -1,6 +1,6 @@
 @file:OptIn(InternalFlowMVIAPI::class)
 
-package com.igorwojda.showcase.feature.base.presentation
+package com.igorwojda.showcase.feature.base.presentation.flowmvi
 
 import com.rickclephas.kmp.observableviewmodel.ViewModel
 import kotlinx.coroutines.flow.Flow
@@ -13,13 +13,13 @@ import pro.respawn.flowmvi.api.MVIIntent
 import pro.respawn.flowmvi.api.MVIState
 
 /**
- * Base ViewModel that owns a FlowMVI [pro.respawn.flowmvi.api.Container.store] and adds typed entry points for the iOS consumer.
+ * Base ViewModel that owns a FlowMVI [Container.store] and adds typed entry points for the iOS consumer.
  *
  * `Store` is an interface (an ObjC protocol), so its generics are erased in Swift. [states], [actions]
  * and [onIntent] re-expose the store with concrete [S], [I] and [A] types.
  *
  * - **iOS consumer** (Swift): use [states], [actions] and [onIntent].
- * - **Android consumer** (Kotlin): use [pro.respawn.flowmvi.api.Container.store] directly, e.g. `store.subscribe { … }` and `store.intent(…)`.
+ * - **Android consumer** (Kotlin): use [Container.store] directly, e.g. `store.subscribe { … }` and `store.intent(…)`.
  */
 abstract class StoreViewModel<S : MVIState, I : MVIIntent, A : MVIAction> :
     ViewModel(),
