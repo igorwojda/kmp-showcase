@@ -1,7 +1,20 @@
 # KMP Showcase
 
-A Kotlin Multiplatform sample app for Android and iOS. Data, domain and presentation logic live in
-a shared Kotlin module (multiplatform); the UI is native on each platform — Jetpack Compose on Android, SwiftUI on iOS.
+A [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html) sample application 
+demonstrating how to share code for Android and iOS. Data, domain and presentation logic live in a common Kotlin module; 
+the UI is native on each platform.
+
+## Tech-Stack
+
+Built with modern Android development tools and libraries, prioritizing, project structure stability,\
+and production-readiness.
+
+**Core Technologies:** 
+- [SKIE](https://skie.touchlab.co) - Kotlin native compiler plugin that that improves Kotlin-Swift interoperability (`Flow → AsyncSequence/Observing`, `sealed class → exhaustive Swift enum (onEnum(of:))`, `suspend → async`, default arguments, etc.)
+- [KMP-ObservableViewModel](https://github.com/rickclephas/KMP-ObservableViewModel) - share Kotlin ViewModels 
+  between Android and iOS while using native UI on each platform. Its main job is making Kotlin state changes observable by SwiftUI.
+
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -53,19 +66,10 @@ flowchart LR
     Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./sharedUI/src/jvmMain/kotlin)
     folder is the appropriate location.
 
+
 ### Running the apps
 
 Open project in [Android Studio](https://developer.android.com/studio), select platform and run the applicaiton.
-
-### Tech-Stack
-
-Built with modern Android development tools and libraries, prioritizing, project structure stability,\
-and production-readiness.
-
-**Core Technologies:** 
-- [SKIE](https://skie.touchlab.co) - Kotlin native compiler plugin that that improves Kotlin-Swift interoperability (`Flow → AsyncSequence/Observing`, `sealed class → exhaustive Swift enum (onEnum(of:))`, `suspend → async`, default arguments, etc.)
-- [KMP-ObservableViewModel](https://github.com/rickclephas/KMP-ObservableViewModel) - share Kotlin ViewModels 
-  between Android and iOS while using native UI on each platform. Its main job is making Kotlin state changes observable by SwiftUI.
 
 ### Running tests
 
@@ -74,7 +78,7 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 - Android tests: `./gradlew :sharedUI:testAndroidHostTest :sharedLogic:testAndroidHostTest`
 - iOS tests: `./gradlew :sharedLogic:iosSimulatorArm64Test`
 
-### Debugging FlowMVI
+## Debugging FlowMVI
 
 [FlowMVI](https://github.com/respawn-llc/FlowMVI) 
 provides [Remote Debugging](https://opensource.respawn.pro/FlowMVI/plugins/debugging).
@@ -96,9 +100,9 @@ so both platforms resolve the same instances:
   [`KoinIos.kt`](./sharedLogic/src/iosMain/kotlin/com/igorwojda/showcase/di/KoinIos.kt).
 
 
-### Conventions
+## Conventions
 
-## Screens vs Components.
+### Screens vs Components.
 
 UI types are named by role, consistently on both platforms:
 
@@ -114,7 +118,3 @@ On the iOS side this deviates from Apple's idiom, where every view type is suffi
 it keeps vocabulary aligned across the two platforms, and makes "is this navigable?"
 answerable from the type name instead of only from ViewModel ownership and folder
 placement. Apply it to every destination without exception.
-
----
-
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
