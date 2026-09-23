@@ -2,16 +2,6 @@ import SwiftUI
 import KMPObservableViewModelSwiftUI
 import forecast
 
-/// Cold-to-warm gradient used by the daily temperature range bars.
-private let temperatureGradient = LinearGradient(
-    colors: [
-        Color(red: 0x4F / 255, green: 0xC3 / 255, blue: 0xF7 / 255),
-        Color(red: 0xFF / 255, green: 0xB7 / 255, blue: 0x4D / 255),
-    ],
-    startPoint: .leading,
-    endPoint: .trailing
-)
-
 struct ForecastScreen: View {
     @StateViewModel private var viewModel = provideForecastViewModel()
     @State private var toast: String?
@@ -23,9 +13,9 @@ struct ForecastScreen: View {
                 // `onEnum(of:)` makes the sealed interface exhaustive – a new state stops compiling here.
                 switch onEnum(of: state) {
                 case .content(let content):
-                    ForecastContentView(forecast: content.forecast)
+                    ForecastContent(forecast: content.forecast)
                 case .error(let error):
-                    ErrorView(message: error.message, onRetry: reload)
+                    ErrorContent(message: error.message, onRetry: reload)
                 case .loading:
                     ProgressView()
                 }
@@ -43,7 +33,7 @@ struct ForecastScreen: View {
         }
         .overlay(alignment: .bottom) {
             if let toast {
-                ToastView(message: toast)
+                Toast(message: toast)
             }
         }
         .animation(.easeInOut, value: toast)
@@ -69,7 +59,7 @@ struct ForecastScreen: View {
     }
 }
 
-private struct ForecastContentView: View {
+private struct ForecastContent: View {
     let forecast: ForecastModel
 
     var body: some View {
@@ -107,143 +97,6 @@ private struct ForecastContentView: View {
     }
 }
 
-private struct CurrentWeatherCard: View {
-    let current: CurrentWeatherModel
-    let latitude: Double
-    let longitude: Double
-
-    var body: some View {
-        let condition = WeatherCondition.companion.fromCode(code: current.weatherCode)
-
-        VStack(spacing: 4) {
-            Text(condition.symbol)
-                .font(.system(size: 64))
-
-            Text("\(Int(current.temperature.rounded()))\(current.temperatureUnit)")
-                .font(.system(size: 44, weight: .bold))
-
-            Text(condition.label)
-                .font(.headline)
-
-            HStack {
-                Spacer()
-                WeatherDetail(label: "Wind", value: "\(Int(current.windSpeed.rounded())) \(current.windSpeedUnit)")
-                Spacer()
-                WeatherDetail(label: "Updated", value: current.time.foundationDate.timeOfDayLabel)
-                Spacer()
-                WeatherDetail(label: "Location", value: coordinatesLabel(latitude: latitude, longitude: longitude))
-                Spacer()
-            }
-            .padding(.top, 16)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(20)
-        .background(Color.accentColor.opacity(0.15), in: RoundedRectangle(cornerRadius: 12))
-    }
-}
-
-private struct WeatherDetail: View {
-    let label: String
-    let value: String
-
-    var body: some View {
-        VStack {
-            Text(label.uppercased())
-                .font(.caption2)
-            Text(value)
-                .font(.subheadline.weight(.medium))
-        }
-    }
-}
-
-private struct DailyForecastRow: View {
-    let day: DailyWeatherModel
-    let dayLabel: String
-    let scaleMin: Double
-    let scaleMax: Double
-
-    var body: some View {
-        let condition = WeatherCondition.companion.fromCode(code: day.weatherCode)
-
-        HStack(spacing: 12) {
-            VStack(alignment: .leading) {
-                Text(dayLabel)
-                    .font(.subheadline.weight(.semibold))
-                Text(day.date.foundationDate.dayOfMonthLabel)
-                    .font(.caption)
-            }
-            .frame(width: 72, alignment: .leading)
-
-            Text(condition.symbol)
-                .font(.system(size: 24))
-
-            Text("\(Int(day.temperatureMin.rounded()))°")
-                .font(.subheadline)
-                .frame(width: 36, alignment: .trailing)
-
-            TemperatureRangeBar(
-                low: day.temperatureMin,
-                high: day.temperatureMax,
-                scaleMin: scaleMin,
-                scaleMax: scaleMax
-            )
-
-            Text("\(Int(day.temperatureMax.rounded()))\(day.temperatureUnit)")
-                .font(.subheadline.weight(.bold))
-                .frame(width: 52, alignment: .leading)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
-    }
-}
-
-/// Horizontal bar showing where `low`...`high` sits inside the `scaleMin`...`scaleMax` range
-/// shared by every day of the forecast.
-private struct TemperatureRangeBar: View {
-    let low: Double
-    let high: Double
-    let scaleMin: Double
-    let scaleMax: Double
-
-    var body: some View {
-        let scaleSpan = scaleMax - scaleMin > 0 ? scaleMax - scaleMin : 1
-        let startFraction = clamp((low - scaleMin) / scaleSpan, 0, 1)
-        let endFraction = clamp((high - scaleMin) / scaleSpan, startFraction, 1)
-        // A single-degree day would otherwise collapse to an invisible bar.
-        let fillFraction = max(endFraction - startFraction, 0.05)
-        let leadingFraction = min(startFraction, 1 - fillFraction)
-
-        GeometryReader { geometry in
-            Capsule()
-                .fill(temperatureGradient)
-                .frame(width: geometry.size.width * fillFraction)
-                .offset(x: geometry.size.width * leadingFraction)
-        }
-        .frame(height: 8)
-        .background(Color(.systemFill), in: Capsule())
-    }
-
-    private func clamp(_ value: Double, _ lower: Double, _ upper: Double) -> Double {
-        min(max(value, lower), upper)
-    }
-}
-
-/// SwiftUI has no toast; a bottom capsule that the screen dismisses after a short delay stands in for it.
-private struct ToastView: View {
-    let message: String
-
-    var body: some View {
-        Text(message)
-            .font(.subheadline)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(.regularMaterial, in: Capsule())
-            .padding(.bottom, 24)
-            .transition(.move(edge: .bottom).combined(with: .opacity))
-    }
-}
-
 /// "Today" / "Tomorrow" for the first two days of the forecast, a weekday name for the rest.
 private func dayLabel(for date: LocalDate, at index: Int) -> String {
     switch index {
@@ -253,14 +106,8 @@ private func dayLabel(for date: LocalDate, at index: Int) -> String {
     }
 }
 
-private func coordinatesLabel(latitude: Double, longitude: Double) -> String {
-    let latitudeHemisphere = latitude >= 0 ? "N" : "S"
-    let longitudeHemisphere = longitude >= 0 ? "E" : "W"
-    return String(format: "%.2f°%@ %.2f°%@", abs(latitude), latitudeHemisphere, abs(longitude), longitudeHemisphere)
-}
-
 #Preview("Content") {
-    ForecastContentView(forecast: previewForecast)
+    ForecastContent(forecast: previewForecast)
 }
 
 private let previewForecast = ForecastModel(

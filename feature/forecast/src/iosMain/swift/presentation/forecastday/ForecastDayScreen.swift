@@ -15,9 +15,9 @@ struct ForecastDayScreen: View {
         Observing(viewModel.states) { state in
             switch onEnum(of: state) {
             case .content(let content):
-                ForecastDayContentView(day: content.day)
+                ForecastDayContent(day: content.day)
             case .error(let error):
-                ErrorView(message: error.message) {
+                ErrorContent(message: error.message) {
                     viewModel.onIntent(intent: ForecastDayIntentRetry.shared)
                 }
             case .loading:
@@ -30,7 +30,7 @@ struct ForecastDayScreen: View {
     }
 }
 
-private struct ForecastDayContentView: View {
+private struct ForecastDayContent: View {
     let day: DailyWeatherModel
 
     var body: some View {
@@ -115,7 +115,7 @@ private struct DetailRow: View {
 }
 
 #Preview {
-    ForecastDayContentView(
+    ForecastDayContent(
         day: DailyWeatherModel(
             date: LocalDate(year: 2026, month: 9, day: 23),
             temperatureMin: 9.5,

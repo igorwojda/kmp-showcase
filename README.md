@@ -184,9 +184,11 @@ UI types are named by role, consistently on both platforms:
 - **`…Screen`** — a full destination the user navigates to. Owns its root state
   (a ViewModel), takes no state from a parent, and appears in the routing layer.
   `ForecastScreen` and `ForecastDayScreen` on both platforms.
+- **`…Content`** — the stateless body of a screen, rendered for its loaded state and kept in the
+  screen's file (`ForecastContent`, `ForecastDayContent`, shared `ErrorContent`).
 - **Everything else** — reusable parts and leaf components, named after what they are
-  (`CurrentWeatherCard`, `TemperatureRangeBar`). They take values from a parent and own
-  no root state.
+  (`CurrentWeatherCard`, `TemperatureRangeBar`), one per file. They take values from a parent and own
+  no root state. The same name is used on both platforms.
 
 On the iOS side this deviates from Apple's idiom, where every view type is suffixed
 `View` (`ContentView`, `SettingsView`) regardless of scope. The deviation is deliberate:

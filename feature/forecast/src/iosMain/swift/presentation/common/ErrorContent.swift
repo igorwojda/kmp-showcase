@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ErrorView: View {
+struct ErrorContent: View {
     let message: String
     let onRetry: () -> Void
     
@@ -19,5 +19,5 @@ struct ErrorView: View {
 }
 
 #Preview {
-    ErrorView(message: "Unable to reach the weather service", onRetry: {})
+    ErrorContent(message: "Unable to reach the weather service", onRetry: {})
 }
