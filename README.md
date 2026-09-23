@@ -76,7 +76,7 @@ flowchart LR
 
 ### Consuming Common ViewModels
 
-ViewModels extend [`StoreViewModel`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/StoreViewModel.kt),
+ViewModels extend [`StoreViewModel`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/flowmvi/StoreViewModel.kt),
 which owns a FlowMVI `store` (built with [`configuredStore`](#shared-store-setup)). Each platform consumes it through a different API:
 
 | Consumer | State                                                    | Actions | Intents |
@@ -88,17 +88,29 @@ iOS can't use `store` directly - `Store` is a Kotlin interface, exported to Swif
 protocol, and protocols lose their generic types. Swift would see `store.states` untyped and
 `store.intent` accepting any `MVIIntent`. `StoreViewModel` re-exposes the store with concrete types:
 
-- `states`: typed `StateFlow`; SKIE turns it into an `AsyncSequence` for `Observing`.
-- `actions`: a cold `Flow` backed by a real store subscription. The subscription lives as long as
+- `states`: typed `StateFlow`; SKIE turns it into an `AsyncSequence` for `Observing`. Collecting it opens a
+  store subscription, which lives as long as the view observes it.
+- `actions`: a cold `Flow`, also backed by a store subscription. The subscription lives as long as
   the Swift `.task` that collects it, so `ActionShareBehavior.Distribute` sees the screen arrive and leave.
 - `onIntent`: accepts only the screen's own intent type.
 
+Both flows read the store through FlowMVI's `subscribe`, like the Compose `subscribe` does. The store's own
+`states` property is internal FlowMVI API (`@InternalFlowMVIAPI`), and reading it doesn't register a subscriber, so
+plugins such as `whileSubscribed` wouldn't see a screen that only renders state.
+
 Android should keep using `store`, which ties the subscription to the Compose lifecycle.
+
+FlowMVI has no official SwiftUI integration (its docs cover iOS only through Compose Multiplatform), hence this
+bridge. Its experimental `NativeStore` (callbacks, manual `close()`) isn't used: SKIE flows are cancelled
+automatically with the SwiftUI task.
+
+**Trade-off:** a screen that collects both flows holds two subscriptions. That's fine with the default
+`ActionShareBehavior.Distribute`, but `ActionShareBehavior.Restrict` (one subscription per store) would throw.
 
 ### Shared Store Setup
 
 Every store is built with
-[`configuredStore`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/ConfiguredStore.kt)
+[`configuredStore`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/flowmvi/ConfiguredStore.kt)
 instead of FlowMVI's `store`. It launches the store in `viewModelScope`, sets `name` and `debuggable`, and installs
 logging and [remote debugging](#debugging-flowmvi). The ViewModel adds only its own plugins:
 
