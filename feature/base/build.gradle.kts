@@ -23,6 +23,8 @@ kotlin {
             // Network
             api(libs.ktor.client.core)
             api(libs.ktor.client.content.negotiation)
+            // Type-safe requests: @Resource classes become URL path + query parameters
+            api(libs.ktor.client.resources)
             api(libs.ktor.serialization.kotlinx.json)
         }
         androidMain.dependencies {

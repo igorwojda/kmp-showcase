@@ -1,5 +1,6 @@
 package com.igorwojda.showcase.data
 
+import com.igorwojda.showcase.data.model.ForecastRequestModel
 import com.igorwojda.showcase.data.model.ForecastResponseModel
 import com.igorwojda.showcase.domain.model.CurrentWeatherModel
 import com.igorwojda.showcase.domain.model.DailyWeatherModel
@@ -7,7 +8,8 @@ import com.igorwojda.showcase.domain.model.ForecastModel
 import com.igorwojda.showcase.domain.model.HourlyTemperatureModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.get
+import io.ktor.client.plugins.resources.get
+import io.ktor.http.URLProtocol
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.LocalDate
@@ -61,32 +63,14 @@ class ForecastRepository(
     suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? =
         getForecast().daily.firstOrNull { it.date == date }
 
-    private suspend fun fetchForecast(request: ForecastRequestModel): ForecastModel {
-        val response: ForecastResponseModel = httpClient.get(BASE_URL) {
-            // TODO: Use object to build query parameters instead of appending them manually.
-            url.parameters.apply {
-                append("latitude", request.latitude.toString())
-                append("longitude", request.longitude.toString())
-                append("current", "temperature_2m,wind_speed_10m,weather_code")
-                append(
-                    "daily",
-                    "temperature_2m_min,temperature_2m_max,weather_code,sunrise,sunset," +
-                        "precipitation_sum,precipitation_probability_max,wind_speed_10m_max",
-                )
-                append("hourly", "temperature_2m")
-                append("forecast_days", request.forecastDays.toString())
-                append("timezone", "auto")
+    // The path and query come from the request's @Resource; only the host is set here.
+    private suspend fun fetchForecast(request: ForecastRequestModel): ForecastModel =
+        httpClient.get(request) {
+            url {
+                protocol = URLProtocol.HTTPS
+                host = HOST
             }
-        }.body()
-
-        return response.toForecast()
-    }
-
-    private data class ForecastRequestModel(
-        val latitude: Double,
-        val longitude: Double,
-        val forecastDays: Int,
-    )
+        }.body<ForecastResponseModel>().toForecast()
 
     // Wall clock on purpose: monotonic clocks pause while the device sleeps, which would keep stale data "fresh".
     private class CachedForecast(
@@ -95,7 +79,7 @@ class ForecastRepository(
     )
 
     private companion object {
-        const val BASE_URL = "https://api.open-meteo.com/v1/forecast"
+        const val HOST = "api.open-meteo.com"
         const val DEFAULT_LATITUDE = 52.23 // Warsaw
         const val DEFAULT_LONGITUDE = 21.01
         const val DEFAULT_FORECAST_DAYS = 7
