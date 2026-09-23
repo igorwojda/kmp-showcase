@@ -38,6 +38,7 @@ kotlin {
     
     sourceSets {
         all {
+            // Opt-in to experimental APIs used by KMP-ObservableViewModel library.
             languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
         commonMain.dependencies {
