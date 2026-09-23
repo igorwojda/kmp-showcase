@@ -1,6 +1,6 @@
 import SwiftUI
 import KMPObservableViewModelSwiftUI
-import SharedLogic
+import forecast
 
 /// Cold-to-warm gradient used by the daily temperature range bars.
 private let temperatureGradient = LinearGradient(

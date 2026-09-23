@@ -1,4 +1,4 @@
 import KMPObservableViewModelCore
-import SharedLogic
+import forecast
 
 extension Kmp_observableviewmodel_coreViewModel: @retroactive ViewModel { }

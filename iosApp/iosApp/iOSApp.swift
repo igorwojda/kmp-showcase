@@ -1,5 +1,5 @@
 import SwiftUI
-import SharedLogic
+import forecast
 
 @main
 struct iOSApp: App {
