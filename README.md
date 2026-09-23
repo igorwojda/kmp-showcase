@@ -97,11 +97,12 @@ Android should keep using `store`, which ties the subscription to the Compose li
 
 ### Convention Plugins
 
-Shared Gradle setup for the KMP modules lives in [build-logic](./build-logic/convention/src/main/kotlin), so each
+Shared Gradle setup for the app and KMP modules lives in [build-logic](./build-logic/convention/src/main/kotlin), so each
 module's build script only declares what's specific to it:
 
 | Plugin | Class | Used by | Adds |
 |--------|-------|---------|------|
+| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, all app dependencies (`:feature:forecast`, Jetpack Compose, lifecycle, Navigation 3, `koin-androidx-compose`) |
 | `showcase.kmp.basefeature` | [`KmpBaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpBaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
 | `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, SKIE (Swift bundling off, SwiftUI `Observing` on) |
 

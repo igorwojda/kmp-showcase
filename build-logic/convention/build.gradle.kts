@@ -11,6 +11,10 @@ dependencies {
 
 gradlePlugin {
     plugins {
+        register("androidApplication") {
+            id = libs.plugins.showcase.android.application.get().pluginId
+            implementationClass = "AndroidApplicationConventionPlugin"
+        }
         register("kmpBaseFeature") {
             id = libs.plugins.showcase.kmp.basefeature.get().pluginId
             implementationClass = "KmpBaseFeatureConventionPlugin"
