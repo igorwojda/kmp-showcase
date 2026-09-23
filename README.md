@@ -6,12 +6,12 @@ a shared Kotlin module (multiplatform); the UI is native on each platform — Je
 ```mermaid
 flowchart LR
     subgraph native["Native UI"]
-        android["androidApp<br/>Jetpack Compose"]
-        ios["iosApp<br/>SwiftUI"]
+        android["androidApp<br/>()Jetpack Compose)"]
+        ios["iosApp<br/>(SwiftUI)"]
     end
 
-    subgraph shared["Shared Logic <br/>(Kotlin Multiplatform)"]
-        presentation["Presentation layer <br/>(ViewModels, state)"]
+    subgraph shared["<div style='text-align:center'>Shared Logic<br/>(Kotlin Multiplatform)</div>"]
+        presentation["Presentation layer<br/>(ViewModels, state)"]
         domain["Domain layer<br/>(business logic, models)"]
         data["Data layer<br/>(repositories, networking)"]
     end
