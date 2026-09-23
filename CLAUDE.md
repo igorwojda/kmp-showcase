@@ -1,5 +1,7 @@
+# Documentation
+- After updating or renaming files make sure READMe.md file is up to date.
+
 # Project Conventions
-- FileNaming No: `KoinIos.kt` Yes: `Koin.ios.kt`
 
 ## File naming
 
