@@ -4,22 +4,37 @@ A Kotlin Multiplatform sample app for Android and iOS. Data, domain and presenta
 a shared Kotlin module (multiplatform); the UI is native on each platform — Jetpack Compose on Android, SwiftUI on iOS.
 
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph native["Native UI"]
         android["androidApp<br/>Jetpack Compose"]
         ios["iosApp<br/>SwiftUI"]
     end
 
-    subgraph shared["sharedLogic (Kotlin Multiplatform)"]
-        presentation["presentation<br/>ViewModels, state"]
-        domain["domain<br/>models, business logic"]
-        data["data<br/>repositories, API"]
+    subgraph shared["Shared Logic <br/>(Kotlin Multiplatform)"]
+        presentation["Presentation layer <br/>(ViewModels, state)"]
+        domain["Domain layer<br/>(business logic, models)"]
+        data["Data layer<br/>(repositories, networking)"]
     end
 
     android --> presentation
     ios --> presentation
     presentation --> domain
-    data --> domain
+    domain <--> data
+
+    linkStyle 3 marker-end:none;
+
+    classDef presentationLayer fill:#C2E6FC,stroke:#38ADFA,stroke-width:3px,color:#222222;
+    classDef domainLayer fill:#FFC7C2,stroke:#FF4B23,stroke-width:3px,color:#222222;
+    classDef dataLayer fill:#CEF4D4,stroke:#60D477,stroke-width:3px,color:#222222;
+    classDef nativeLayer fill:#DECDFF,stroke:#8C4FFF,stroke-width:3px,color:#222222;
+
+    class presentation presentationLayer;
+    class domain domainLayer;
+    class data dataLayer;
+    class android,ios nativeLayer;
+
+    style native fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
+    style shared fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
 ```
 
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
