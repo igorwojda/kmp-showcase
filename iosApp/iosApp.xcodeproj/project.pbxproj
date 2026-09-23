@@ -32,6 +32,13 @@
 			);
 			target = D0893C615006C37C05642F5C /* iosApp */;
 		};
+		F0A1B2C3D4E5F60000000002 /* Exceptions for "forecast" folder in "iosApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				CLAUDE.md,
+			);
+			target = D0893C615006C37C05642F5C /* iosApp */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -49,6 +56,15 @@
 				6D23F29A03BC495D6D4ADA13 /* Exceptions for "Configuration" folder in "iosApp" target */,
 			);
 			path = Configuration;
+			sourceTree = "<group>";
+		};
+		F0A1B2C3D4E5F60000000001 /* forecast */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F0A1B2C3D4E5F60000000002 /* Exceptions for "forecast" folder in "iosApp" target */,
+			);
+			name = forecast;
+			path = ../feature/forecast/src/iosMain/swift;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -71,6 +87,7 @@
 			children = (
 				33AA92F8E7B8E0E08F14EA5C /* Configuration */,
 				65577DFE0ACE5993767067E8 /* iosApp */,
+				F0A1B2C3D4E5F60000000001 /* forecast */,
 				565703E6B8E683C1EB3C2DD1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -102,6 +119,7 @@
 			fileSystemSynchronizedGroups = (
 				33AA92F8E7B8E0E08F14EA5C /* Configuration */,
 				65577DFE0ACE5993767067E8 /* iosApp */,
+				F0A1B2C3D4E5F60000000001 /* forecast */,
 			);
 			name = iosApp;
 			packageProductDependencies = (

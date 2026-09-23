@@ -53,11 +53,13 @@ flowchart LR
 ```
 
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+  you need this entry point for your iOS app. Feature SwiftUI code lives in the feature modules (see below).
 
 * [/feature/forecast](./feature/forecast/src) is the forecast feature shared between app targets in the project.
   The most important subfolder is [commonMain](./feature/forecast/src/commonMain/kotlin).
   [androidMain](./feature/forecast/src/androidMain/kotlin) holds the Jetpack Compose UI in the [presentation](./feature/forecast/src/androidMain/kotlin/com/igorwojda/showcase/presentation) package (`ForecastScreen`, `ForecastDayScreen`).
+  [iosMain/swift](./feature/forecast/src/iosMain/swift) holds the SwiftUI UI in the same `presentation` layout
+  (see [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)).
 
 * [/feature/base](./feature/base/src) holds code shared by all feature modules, e.g. `StoreViewModel`.
 
@@ -101,11 +103,38 @@ module's build script only declares what's specific to it:
 | Plugin | Class | Used by | Adds |
 |--------|-------|---------|------|
 | `showcase.kmp.basefeature` | [`KmpBaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpBaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
-| `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain` |
+| `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, SKIE (Swift bundling off, SwiftUI `Observing` on) |
 
 - The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
 - Versions come from the shared [version catalog](./gradle/libs.versions.toml), which `build-logic` reads too.
 - A new feature module needs only `alias(libs.plugins.showcase.kmp.feature)` plus its own dependencies.
+
+### Feature UI Lives in the Feature Module
+
+A feature's native UI sits next to its shared logic, in the feature module, not in the app modules. The app
+modules only wire things together: entry point, DI start-up and navigation.
+
+```
+feature/forecast/src/
+├── commonMain/kotlin/…/presentation/   ViewModels, state (shared)
+├── androidMain/kotlin/…/presentation/  Jetpack Compose screens and components
+└── iosMain/swift/presentation/         SwiftUI screens and components
+```
+
+- **One package for all view code.** Screens, components and UI helpers go under `presentation`
+  (`presentation/<feature>`, shared helpers in `presentation/common`), on both platforms. There is no `ui` package.
+- **Android** is a normal KMP `androidMain` source set. The Compose compiler and Compose dependencies come from the
+  `showcase.kmp.feature` [convention plugin](#convention-plugins), so feature build scripts don't repeat them.
+- **iOS** Swift can't be compiled by Gradle, so the files are compiled by the Xcode app target through a
+  synchronized folder (`forecast` in `iosApp.xcodeproj`, pointing at `feature/forecast/src/iosMain/swift`). New files
+  there are picked up automatically.
+- **SKIE Swift bundling is disabled** (`swiftBundling { enabled = false }` in the `showcase.kmp.feature` convention plugin). SKIE would otherwise compile
+  `src/iosMain/swift` into the Kotlin framework, where the Swift packages the screens import
+  (`KMPObservableViewModelSwiftUI`) aren't available. After changing this, run `./gradlew :feature:forecast:clean`,
+  or SKIE reuses stale unpacked Swift sources.
+
+**Trade-off:** the module owns its iOS UI files but not their build. Xcode compiles them, so an iOS-only
+UI change still needs an Xcode build to verify.
 
 ### Navigation
 

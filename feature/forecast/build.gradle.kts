@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 plugins {
     alias(libs.plugins.showcase.kmp.feature)
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.skie)
 }
 
 kotlin {
@@ -25,12 +24,5 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
-    }
-}
-
-skie {
-    features {
-        // https://skie.touchlab.co/features/flows-in-swiftui
-        enableSwiftUIObservingPreview = true
     }
 }
