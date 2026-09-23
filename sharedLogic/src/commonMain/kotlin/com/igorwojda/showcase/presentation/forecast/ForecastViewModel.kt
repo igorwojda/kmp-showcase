@@ -77,7 +77,6 @@ class ForecastViewModel(
         with(store) { subscribe { actions.collect { send(it) } } }.join()
     }
 
-    /** Loading → Content; any exception is routed to `recover` above. */
     private suspend fun PipelineContext<ForecastState, ForecastIntent, ForecastAction>.loadForecast() {
         updateState { ForecastState.Loading }
         val forecast = forecastRepository.getForecast()
