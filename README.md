@@ -47,11 +47,10 @@ Open project in [Android Studio](https://developer.android.com/studio), select p
 Built with modern Android development tools and libraries, prioritizing, project structure stability,\
 and production-readiness.
 
-ToDo:
-
-**Core Technologies:**
-- [SKIE](https://skie.touchlab.co) post-processes the Kotlin/Native framework so the generated
-  Objective-C API reads like Swift. It's applied in
+**Core Technologies:** 
+- [SKIE](https://skie.touchlab.co) - Kotlin native compiler plugin that that improves Kotlin-Swift interoperability (`Flow → AsyncSequence/Observing`, `sealed class → exhaustive Swift enum (onEnum(of:))`, `suspend → async`, default arguments, etc.)
+- [KMP-ObservableViewModel](https://github.com/rickclephas/KMP-ObservableViewModel) - share Kotlin ViewModels 
+  between Android and iOS while using native UI on each platform. Its main job is making Kotlin state changes observable by SwiftUI.
 
 ### Running tests
 
