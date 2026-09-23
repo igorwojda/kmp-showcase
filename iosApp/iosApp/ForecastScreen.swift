@@ -13,7 +13,7 @@ private let temperatureGradient = LinearGradient(
 )
 
 struct ForecastScreen: View {
-    @StateViewModel private var viewModel = forecastViewModel()
+    @StateViewModel private var viewModel = provideForecastViewModel()
     @State private var toast: String?
 
     var body: some View {
