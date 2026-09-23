@@ -16,9 +16,9 @@ import pro.respawn.flowmvi.api.MVIState
  * Base ViewModel that owns a FlowMVI [pro.respawn.flowmvi.api.Container.store] and adds typed entry points for the iOS consumer.
  *
  * `Store` is an interface (an ObjC protocol), so its generics are erased in Swift. [states], [actions]
- * and [sendIntent] re-expose the store with concrete [S], [I] and [A] types.
+ * and [onIntent] re-expose the store with concrete [S], [I] and [A] types.
  *
- * - **iOS consumer** (Swift): use [states], [actions] and [sendIntent].
+ * - **iOS consumer** (Swift): use [states], [actions] and [onIntent].
  * - **Android consumer** (Kotlin): use [pro.respawn.flowmvi.api.Container.store] directly, e.g. `store.subscribe { … }` and `store.intent(…)`.
  */
 abstract class StoreViewModel<S : MVIState, I : MVIIntent, A : MVIAction> :
@@ -47,5 +47,5 @@ abstract class StoreViewModel<S : MVIState, I : MVIIntent, A : MVIAction> :
      * iOS consumer only: sends [intent] to the store. Typed as [I], unlike `store.intent`, which accepts
      * any [MVIIntent] in Swift. Android consumer should call `store.intent(…)` directly.
      */
-    fun sendIntent(intent: I) = store.intent(intent)
+    fun onIntent(intent: I) = store.intent(intent)
 }

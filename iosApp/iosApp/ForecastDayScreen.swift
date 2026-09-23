@@ -18,7 +18,7 @@ struct ForecastDayScreen: View {
                 ForecastDayContentView(day: content.day)
             case .error(let error):
                 ErrorView(message: error.message) {
-                    viewModel.sendIntent(intent: ForecastDayIntentRetry.shared)
+                    viewModel.onIntent(intent: ForecastDayIntentRetry.shared)
                 }
             case .loading:
                 ProgressView()

@@ -3,6 +3,9 @@
 
 # Project Conventions
 
+## ViewModel
+- Every method that is called from the UI should have `on` prefix. e.g. `onButtonClick()`.
+
 ## File naming
 
 ### Platform-specific Files Use A Platform Suffix

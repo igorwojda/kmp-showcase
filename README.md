@@ -80,7 +80,7 @@ which owns a FlowMVI `store`. Each platform consumes it through a different API:
 | Consumer | State                                                    | Actions | Intents |
 |----------|----------------------------------------------------------|---------|---------|
 | Android (Compose) | `val state by viewModel.store.subscribe { action -> … }` | same `subscribe` lambda | `store.intent(…)` |
-| iOS (SwiftUI) | `viewModel.states`                                       | `viewModel.actions` | `viewModel.sendIntent(intent:)` |
+| iOS (SwiftUI) | `viewModel.states`                                       | `viewModel.actions` | `viewModel.onIntent(intent:)` |
 
 iOS can't use `store` directly - `Store` is a Kotlin interface, exported to Swift as an Objective-C
 protocol, and protocols lose their generic types. Swift would see `store.states` untyped and
@@ -89,7 +89,7 @@ protocol, and protocols lose their generic types. Swift would see `store.states`
 - `states`: typed `StateFlow`; SKIE turns it into an `AsyncSequence` for `Observing`.
 - `actions`: a cold `Flow` backed by a real store subscription. The subscription lives as long as
   the Swift `.task` that collects it, so `ActionShareBehavior.Distribute` sees the screen arrive and leave.
-- `sendIntent`: accepts only the screen's own intent type.
+- `onIntent`: accepts only the screen's own intent type.
 
 Android should keep using `store`, which ties the subscription to the Compose lifecycle.
 
