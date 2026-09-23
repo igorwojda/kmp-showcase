@@ -46,13 +46,13 @@ class ForecastRepository(
     }
 
     /**
-     * Weather for a single [date] of the (cached) default forecast.
+     * Weather for a single [date] of the (cached) default forecast, or `null` when the forecast
+     * doesn't contain [date].
      *
-     * Throws when the forecast doesn't contain [date], or on network / parsing failure.
+     * Throws on network / parsing failure.
      */
-    suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel =
+    suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? =
         getForecast().daily.firstOrNull { it.date == date }
-            ?: throw NoSuchElementException("No forecast for $date")
 
     private suspend fun fetchForecast(request: ForecastRequestModel): ForecastModel {
         val response: ForecastResponseModel = httpClient.get(BASE_URL) {

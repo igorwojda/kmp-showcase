@@ -37,7 +37,9 @@ class ForecastDayViewModel(
     private suspend fun PipelineContext<ForecastDayState, ForecastDayIntent, ForecastDayAction>.loadDay() {
         updateState { ForecastDayState.Loading }
         val day = forecastRepository.getDailyWeather(date)
-        updateState { ForecastDayState.Content(day) }
+        updateState {
+            if (day == null) ForecastDayState.Error("No forecast for $date") else ForecastDayState.Content(day)
+        }
     }
 }
 
