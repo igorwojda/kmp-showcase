@@ -11,23 +11,27 @@ import io.ktor.client.request.get
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.LocalDate
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Instant
 
 /**
  * Downloads weather data from the Open-Meteo API.
  *
- * Responses are kept in an in-memory cache (per request), so screens opened after the first
- * request (e.g. ForecastDayScreen) reuse the downloaded forecast instead of hitting the network again.
+ * Responses are kept in an in-memory cache (per request) for [CACHE_TTL], so screens opened after
+ * the first request (e.g. ForecastDayScreen) reuse the downloaded forecast instead of hitting the
+ * network again.
  */
 class ForecastRepository(
     private val httpClient: HttpClient,
 ) {
     private val cacheMutex = Mutex()
-    private val cache = mutableMapOf<ForecastRequestModel, ForecastModel>()
+    private val cache = mutableMapOf<ForecastRequestModel, CachedForecast>()
 
     /**
      * Current weather plus a [forecastDays]-day daily forecast for the given coordinates.
      *
-     * Returns the cached forecast when available, unless [forceRefresh] is set.
+     * Returns the cached forecast when it is younger than [CACHE_TTL], unless [forceRefresh] is set.
      * Throws on network / parsing failure.
      */
     suspend fun getForecast(
@@ -40,8 +44,11 @@ class ForecastRepository(
 
         // The lock also stops concurrent callers from downloading the same forecast twice.
         return cacheMutex.withLock {
-            cache[request]?.takeUnless { forceRefresh }
-                ?: fetchForecast(request).also { cache[request] = it }
+            val now = Clock.System.now()
+            cache[request]
+                ?.takeUnless { forceRefresh || now - it.fetchedAt >= CACHE_TTL }
+                ?.forecast
+                ?: fetchForecast(request).also { cache[request] = CachedForecast(it, now) }
         }
     }
 
@@ -81,11 +88,18 @@ class ForecastRepository(
         val forecastDays: Int,
     )
 
+    // Wall clock on purpose: monotonic clocks pause while the device sleeps, which would keep stale data "fresh".
+    private class CachedForecast(
+        val forecast: ForecastModel,
+        val fetchedAt: Instant,
+    )
+
     private companion object {
         const val BASE_URL = "https://api.open-meteo.com/v1/forecast"
         const val DEFAULT_LATITUDE = 52.23 // Warsaw
         const val DEFAULT_LONGITUDE = 21.01
         const val DEFAULT_FORECAST_DAYS = 7
+        val CACHE_TTL = 15.minutes
     }
 }
 

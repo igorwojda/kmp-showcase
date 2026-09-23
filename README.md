@@ -211,7 +211,8 @@ so both platforms resolve the same instances:
 [`ForecastRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepository.kt)
 keeps downloaded forecasts in an in-memory cache (per request parameters, guarded by a `Mutex`). The first request
 hits the network; `ForecastDayViewModel` then reads the day from the cache. `ForecastIntent.Reload` bypasses the cache
-(`forceRefresh = true`) and replaces the cached value. The cache lives as long as the process.
+(`forceRefresh = true`) and replaces the cached value. Entries expire after 15 minutes (wall clock) and are
+re-downloaded on the next request; the cache itself lives as long as the process.
 
 ## Naming Conventions
 
