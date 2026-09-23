@@ -63,7 +63,6 @@ class ForecastRepository(
     suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? =
         getForecast().daily.firstOrNull { it.date == date }
 
-    // The path and query come from the request's @Resource; only the host is set here.
     private suspend fun fetchForecast(request: ForecastRequestModel): ForecastModel =
         httpClient.get(request) {
             url {
@@ -72,7 +71,6 @@ class ForecastRepository(
             }
         }.body<ForecastResponseModel>().toForecast()
 
-    // Wall clock on purpose: monotonic clocks pause while the device sleeps, which would keep stale data "fresh".
     private class CachedForecast(
         val forecast: ForecastModel,
         val fetchedAt: Instant,
