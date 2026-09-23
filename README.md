@@ -113,9 +113,9 @@ UI types are named by role, consistently on both platforms:
 
 - **`…Screen`** — a full destination the user navigates to. Owns its root state
   (a ViewModel), takes no state from a parent, and appears in the routing layer.
-  SwiftUI: `ForecastScreen`. Compose: `ForecastScreenFlowMvi`.
+  `ForecastScreen` on both platforms.
 - **Everything else** — reusable parts and leaf components, named after what they are
-  (`ForecastHeaderView`, `TemperatureBadge`). They take values from a parent and own
+  (`CurrentWeatherCard`, `TemperatureRangeBar`). They take values from a parent and own
   no root state.
 
 On the iOS side this deviates from Apple's idiom, where every view type is suffixed
