@@ -9,6 +9,12 @@
   - `Data`- Responsible for data management, including repositories and data sources.
   - `Presentation` - Handles UI logic and user interactions.
 
+## Data Layer
+
+### Network Models
+- Classes used for network requests and responses use a `Model` suffix: `...RequestModel`, `...ResponseModel`
+  (e.g. `ForecastRequestModel`, `ForecastResponseModel`).
+
 ## Presentation Layer
 
 ### ViewModel

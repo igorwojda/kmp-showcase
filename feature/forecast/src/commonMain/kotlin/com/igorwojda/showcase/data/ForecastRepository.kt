@@ -22,7 +22,7 @@ class ForecastRepository(
     private val httpClient: HttpClient,
 ) {
     private val cacheMutex = Mutex()
-    private val cache = mutableMapOf<ForecastRequest, ForecastModel>()
+    private val cache = mutableMapOf<ForecastRequestModel, ForecastModel>()
 
     /**
      * Current weather plus a [forecastDays]-day daily forecast for the given coordinates.
@@ -36,7 +36,7 @@ class ForecastRepository(
         forecastDays: Int = DEFAULT_FORECAST_DAYS,
         forceRefresh: Boolean = false,
     ): ForecastModel {
-        val request = ForecastRequest(latitude, longitude, forecastDays)
+        val request = ForecastRequestModel(latitude, longitude, forecastDays)
 
         // The lock also stops concurrent callers from downloading the same forecast twice.
         return cacheMutex.withLock {
@@ -54,7 +54,7 @@ class ForecastRepository(
         getForecast().daily.firstOrNull { it.date == date }
             ?: throw NoSuchElementException("No forecast for $date")
 
-    private suspend fun fetchForecast(request: ForecastRequest): ForecastModel {
+    private suspend fun fetchForecast(request: ForecastRequestModel): ForecastModel {
         val response: ForecastResponseModel = httpClient.get(BASE_URL) {
             // TODO: Use object to build query parameters instead of appending them manually.
             url.parameters.apply {
@@ -75,7 +75,7 @@ class ForecastRepository(
         return response.toForecast()
     }
 
-    private data class ForecastRequest(
+    private data class ForecastRequestModel(
         val latitude: Double,
         val longitude: Double,
         val forecastDays: Int,
