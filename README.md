@@ -56,8 +56,8 @@ flowchart LR
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
 
 * [/feature/forecast](./feature/forecast/src) is the forecast feature shared between app targets in the project.
-  The most important subfolder is [commonMain](./feature/forecast/src/commonMain/kotlin). If preferred, you
-  can add code to the platform-specific folders here too.
+  The most important subfolder is [commonMain](./feature/forecast/src/commonMain/kotlin).
+  [androidMain](./feature/forecast/src/androidMain/kotlin) holds the Jetpack Compose UI in the [presentation](./feature/forecast/src/androidMain/kotlin/com/igorwojda/showcase/presentation) package (`ForecastScreen`, `ForecastDayScreen`).
 
 * [/feature/base](./feature/base/src) holds code shared by all feature modules, e.g. `StoreViewModel`.
 
@@ -101,7 +101,7 @@ module's build script only declares what's specific to it:
 | Plugin | Class | Used by | Adds |
 |--------|-------|---------|------|
 | `showcase.kmp.basefeature` | [`KmpBaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpBaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
-| `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))` |
+| `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain` |
 
 - The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
 - Versions come from the shared [version catalog](./gradle/libs.versions.toml), which `build-logic` reads too.

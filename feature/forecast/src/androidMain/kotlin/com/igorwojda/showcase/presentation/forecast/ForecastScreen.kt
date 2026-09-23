@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.ui.forecast
+package com.igorwojda.showcase.presentation.forecast
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -42,16 +42,11 @@ import androidx.compose.ui.unit.sp
 import com.igorwojda.showcase.domain.model.CurrentWeatherModel
 import com.igorwojda.showcase.domain.model.DailyWeatherModel
 import com.igorwojda.showcase.domain.model.ForecastModel
-import com.igorwojda.showcase.presentation.forecast.ForecastAction
-import com.igorwojda.showcase.presentation.forecast.ForecastIntent
-import com.igorwojda.showcase.presentation.forecast.ForecastState
-import com.igorwojda.showcase.presentation.forecast.ForecastViewModel
-import com.igorwojda.showcase.presentation.forecast.WeatherCondition
-import com.igorwojda.showcase.ui.common.ErrorContent
-import com.igorwojda.showcase.ui.common.dayOfMonthFormatter
-import com.igorwojda.showcase.ui.common.dayOfWeekFormatter
-import com.igorwojda.showcase.ui.common.format
-import com.igorwojda.showcase.ui.common.timeFormatter
+import com.igorwojda.showcase.presentation.common.ErrorContent
+import com.igorwojda.showcase.presentation.common.dayOfMonthFormatter
+import com.igorwojda.showcase.presentation.common.dayOfWeekFormatter
+import com.igorwojda.showcase.presentation.common.format
+import com.igorwojda.showcase.presentation.common.timeFormatter
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import org.koin.androidx.compose.koinViewModel
@@ -59,7 +54,6 @@ import pro.respawn.flowmvi.compose.dsl.subscribe
 import java.util.Locale
 import kotlin.math.roundToInt
 
-/** Cold-to-warm gradient used by the daily temperature range bars. */
 private val temperatureGradient = listOf(Color(0xFF4FC3F7), Color(0xFFFFB74D))
 
 @OptIn(ExperimentalMaterial3Api::class)

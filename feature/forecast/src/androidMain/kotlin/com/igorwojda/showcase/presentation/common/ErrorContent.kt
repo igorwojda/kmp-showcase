@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.ui.common
+package com.igorwojda.showcase.presentation.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.ui.common
+package com.igorwojda.showcase.presentation.common
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime

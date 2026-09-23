@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.ui.forecastday
+package com.igorwojda.showcase.presentation.forecastday
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,14 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.igorwojda.showcase.domain.model.DailyWeatherModel
 import com.igorwojda.showcase.domain.model.HourlyTemperatureModel
-import com.igorwojda.showcase.presentation.forecastday.ForecastDayIntent
-import com.igorwojda.showcase.presentation.forecastday.ForecastDayState
-import com.igorwojda.showcase.presentation.forecastday.ForecastDayViewModel
+import com.igorwojda.showcase.presentation.common.ErrorContent
+import com.igorwojda.showcase.presentation.common.format
+import com.igorwojda.showcase.presentation.common.fullDateFormatter
+import com.igorwojda.showcase.presentation.common.timeFormatter
 import com.igorwojda.showcase.presentation.forecast.WeatherCondition
-import com.igorwojda.showcase.ui.common.ErrorContent
-import com.igorwojda.showcase.ui.common.format
-import com.igorwojda.showcase.ui.common.fullDateFormatter
-import com.igorwojda.showcase.ui.common.timeFormatter
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import org.koin.androidx.compose.koinViewModel
