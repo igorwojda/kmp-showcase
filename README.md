@@ -68,27 +68,30 @@ flowchart LR
     Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./sharedUI/src/jvmMain/kotlin)
     folder is the appropriate location.
 
+## Design Decisions
 
-### Running the apps
+### Consuming Common ViewModels
 
-Open project in [Android Studio](https://developer.android.com/studio), select platform and run the applicaiton.
+ViewModels extend [`StoreViewModel`](./sharedLogic/src/commonMain/kotlin/com/igorwojda/showcase/presentation/forecast/StoreViewModel.kt),
+which owns a FlowMVI `store`. Each platform consumes it through a different API:
 
-### Running tests
+| Consumer | State                                                    | Actions | Intents |
+|----------|----------------------------------------------------------|---------|---------|
+| Android (Compose) | `val state by viewModel.store.subscribe { action -> … }` | same `subscribe` lambda | `store.intent(…)` |
+| iOS (SwiftUI) | `viewModel.states`                                       | `viewModel.actions` | `viewModel.sendIntent(intent:)` |
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+iOS can't use `store` directly - `Store` is a Kotlin interface, exported to Swift as an Objective-C
+protocol, and protocols lose their generic types. Swift would see `store.states` untyped and
+`store.intent` accepting any `MVIIntent`. `StoreViewModel` re-exposes the store with concrete types:
 
-- Android tests: `./gradlew :sharedUI:testAndroidHostTest :sharedLogic:testAndroidHostTest`
-- iOS tests: `./gradlew :sharedLogic:iosSimulatorArm64Test`
+- `states`: typed `StateFlow`; SKIE turns it into an `AsyncSequence` for `Observing`.
+- `actions`: a cold `Flow` backed by a real store subscription. The subscription lives as long as
+  the Swift `.task` that collects it, so `ActionShareBehavior.Distribute` sees the screen arrive and leave.
+- `sendIntent`: accepts only the screen's own intent type.
 
-## Debugging FlowMVI
+Android should keep using `store`, which ties the subscription to the Compose lifecycle.
 
-[FlowMVI](https://github.com/respawn-llc/FlowMVI) 
-provides [Remote Debugging](https://opensource.respawn.pro/FlowMVI/plugins/debugging).
-
-In this project remote debugging host is set to `"127.0.0.1"` ip address (`enableRemoteDebugging(host = "127.0.0.1")`). 
-To make debugging work on Android physical device run `adb reverse tcp:9684 tcp:9684` command.
-
-### Dependency injection
+## Dependency Injection
 
 [Koin](https://insert-koin.io) wires the graph. All definitions live in shared code
 ([`sharedLogicModule`](./sharedLogic/src/commonMain/kotlin/com/igorwojda/showcase/di/SharedLogicModule.kt)),
@@ -99,10 +102,10 @@ so both platforms resolve the same instances:
 - iOS: `KMPShowcaseApplication.init()` calls `doInitKoin(config: nil)` — SKIE exposes the top-level
   Kotlin `initKoin` as a top-level Swift function. Swift can't use Koin's reified `get()`,
   so each resolved type gets an explicit accessor in
-  [`KoinIos.kt`](./sharedLogic/src/iosMain/kotlin/com/igorwojda/showcase/di/KoinIos.kt).
+  [`Koin.ios.kt`](./sharedLogic/src/iosMain/kotlin/com/igorwojda/showcase/di/Koin.ios.kt).
 
 
-## Conventions
+## Naming Conventions
 
 ### Screens vs Components.
 
@@ -120,3 +123,22 @@ On the iOS side this deviates from Apple's idiom, where every view type is suffi
 it keeps vocabulary aligned across the two platforms, and makes "is this navigable?"
 answerable from the type name instead of only from ViewModel ownership and folder
 placement. Apply it to every destination without exception.
+
+## Running the apps
+
+Open project in [Android Studio](https://developer.android.com/studio), select platform and run the applicaiton.
+
+## Running tests
+
+Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+
+- Android tests: `./gradlew :sharedUI:testAndroidHostTest :sharedLogic:testAndroidHostTest`
+- iOS tests: `./gradlew :sharedLogic:iosSimulatorArm64Test`
+
+## Debugging FlowMVI
+
+[FlowMVI](https://github.com/respawn-llc/FlowMVI) 
+provides [Remote Debugging](https://opensource.respawn.pro/FlowMVI/plugins/debugging).
+
+In this project remote debugging host is set to `"127.0.0.1"` ip address (`enableRemoteDebugging(host = "127.0.0.1")`). 
+To make debugging work on Android physical device run `adb reverse tcp:9684 tcp:9684` command.
