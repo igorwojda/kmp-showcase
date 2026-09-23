@@ -28,4 +28,5 @@ dependencyResolutionManagement {
 }
 
 include(":androidApp")
-include(":sharedLogic")
+include(":feature:base")
+include(":feature:forecast")

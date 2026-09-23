@@ -55,9 +55,11 @@ flowchart LR
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
 
-* [/sharedLogic](./sharedLogic/src) is for the code that will be shared between app targets in the project.
-  The most important subfolder is [commonMain](./sharedLogic/src/commonMain/kotlin). If preferred, you
+* [/feature/forecast](./feature/forecast/src) is the forecast feature shared between app targets in the project.
+  The most important subfolder is [commonMain](./feature/forecast/src/commonMain/kotlin). If preferred, you
   can add code to the platform-specific folders here too.
+
+* [/feature/base](./feature/base/src) holds code shared by all feature modules, e.g. `StoreViewModel`.
 
 * [/sharedUI](./sharedUI/src) is for code that will be shared across your Compose Multiplatform applications.
   It contains several subfolders:
@@ -72,7 +74,7 @@ flowchart LR
 
 ### Consuming Common ViewModels
 
-ViewModels extend [`StoreViewModel`](./sharedLogic/src/commonMain/kotlin/com/igorwojda/showcase/presentation/forecast/StoreViewModel.kt),
+ViewModels extend [`StoreViewModel`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/StoreViewModel.kt),
 which owns a FlowMVI `store`. Each platform consumes it through a different API:
 
 | Consumer | State                                                    | Actions | Intents |
@@ -94,7 +96,7 @@ Android should keep using `store`, which ties the subscription to the Compose li
 ## Dependency Injection
 
 [Koin](https://insert-koin.io) wires the graph. All definitions live in shared code
-([`sharedLogicModule`](./sharedLogic/src/commonMain/kotlin/com/igorwojda/showcase/di/SharedLogicModule.kt)),
+([`sharedLogicModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/SharedLogicModule.kt)),
 so both platforms resolve the same instances:
 
 - Android: `ShowcaseApplication.onCreate()` calls `initializeKoin { androidLogger(); androidContext(...) }`;
@@ -102,7 +104,7 @@ so both platforms resolve the same instances:
 - iOS: `KMPShowcaseApplication.init()` calls `doInitKoin(config: nil)` — SKIE exposes the top-level
   Kotlin `initKoin` as a top-level Swift function. Swift can't use Koin's reified `get()`,
   so each resolved type gets an explicit accessor in
-  [`Koin.ios.kt`](./sharedLogic/src/iosMain/kotlin/com/igorwojda/showcase/di/Koin.ios.kt).
+  [`Koin.ios.kt`](./feature/forecast/src/iosMain/kotlin/com/igorwojda/showcase/di/Koin.ios.kt).
 
 
 ## Naming Conventions
@@ -132,8 +134,8 @@ Open project in [Android Studio](https://developer.android.com/studio), select p
 
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
-- Android tests: `./gradlew :sharedUI:testAndroidHostTest :sharedLogic:testAndroidHostTest`
-- iOS tests: `./gradlew :sharedLogic:iosSimulatorArm64Test`
+- Android tests: `./gradlew :sharedUI:testAndroidHostTest :feature:forecast:testAndroidHostTest`
+- iOS tests: `./gradlew :feature:forecast:iosSimulatorArm64Test`
 
 ## Debugging FlowMVI
 

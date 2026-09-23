@@ -17,11 +17,13 @@ kotlin {
             isStatic = true
             // Domain models expose LocalDate / LocalDateTime, so the types must be visible to Swift.
             export(libs.kotlinx.datetime)
+            // StoreViewModel (base class of the ViewModels) must be visible to Swift.
+            export(project(":feature:base"))
         }
     }
     
     android {
-       namespace = "com.igorwojda.showcase.sharedLogic"
+       namespace = "com.igorwojda.showcase.feature.forecast"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
     
@@ -42,11 +44,8 @@ kotlin {
             languageSettings.optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
         commonMain.dependencies {
-            //TODO: Libs as API?
-            api(libs.androidx.lifecycle.viewmodel)
-            api(libs.kmp.observableviewmodel.core)
-            api(libs.flowmvi.compose)
-            // Remote debugger (IDE plugin / desktop app). sharedLogic uses the KMP android library plugin,
+            api(project(":feature:base"))
+            // Remote debugger (IDE plugin / desktop app). This module uses the KMP android library plugin,
             // which has no debug/release source sets, so it ships in release builds too.
             implementation(libs.flowmvi.debugger)
 

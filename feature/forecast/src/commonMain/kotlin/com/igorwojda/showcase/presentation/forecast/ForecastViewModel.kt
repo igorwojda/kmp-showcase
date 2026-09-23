@@ -2,6 +2,7 @@ package com.igorwojda.showcase.presentation.forecast
 
 import com.igorwojda.showcase.data.ForecastRepository
 import com.igorwojda.showcase.domain.model.ForecastModel
+import com.igorwojda.showcase.feature.base.presentation.StoreViewModel
 import com.rickclephas.kmp.observableviewmodel.coroutineScope
 import pro.respawn.flowmvi.api.ActionShareBehavior
 import pro.respawn.flowmvi.api.MVIAction
