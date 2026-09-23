@@ -93,6 +93,20 @@ protocol, and protocols lose their generic types. Swift would see `store.states`
 
 Android should keep using `store`, which ties the subscription to the Compose lifecycle.
 
+### Convention Plugins
+
+Shared Gradle setup for the KMP modules lives in [build-logic](./build-logic/convention/src/main/kotlin), so each
+module's build script only declares what's specific to it:
+
+| Plugin | Class | Used by | Adds |
+|--------|-------|---------|------|
+| `showcase.kmp.basefeature` | [`KmpBaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpBaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
+| `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))` |
+
+- The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
+- Versions come from the shared [version catalog](./gradle/libs.versions.toml), which `build-logic` reads too.
+- A new feature module needs only `alias(libs.plugins.showcase.kmp.feature)` plus its own dependencies.
+
 ## Dependency Injection
 
 [Koin](https://insert-koin.io) wires the graph. All definitions live in shared code

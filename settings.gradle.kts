@@ -1,6 +1,7 @@
 rootProject.name = "kmp-showcase"
 
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             mavenContent {

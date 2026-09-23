@@ -1,0 +1,22 @@
+plugins {
+    `kotlin-dsl`
+}
+
+dependencies {
+    // compileOnly: the root build applies these plugins (apply false), so they're already on the classpath.
+    compileOnly(libs.android.gradlePlugin)
+    compileOnly(libs.kotlin.gradlePlugin)
+}
+
+gradlePlugin {
+    plugins {
+        register("kmpBaseFeature") {
+            id = libs.plugins.showcase.kmp.basefeature.get().pluginId
+            implementationClass = "KmpBaseFeatureConventionPlugin"
+        }
+        register("kmpFeature") {
+            id = libs.plugins.showcase.kmp.feature.get().pluginId
+            implementationClass = "KmpFeatureConventionPlugin"
+        }
+    }
+}
