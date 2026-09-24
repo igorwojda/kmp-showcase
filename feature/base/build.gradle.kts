@@ -14,6 +14,7 @@ kotlin {
             // debug/release source sets, so it ships in release builds too.
             api(libs.flowmvi.debugger)
             api(libs.kotlinx.coroutines)
+            api(libs.kotlinx.datetime)
 
             // DI
             api(project.dependencies.platform(libs.koin.bom))

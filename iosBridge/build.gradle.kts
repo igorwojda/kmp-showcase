@@ -14,6 +14,7 @@ kotlin {
             // of the domain models, so these types must be visible to Swift.
             export(project(":feature:base"))
             export(project(":feature:forecast"))
+            export(project(":feature:permission"))
             export(libs.kotlinx.datetime)
         }
     }
@@ -23,6 +24,7 @@ kotlin {
             // Only api dependencies can be exported
             api(project(":feature:base"))
             api(project(":feature:forecast"))
+            api(project(":feature:permission"))
             api(libs.kotlinx.datetime)
         }
     }

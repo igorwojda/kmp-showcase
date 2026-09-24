@@ -29,6 +29,10 @@ dependencyResolutionManagement {
 }
 
 include(":androidApp")
+
 include(":iosBridge")
+
 include(":feature:base")
 include(":feature:forecast")
+
+include(":feature:permission")

@@ -3,6 +3,8 @@ import iosBridge
 
 @main
 struct iOSApp: App {
+    @State private var locationAuthorization = LocationAuthorization()
+    @State private var isLocationPermissionGranted = LocationAuthorization.isGranted
 
     init() {
         initializeKoin()
@@ -10,7 +12,20 @@ struct iOSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ForecastScreen()
+            Group {
+                // The forecast needs the location permission.
+                if isLocationPermissionGranted {
+                    ForecastScreen()
+                } else {
+                    LocationPermissionScreen { isLocationPermissionGranted = true }
+                }
+            }
+            // The permission can change while the app runs: in Settings, or when "Allow Once" expires.
+            .task {
+                for await status in locationAuthorization.statuses {
+                    isLocationPermissionGranted = status == .granted
+                }
+            }
         }
     }
 }
