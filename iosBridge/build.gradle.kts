@@ -10,6 +10,8 @@ kotlin {
         target.binaries.framework {
             baseName = "iosBridge"
             isStatic = true
+            // Kotlin/Native cannot infer a bundle ID for a static framework; set it explicitly to silence the warning.
+            binaryOption("bundleId", "com.igorwojda.showcase.iosBridge")
             // Swift uses the features' ViewModels, StoreViewModel (their base class) and the LocalDate / LocalDateTime
             // of the domain models, so these types must be visible to Swift.
             export(project(":feature:base"))
