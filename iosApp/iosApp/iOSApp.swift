@@ -1,11 +1,11 @@
 import SwiftUI
-import forecast
+import iosBridge
 
 @main
 struct iOSApp: App {
 
     init() {
-        initializeKoin(config: nil)
+        initializeKoin()
     }
 
     var body: some Scene {

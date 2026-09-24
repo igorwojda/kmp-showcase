@@ -1,4 +1,3 @@
-import co.touchlab.skie.plugin.configuration.SkieExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -9,7 +8,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
  * Feature module: a [KmpBaseFeatureConventionPlugin] library that depends on `:feature:base`
- * and holds its Android Jetpack Compose UI in `androidMain`. SKIE makes the iOS framework Swift-friendly.
+ * and holds its Android Jetpack Compose UI in `androidMain`. The iOS framework is built by `:iosBridge`.
  */
 class KmpFeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -18,7 +17,6 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
 
         pluginManager.apply(KmpBaseFeatureConventionPlugin::class.java)
         pluginManager.apply(libs.findPlugin("composeCompiler").get().get().pluginId)
-        pluginManager.apply(libs.findPlugin("skie").get().get().pluginId)
 
         extensions.configure<KotlinMultiplatformExtension> {
             sourceSets.commonMain.dependencies {
@@ -34,18 +32,6 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
                 implementation(lib("androidx-compose-uiToolingPreview"))
                 implementation(project.dependencies.platform(lib("koin-bom")))
                 implementation(lib("koin-androidx-compose"))
-            }
-        }
-
-        extensions.configure<SkieExtension> {
-            // SwiftUI screens in src/iosMain/swift are compiled by the Xcode app target (which has the Swift
-            // packages they import), so SKIE must not bundle them into the framework.
-            swiftBundling {
-                enabled.set(false)
-            }
-            features {
-                // https://skie.touchlab.co/features/flows-in-swiftui
-                enableSwiftUIObservingPreview.set(true)
             }
         }
 

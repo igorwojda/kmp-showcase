@@ -1,5 +1,5 @@
 import Foundation
-import forecast
+import iosBridge
 
 extension Date {
     /// "22 Sep" (order follows the device locale).

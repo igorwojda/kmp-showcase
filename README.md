@@ -58,6 +58,9 @@ flowchart LR
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. Feature SwiftUI code lives in the feature modules (see below).
 
+* [/iosBridge](./iosBridge) builds the single framework the iOS app links (`import iosBridge`). It exports
+  every feature module and starts Koin for iOS (see [Dependency Injection](#dependency-injection)).
+
 * [/feature/forecast](./feature/forecast/src) is the forecast feature shared between app targets in the project.
   The most important subfolder is [commonMain](./feature/forecast/src/commonMain/kotlin).
   [androidMain](./feature/forecast/src/androidMain/kotlin) holds the Jetpack Compose UI in the [presentation](./feature/forecast/src/androidMain/kotlin/com/igorwojda/showcase/presentation) package (`ForecastScreen`, `ForecastDayScreen`).
@@ -65,15 +68,6 @@ flowchart LR
   (see [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)).
 
 * [/feature/base](./feature/base/src) holds code shared by all feature modules, e.g. `StoreViewModel`.
-
-* [/sharedUI](./sharedUI/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./sharedUI/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./sharedUI/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./sharedUI/src/jvmMain/kotlin)
-    folder is the appropriate location.
 
 ## Design Decisions
 
@@ -144,8 +138,10 @@ module's build script only declares what's specific to it:
 |--------|-------|---------|------|
 | `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, all app dependencies (`:feature:forecast`, Jetpack Compose, lifecycle, Navigation 3) |
 | `showcase.kmp.basefeature` | [`KmpBaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpBaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
-| `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, SKIE (Swift bundling off, SwiftUI `Observing` on) |
+| `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain` |
 
+- `:iosBridge` has no convention plugin. It's the only module that builds an iOS framework, so the framework and
+  SKIE setup live in its own build script.
 - The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
 - Versions come from the shared [version catalog](./gradle/libs.versions.toml), which `build-logic` reads too.
 - A new feature module needs only `alias(libs.plugins.showcase.kmp.feature)` plus its own dependencies.
@@ -169,10 +165,9 @@ feature/forecast/src/
 - **iOS** Swift can't be compiled by Gradle, so the files are compiled by the Xcode app target through a
   synchronized folder (`forecast` in `iosApp.xcodeproj`, pointing at `feature/forecast/src/iosMain/swift`). New files
   there are picked up automatically.
-- **SKIE Swift bundling is disabled** (`swiftBundling { enabled = false }` in the `showcase.kmp.feature` convention plugin). SKIE would otherwise compile
-  `src/iosMain/swift` into the Kotlin framework, where the Swift packages the screens import
-  (`KMPObservableViewModelSwiftUI`) aren't available. After changing this, run `./gradlew :feature:forecast:clean`,
-  or SKIE reuses stale unpacked Swift sources.
+- **Feature modules don't apply SKIE.** SKIE is applied only to `:iosBridge`, the module that builds the framework,
+  and it bundles Swift only from that module. So the features' `src/iosMain/swift` files stay out of the Kotlin
+  framework, where the Swift packages the screens import (`KMPObservableViewModelSwiftUI`) aren't available.
 
 **Trade-off:** the module owns its iOS UI files but not their build. Xcode compiles them, so an iOS-only
 UI change still needs an Xcode build to verify.
@@ -197,24 +192,140 @@ UI layer decides where to go.
 
 ## Dependency Injection
 
-[Koin](https://insert-koin.io) wires the graph. All definitions live in shared code
+[Koin](https://insert-koin.io) wires the graph. All definitions live in shared code, one Koin module per Gradle module
 ([`baseModule`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/di/BaseModule.kt),
 [`forecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/ForecastModule.kt)),
-so both platforms resolve the same instances. Both platforms start Koin with the shared
-[`initializeKoin(config)`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/Koin.kt), which adds
-the platform's own config through `includes(config)`
-([Koin KMP setup](https://insert-koin.io/docs/reference/koin-core/kmp-setup/)):
+so both platforms resolve the same instances.
 
-- Android: `KMPShowcaseApplication.onCreate()` calls `initializeKoin { androidLogger(); androidContext(...) }`;
-  composables get their ViewModel with `koinViewModel()`.
-- iOS: `iOSApp.init()` calls `initializeKoin(config: nil)` — SKIE exposes the top-level Kotlin function as a
-  top-level Swift function. Swift can't use Koin's reified `get()`, so each resolved type gets an explicit accessor in
-  [`Koin.ios.kt`](./feature/forecast/src/iosMain/kotlin/com/igorwojda/showcase/di/Koin.ios.kt).
-- **No Koin Compiler Plugin (yet).** Koin recommends it for compile-time graph checks, but in 1.2.1 definitions
-  from another Gradle module are invisible on Kotlin/Native, so the iOS build fails with a false missing-dependency
-  error (`HttpClient` from `:feature:base`,
-  [koin-compiler-plugin#113](https://github.com/InsertKoinIO/koin-compiler-plugin/issues/113)).
+Only the composition roots start Koin, because only they know which features the app ships. They pass the features'
+Koin modules to [`initializeKoin`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/di/KoinInit.kt)
+in `:feature:base`, which adds `baseModule` and the platform's own config through `includes(config)`
+([Koin KMP setup](https://insert-koin.io/docs/reference/koin-core/kmp-setup/)). Feature modules never start Koin, so
+they don't depend on each other.
 
+### Android
+
+```mermaid
+flowchart LR
+    subgraph androidApp[":androidApp (composition root)"]
+        application["KMPShowcaseApplication<br/>onCreate()"]
+    end
+
+    subgraph base[":feature:base"]
+        initializeKoin["initializeKoin(featureModules, config)"]
+        baseModule["baseModule"]
+    end
+
+    subgraph forecast[":feature:forecast"]
+        forecastModule["forecastModule"]
+        screens["ForecastScreen<br/>ForecastDayScreen"]
+    end
+
+    koin[("Koin container")]
+
+    application -- "listOf(forecastModule)<br/>androidLogger(), androidContext()" --> initializeKoin
+    initializeKoin -- "startKoin" --> koin
+    baseModule -. "loaded" .-> koin
+    forecastModule -. "loaded" .-> koin
+    screens -- "koinViewModel()" --> koin
+
+    classDef root fill:#DECDFF,stroke:#8C4FFF,stroke-width:3px,color:#222222;
+    classDef ui fill:#C2E6FC,stroke:#38ADFA,stroke-width:3px,color:#222222;
+    classDef code fill:#FFFFFF,stroke:#B8C2CC,stroke-width:2px,color:#222222;
+    classDef container fill:#FFF3C4,stroke:#F2C94C,stroke-width:3px,color:#222222;
+
+    class application root;
+    class screens ui;
+    class initializeKoin,baseModule,forecastModule code;
+    class koin container;
+
+    style androidApp fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
+    style base fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
+    style forecast fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
+```
+
+The app module is the composition root.
+[`KMPShowcaseApplication.onCreate()`](./androidApp/src/main/kotlin/com/igorwojda/showcase/KMPShowcaseApplication.kt)
+calls `initializeKoin(listOf(forecastModule)) { androidLogger(); androidContext(...) }`. Composables get their
+ViewModel with `koinViewModel()`; `ForecastDayScreen` passes its date with `koinViewModel { parametersOf(date) }`.
+
+**Adding a feature:** depend on it in
+[`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt)
+and add its Koin module to the list in `KMPShowcaseApplication`.
+
+### iOS
+
+```mermaid
+flowchart LR
+    subgraph swift["Swift (iosApp Xcode target)"]
+        iosApp["iOSApp.init()"]
+        swiftScreens["ForecastScreen<br/>ForecastDayScreen"]
+    end
+
+    subgraph framework["iosBridge.framework"]
+        subgraph iosBridge[":iosBridge (composition root)"]
+            bridgeInit["initializeKoin()"]
+        end
+
+        subgraph base[":feature:base"]
+            initializeKoin["initializeKoin(featureModules, config)"]
+            baseModule["baseModule"]
+        end
+
+        subgraph forecast[":feature:forecast"]
+            forecastModule["forecastModule"]
+            accessors["provideForecastViewModel()<br/>provideForecastDayViewModel(date)"]
+        end
+
+        koin[("Koin container")]
+    end
+
+    iosApp --> bridgeInit
+    bridgeInit -- "listOf(forecastModule)" --> initializeKoin
+    initializeKoin -- "startKoin" --> koin
+    baseModule -. "loaded" .-> koin
+    forecastModule -. "loaded" .-> koin
+    swiftScreens --> accessors
+    accessors -- "get()" --> koin
+
+    classDef root fill:#DECDFF,stroke:#8C4FFF,stroke-width:3px,color:#222222;
+    classDef ui fill:#C2E6FC,stroke:#38ADFA,stroke-width:3px,color:#222222;
+    classDef code fill:#FFFFFF,stroke:#B8C2CC,stroke-width:2px,color:#222222;
+    classDef container fill:#FFF3C4,stroke:#F2C94C,stroke-width:3px,color:#222222;
+
+    class bridgeInit root;
+    class swiftScreens ui;
+    class iosApp,initializeKoin,baseModule,forecastModule,accessors code;
+    class koin container;
+
+    style swift fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
+    style framework fill:#FFFFFF,stroke:#8C4FFF,stroke-dasharray:5 5,color:#222222;
+    style iosBridge fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
+    style base fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
+    style forecast fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
+```
+
+[`:iosBridge`](./iosBridge) is the composition root. Every Kotlin framework carries its own copy of the Kotlin runtime
+and of every dependency (Koin's container included), and types from two frameworks aren't compatible, so the iOS app
+links one framework, `iosBridge`, that exports all features.
+
+- `iOSApp.init()` calls the module's
+  [`initializeKoin()`](./iosBridge/src/iosMain/kotlin/com/igorwojda/showcase/iosbridge/di/KoinInit.ios.kt), which
+  passes the features' Koin modules on. SKIE exposes top-level Kotlin functions as top-level Swift functions.
+- Swift can't use Koin's reified `get()`, so each feature gets explicit accessors, e.g.
+  [`Koin.ios.kt`](./feature/forecast/src/iosMain/kotlin/com/igorwojda/showcase/di/Koin.ios.kt) with
+  `provideForecastViewModel()` and `provideForecastDayViewModel(date:)`. SwiftUI screens keep the ViewModel in
+  `@StateViewModel`.
+
+**Adding a feature:** `api` + `export` it in [`iosBridge/build.gradle.kts`](./iosBridge/build.gradle.kts), add its Koin
+module to the list in `KoinInit.ios.kt`, and add accessors for its ViewModels to the feature's `iosMain`.
+
+### No Koin Compiler Plugin (Yet)
+
+Koin recommends its [compiler plugin](https://insert-koin.io/docs/setup/compiler-plugin) for compile-time graph checks,
+but in 1.2.1 definitions from another Gradle module are invisible on Kotlin/Native, so the iOS build fails with a false
+missing-dependency error (`HttpClient` from `:feature:base`,
+[koin-compiler-plugin#113](https://github.com/InsertKoinIO/koin-compiler-plugin/issues/113)).
 
 ## Caching
 
@@ -253,8 +364,8 @@ Open project in [Android Studio](https://developer.android.com/studio), select p
 
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
-- Android tests: `./gradlew :sharedUI:testAndroidHostTest :feature:forecast:testAndroidHostTest`
 - iOS tests: `./gradlew :feature:forecast:iosSimulatorArm64Test`
+- Android host tests aren't enabled yet: the KMP Android library target needs `withHostTest {}` first.
 
 ## Debugging FlowMVI
 

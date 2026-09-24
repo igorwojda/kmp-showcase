@@ -1,4 +1,4 @@
 import KMPObservableViewModelCore
-import forecast
+import iosBridge
 
 extension Kmp_observableviewmodel_coreViewModel: @retroactive ViewModel { }

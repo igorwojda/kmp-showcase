@@ -1,5 +1,5 @@
 import SwiftUI
-import forecast
+import iosBridge
 
 struct DailyForecastRow: View {
     let day: DailyWeatherModel

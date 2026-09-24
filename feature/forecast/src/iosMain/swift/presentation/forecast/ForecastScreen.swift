@@ -1,6 +1,6 @@
 import SwiftUI
 import KMPObservableViewModelSwiftUI
-import forecast
+import iosBridge
 
 struct ForecastScreen: View {
     @StateViewModel private var viewModel = provideForecastViewModel()

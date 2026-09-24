@@ -6,7 +6,6 @@ dependencies {
     // compileOnly: the root build applies these plugins (apply false), so they're already on the classpath.
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
-    compileOnly(libs.skie.gradlePlugin)
 }
 
 gradlePlugin {
