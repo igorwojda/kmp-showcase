@@ -142,7 +142,7 @@ module's build script only declares what's specific to it:
 
 | Plugin | Class | Used by | Adds |
 |--------|-------|---------|------|
-| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, all app dependencies (`:feature:forecast`, Jetpack Compose, lifecycle, Navigation 3, `koin-androidx-compose`) |
+| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, all app dependencies (`:feature:forecast`, Jetpack Compose, lifecycle, Navigation 3) |
 | `showcase.kmp.basefeature` | [`KmpBaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpBaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
 | `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, SKIE (Swift bundling off, SwiftUI `Observing` on) |
 
@@ -198,15 +198,22 @@ UI layer decides where to go.
 ## Dependency Injection
 
 [Koin](https://insert-koin.io) wires the graph. All definitions live in shared code
-([`sharedLogicModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/SharedLogicModule.kt)),
-so both platforms resolve the same instances:
+([`baseModule`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/di/BaseModule.kt),
+[`forecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/ForecastModule.kt)),
+so both platforms resolve the same instances. Both platforms start Koin with the shared
+[`initializeKoin(config)`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/Koin.kt), which adds
+the platform's own config through `includes(config)`
+([Koin KMP setup](https://insert-koin.io/docs/reference/koin-core/kmp-setup/)):
 
-- Android: `ShowcaseApplication.onCreate()` calls `initializeKoin { androidLogger(); androidContext(...) }`;
+- Android: `KMPShowcaseApplication.onCreate()` calls `initializeKoin { androidLogger(); androidContext(...) }`;
   composables get their ViewModel with `koinViewModel()`.
-- iOS: `KMPShowcaseApplication.init()` calls `doInitKoin(config: nil)` — SKIE exposes the top-level
-  Kotlin `initKoin` as a top-level Swift function. Swift can't use Koin's reified `get()`,
-  so each resolved type gets an explicit accessor in
+- iOS: `iOSApp.init()` calls `initializeKoin(config: nil)` — SKIE exposes the top-level Kotlin function as a
+  top-level Swift function. Swift can't use Koin's reified `get()`, so each resolved type gets an explicit accessor in
   [`Koin.ios.kt`](./feature/forecast/src/iosMain/kotlin/com/igorwojda/showcase/di/Koin.ios.kt).
+- **No Koin Compiler Plugin (yet).** Koin recommends it for compile-time graph checks, but in 1.2.1 definitions
+  from another Gradle module are invisible on Kotlin/Native, so the iOS build fails with a false missing-dependency
+  error (`HttpClient` from `:feature:base`,
+  [koin-compiler-plugin#113](https://github.com/InsertKoinIO/koin-compiler-plugin/issues/113)).
 
 
 ## Caching

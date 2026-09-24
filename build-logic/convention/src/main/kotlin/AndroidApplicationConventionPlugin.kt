@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 /**
  * Android application with Jetpack Compose UI: SDK versions, JVM target, release build type and all app
- * dependencies (feature modules, Compose, Navigation 3, Koin). The app module declares only its identity
+ * dependencies (feature modules, Compose, Navigation 3). The app module declares only its identity
  * (namespace, application id, version).
  */
 class AndroidApplicationConventionPlugin : Plugin<Project> {
@@ -75,8 +75,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             "implementation"(lib("androidx-lifecycle-viewmodelNavigation3"))
             "implementation"(lib("androidx-navigation3-runtime"))
             "implementation"(lib("androidx-navigation3-ui"))
-            "implementation"(platform(lib("koin-bom")))
-            "implementation"(lib("koin-androidx-compose"))
 
             "debugImplementation"(lib("androidx-compose-uiTooling"))
         }

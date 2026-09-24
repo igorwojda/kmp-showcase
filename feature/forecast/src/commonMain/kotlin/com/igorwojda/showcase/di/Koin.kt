@@ -3,6 +3,7 @@ package com.igorwojda.showcase.di
 import com.igorwojda.showcase.feature.base.di.baseModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
+import org.koin.dsl.includes
 
 /**
  * Starts the single Koin container shared by both platforms.
@@ -11,7 +12,7 @@ import org.koin.dsl.KoinAppDeclaration
  */
 fun initializeKoin(config: KoinAppDeclaration? = null) {
     startKoin {
-        config?.invoke(this)
-        modules(baseModule, sharedLogicModule)
+        includes(config)
+        modules(baseModule, forecastModule)
     }
 }
