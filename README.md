@@ -453,8 +453,8 @@ Test setup (`kotlin-test` in `commonTest`, `withHostTest {}` on the KMP Android 
 
 ## Linters
 
-Linters run once from the root project over the whole repository (all modules and `build-logic`), so modules don't
-configure them:
+Kotlin linters run once from the root project over the whole repository (all modules and `build-logic`), so modules
+don't configure them:
 
 ```bash
 ./gradlew detektApply             # Apply Detekt formatting fixes
@@ -467,7 +467,17 @@ configure them:
 - Detekt rules: [detekt.yml](./detekt.yml), on top of the Detekt defaults. Reports: `build/reports/detekt/`.
 - Formatting is done by ktlint only. Detekt runs without its `detekt-formatting` (ktlint wrapper) plugin, so
   `detektApply` fixes only Detekt's own auto-correctable rules.
-- Swift code isn't linted.
+
+Swift code is linted by [SwiftLint](https://realm.github.io/SwiftLint/), which isn't part of the Gradle build
+(install it with `brew install swiftlint`):
+
+```bash
+swiftlint --fix                   # Apply SwiftLint fixes
+swiftlint lint --strict           # Run SwiftLint Check (warnings fail, same as CI)
+```
+
+- SwiftLint rules: [.swiftlint.yml](./.swiftlint.yml), on top of the SwiftLint defaults. It runs from the root and
+  covers the iOS app plus every feature's `src/iosMain/swift` folder.
 
 ## CI
 
@@ -479,6 +489,7 @@ configure them:
 | Build iOS App | macOS | `xcodebuild` simulator build of `iosApp` (its build phase builds the Kotlin framework) |
 | Detekt | Ubuntu | `./gradlew detektCheck`, uploads the report |
 | Spotless (ktlint) | Ubuntu | `./gradlew spotlessCheck` |
+| SwiftLint | Ubuntu | `swiftlint lint --strict` in the SwiftLint container |
 
 ## Debugging FlowMVI
 

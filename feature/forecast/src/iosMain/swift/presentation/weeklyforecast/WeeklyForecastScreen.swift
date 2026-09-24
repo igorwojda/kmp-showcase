@@ -126,7 +126,7 @@ private let previewForecast = ForecastModel(
         previewDay(month: 9, day: 23, min: 9.5, max: 17.0, weatherCode: 61),
         previewDay(month: 9, day: 24, min: 8.0, max: 15.5, weatherCode: 3),
         previewDay(month: 9, day: 25, min: 10.0, max: 21.0, weatherCode: 0),
-        previewDay(month: 9, day: 26, min: 12.0, max: 23.5, weatherCode: 1),
+        previewDay(month: 9, day: 26, min: 12.0, max: 23.5, weatherCode: 1)
     ]
 )
 

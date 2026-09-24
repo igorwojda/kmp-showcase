@@ -3,7 +3,7 @@ import SwiftUI
 struct ErrorContent: View {
     let message: String
     let onRetry: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 8) {
             Text("⚠️")
