@@ -35,4 +35,9 @@ skie {
         // https://skie.touchlab.co/features/flows-in-swiftui
         enableSwiftUIObservingPreview.set(true)
     }
+
+    analytics {
+        // Skip the network call to Touchlab that otherwise runs on every iOS build.
+        disableUpload.set(true)
+    }
 }
