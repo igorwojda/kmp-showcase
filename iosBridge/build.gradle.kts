@@ -12,9 +12,9 @@ kotlin {
             isStatic = true
             // Swift uses the features' ViewModels, StoreViewModel (their base class) and the LocalDate / LocalDateTime
             // of the domain models, so these types must be visible to Swift.
-            export(project(":feature:base"))
-            export(project(":feature:forecast"))
-            export(project(":feature:permission"))
+            export(dependencies.project(":feature:base"))
+            export(dependencies.project(":feature:forecast"))
+            export(dependencies.project(":feature:permission"))
             export(libs.kotlinx.datetime)
         }
     }
