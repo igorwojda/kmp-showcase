@@ -13,8 +13,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.igorwojda.showcase.feature.permission.presentation.location.LocationPermissionScreen
 import com.igorwojda.showcase.feature.permission.presentation.location.isLocationPermissionGranted
-import com.igorwojda.showcase.presentation.forecastday.ForecastDayScreen
-import com.igorwojda.showcase.presentation.forecast.ForecastScreen
+import com.igorwojda.showcase.presentation.dailyforecast.DailyForecastScreen
+import com.igorwojda.showcase.presentation.weeklyforecast.WeeklyForecastScreen
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
@@ -22,10 +22,10 @@ import kotlinx.serialization.Serializable
 private data object LocationPermissionRoute : NavKey
 
 @Serializable
-private data object ForecastRoute : NavKey
+private data object WeeklyForecastRoute : NavKey
 
 @Serializable
-private data class ForecastDayRoute(val date: LocalDate) : NavKey
+private data class DailyForecastRoute(val date: LocalDate) : NavKey
 
 /**
  * Navigation 3 host. The back stack is saved across configuration changes and process death, and
@@ -37,7 +37,7 @@ private data class ForecastDayRoute(val date: LocalDate) : NavKey
 fun App() {
     val context = LocalContext.current
     val backStack = rememberNavBackStack(
-        if (context.isLocationPermissionGranted()) ForecastRoute else LocationPermissionRoute,
+        if (context.isLocationPermissionGranted()) WeeklyForecastRoute else LocationPermissionRoute,
     )
 
     // The permission can be lost while the app is away (revoked in Settings, one-time grant expired, auto-reset
@@ -60,13 +60,13 @@ fun App() {
             entryProvider = entryProvider {
                 entry<LocationPermissionRoute> {
                     // Replaced, so Back from the forecast doesn't return to the permission screen.
-                    LocationPermissionScreen(onPermissionGranted = { backStack.resetTo(ForecastRoute) })
+                    LocationPermissionScreen(onPermissionGranted = { backStack.resetTo(WeeklyForecastRoute) })
                 }
-                entry<ForecastRoute> {
-                    ForecastScreen(onDayClick = { date -> backStack.add(ForecastDayRoute(date)) })
+                entry<WeeklyForecastRoute> {
+                    WeeklyForecastScreen(onDayClick = { date -> backStack.add(DailyForecastRoute(date)) })
                 }
-                entry<ForecastDayRoute> { route ->
-                    ForecastDayScreen(
+                entry<DailyForecastRoute> { route ->
+                    DailyForecastScreen(
                         date = route.date,
                         onBack = { backStack.removeLastOrNull() },
                     )

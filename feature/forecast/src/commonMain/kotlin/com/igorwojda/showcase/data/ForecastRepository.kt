@@ -21,7 +21,7 @@ import kotlin.time.Instant
  * Downloads weather data from the Open-Meteo API.
  *
  * Responses are kept in an in-memory cache (per request) for [CACHE_TTL], so screens opened after
- * the first request (e.g. ForecastDayScreen) reuse the downloaded forecast instead of hitting the
+ * the first request (e.g. DailyForecastScreen) reuse the downloaded forecast instead of hitting the
  * network again.
  */
 class ForecastRepository(

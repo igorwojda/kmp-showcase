@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.presentation.forecast
+package com.igorwojda.showcase.presentation.weeklyforecast
 
 /**
  * WMO weather interpretation code (as returned by Open-Meteo) rendered as a label and a symbol.

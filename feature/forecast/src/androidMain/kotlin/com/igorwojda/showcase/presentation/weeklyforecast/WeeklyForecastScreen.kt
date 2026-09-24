@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.presentation.forecast
+package com.igorwojda.showcase.presentation.weeklyforecast
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
@@ -34,9 +34,9 @@ import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForecastScreen(
+fun WeeklyForecastScreen(
     onDayClick: (LocalDate) -> Unit,
-    viewModel: ForecastViewModel = koinViewModel(),
+    viewModel: WeeklyForecastViewModel = koinViewModel(),
 ) {
     val store = viewModel.store
     val context = LocalContext.current
@@ -44,7 +44,7 @@ fun ForecastScreen(
     // The lambda consumes MVIActions as they arrive; it only runs while the UI is visible.
     val state by store.subscribe { action ->
         when (action) {
-            is ForecastAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
+            is WeeklyForecastAction.ShowToast -> Toast.makeText(context, action.message, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -61,19 +61,19 @@ fun ForecastScreen(
                 .padding(contentPadding),
         ) {
             when (val currentState = state) {
-                ForecastState.Loading -> CircularProgressIndicator(
+                WeeklyForecastState.Loading -> CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                 )
 
-                is ForecastState.Content -> ForecastContent(
+                is WeeklyForecastState.Content -> WeeklyForecastContent(
                     forecast = currentState.forecast,
                     onDayClick = onDayClick,
                     modifier = Modifier.fillMaxSize(),
                 )
 
-                is ForecastState.Error -> ErrorContent(
+                is WeeklyForecastState.Error -> ErrorContent(
                     message = currentState.message,
-                    onRetry = { store.intent(ForecastIntent.Reload) },
+                    onRetry = { store.intent(WeeklyForecastIntent.Reload) },
                     modifier = Modifier.align(Alignment.Center),
                 )
             }
@@ -82,7 +82,7 @@ fun ForecastScreen(
 }
 
 @Composable
-private fun ForecastContent(
+private fun WeeklyForecastContent(
     forecast: ForecastModel,
     onDayClick: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
@@ -133,9 +133,9 @@ private fun dayLabel(date: LocalDate, index: Int): String = when (index) {
 
 @Preview(showBackground = true)
 @Composable
-private fun ForecastContentPreview() {
+private fun WeeklyForecastContentPreview() {
     MaterialTheme {
-        ForecastContent(forecast = previewForecast, onDayClick = {})
+        WeeklyForecastContent(forecast = previewForecast, onDayClick = {})
     }
 }
 

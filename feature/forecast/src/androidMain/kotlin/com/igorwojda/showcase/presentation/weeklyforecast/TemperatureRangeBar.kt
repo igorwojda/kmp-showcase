@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.presentation.forecast
+package com.igorwojda.showcase.presentation.weeklyforecast
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

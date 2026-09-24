@@ -63,7 +63,7 @@ flowchart LR
 
 * [/feature/forecast](./feature/forecast/src) is the forecast feature shared between app targets in the project.
   The most important subfolder is [commonMain](./feature/forecast/src/commonMain/kotlin).
-  [androidMain](./feature/forecast/src/androidMain/kotlin) holds the Jetpack Compose UI in the [presentation](./feature/forecast/src/androidMain/kotlin/com/igorwojda/showcase/presentation) package (`ForecastScreen`, `ForecastDayScreen`).
+  [androidMain](./feature/forecast/src/androidMain/kotlin) holds the Jetpack Compose UI in the [presentation](./feature/forecast/src/androidMain/kotlin/com/igorwojda/showcase/presentation) package (`WeeklyForecastScreen`, `DailyForecastScreen`).
   [iosMain/swift](./feature/forecast/src/iosMain/swift) holds the SwiftUI UI in the same `presentation` layout
   (see [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)).
 
@@ -115,7 +115,7 @@ instead of FlowMVI's `store`. It launches the store in `viewModelScope`, sets `n
 logging and [remote debugging](#debugging-flowmvi). The ViewModel adds only its own plugins:
 
 ```kotlin
-override val store = configuredStore(initial = ForecastState.Loading, name = "Forecast") {
+override val store = configuredStore(initial = WeeklyForecastState.Loading, name = "WeeklyForecast") {
     recover { … }
     init { … }
     reduce { … }
@@ -185,13 +185,13 @@ UI layer decides where to go.
 | Platform | Library | Back stack | ViewModel lifetime |
 |----------|---------|------------|--------------------|
 | Android | [Navigation 3](https://developer.android.com/guide/navigation/navigation-3) | `rememberNavBackStack` of `@Serializable` `NavKey` routes in [`App`](./androidApp/src/main/kotlin/com/igorwojda/showcase/App.kt) | scoped to the back stack entry (`rememberViewModelStoreNavEntryDecorator`) |
-| iOS | SwiftUI `NavigationStack` | `NavigationLink(value: day.date)` + `.navigationDestination(for: LocalDate.self)` in `ForecastScreen` | owned by the destination view (`@StateViewModel`) |
+| iOS | SwiftUI `NavigationStack` | `NavigationLink(value: day.date)` + `.navigationDestination(for: LocalDate.self)` in `WeeklyForecastScreen` | owned by the destination view (`@StateViewModel`) |
 
-- **Routes carry IDs, not data.** `ForecastDayRoute` holds only the `LocalDate`. `ForecastDayViewModel` gets it as
-  a Koin parameter (`parametersOf(date)`; on iOS `provideForecastDayViewModel(date:)`) and reads the day from the
+- **Routes carry IDs, not data.** `DailyForecastRoute` holds only the `LocalDate`. `DailyForecastViewModel` gets it as
+  a Koin parameter (`parametersOf(date)`; on iOS `provideDailyForecastViewModel(date:)`) and reads the day from the
   repository cache (see [Caching](#caching)). Routes stay small enough to save and restore, and the screen can
   load its own data on its own, e.g. after process death.
-- **One ViewModel per destination.** Each opened day gets its own `ForecastDayViewModel`, which is cleared when
+- **One ViewModel per destination.** Each opened day gets its own `DailyForecastViewModel`, which is cleared when
   the screen is popped, on both platforms.
 - **The start destination depends on the location permission.** Without it the app starts on `LocationPermissionScreen`.
   When the permission is granted, the screen is replaced by the forecast, so Back doesn't return to it. If the
@@ -235,7 +235,7 @@ flowchart LR
 
     subgraph forecast[":feature:forecast"]
         featureForecastModule["featureForecastModule"]
-        screens["ForecastScreen<br/>ForecastDayScreen"]
+        screens["WeeklyForecastScreen<br/>DailyForecastScreen"]
     end
 
     subgraph permission[":feature:permission"]
@@ -272,7 +272,7 @@ flowchart LR
 The app module is the composition root.
 [`KMPShowcaseApplication.onCreate()`](./androidApp/src/main/kotlin/com/igorwojda/showcase/KMPShowcaseApplication.kt)
 calls `initializeKoin(listOf(featureForecastModule, featurePermissionModule)) { androidLogger(); androidContext(...) }`. Composables get their
-ViewModel with `koinViewModel()`; `ForecastDayScreen` passes its date with `koinViewModel { parametersOf(date) }`.
+ViewModel with `koinViewModel()`; `DailyForecastScreen` passes its date with `koinViewModel { parametersOf(date) }`.
 
 **Adding a feature:** depend on it in
 [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt)
@@ -284,7 +284,7 @@ and add its Koin module to the list in `KMPShowcaseApplication`.
 flowchart LR
     subgraph swift["Swift (iosApp Xcode target)"]
         iosApp["iOSApp.init()"]
-        swiftScreens["ForecastScreen<br/>ForecastDayScreen<br/>LocationPermissionScreen"]
+        swiftScreens["WeeklyForecastScreen<br/>DailyForecastScreen<br/>LocationPermissionScreen"]
     end
 
     subgraph framework["iosBridge.framework"]
@@ -299,7 +299,7 @@ flowchart LR
 
         subgraph forecast[":feature:forecast"]
             featureForecastModule["featureForecastModule"]
-            accessors["provideForecastViewModel()<br/>provideForecastDayViewModel(date)"]
+            accessors["provideWeeklyForecastViewModel()<br/>provideDailyForecastViewModel(date)"]
         end
 
         subgraph permission[":feature:permission"]
@@ -350,7 +350,7 @@ links one framework, `iosBridge`, that exports all features.
   `initializeKoin()`.
 - Swift can't use Koin's reified `get()`, so each feature gets explicit accessors, e.g.
   [`Koin.ios.kt`](./feature/forecast/src/iosMain/kotlin/com/igorwojda/showcase/di/Koin.ios.kt) with
-  `provideForecastViewModel()` and `provideForecastDayViewModel(date:)`. SwiftUI screens keep the ViewModel in
+  `provideWeeklyForecastViewModel()` and `provideDailyForecastViewModel(date:)`. SwiftUI screens keep the ViewModel in
   `@StateViewModel`.
 
 **Adding a feature:** `api` + `export` it in [`iosBridge/build.gradle.kts`](./iosBridge/build.gradle.kts), add its Koin
@@ -405,7 +405,7 @@ gets every status as `LocationPermissionIntent.StatusChanged`, keeps the screen 
 
 [`ForecastRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepository.kt)
 keeps downloaded forecasts in an in-memory cache (per request parameters, guarded by a `Mutex`). The first request
-hits the network; `ForecastDayViewModel` then reads the day from the cache. `ForecastIntent.Reload` bypasses the cache
+hits the network; `DailyForecastViewModel` then reads the day from the cache. `WeeklyForecastIntent.Reload` bypasses the cache
 (`forceRefresh = true`) and replaces the cached value. Entries expire after 15 minutes (wall clock) and are
 re-downloaded on the next request; the cache itself lives as long as the process.
 
@@ -417,9 +417,9 @@ UI types are named by role, consistently on both platforms:
 
 - **`…Screen`** — a full destination the user navigates to. Owns its root state
   (a ViewModel), takes no state from a parent, and appears in the routing layer.
-  `ForecastScreen` and `ForecastDayScreen` on both platforms.
+  `WeeklyForecastScreen` and `DailyForecastScreen` on both platforms.
 - **`…Content`** — the stateless body of a screen, rendered for its loaded state and kept in the
-  screen's file (`ForecastContent`, `ForecastDayContent`, shared `ErrorContent`).
+  screen's file (`WeeklyForecastContent`, `DailyForecastContent`, shared `ErrorContent`).
 - **Everything else** — reusable parts and leaf components, named after what they are
   (`CurrentWeatherCard`, `TemperatureRangeBar`), one per file. They take values from a parent and own
   no root state. The same name is used on both platforms.

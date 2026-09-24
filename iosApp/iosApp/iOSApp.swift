@@ -15,7 +15,7 @@ struct iOSApp: App {
             Group {
                 // The forecast needs the location permission.
                 if isLocationPermissionGranted {
-                    ForecastScreen()
+                    WeeklyForecastScreen()
                 } else {
                     LocationPermissionScreen { isLocationPermissionGranted = true }
                 }

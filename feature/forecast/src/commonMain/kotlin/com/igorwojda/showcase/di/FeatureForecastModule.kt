@@ -1,8 +1,8 @@
 package com.igorwojda.showcase.di
 
 import com.igorwojda.showcase.data.ForecastRepository
-import com.igorwojda.showcase.presentation.forecastday.ForecastDayViewModel
-import com.igorwojda.showcase.presentation.forecast.ForecastViewModel
+import com.igorwojda.showcase.presentation.dailyforecast.DailyForecastViewModel
+import com.igorwojda.showcase.presentation.weeklyforecast.WeeklyForecastViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -13,6 +13,6 @@ val featureForecastModule = module {
     singleOf(::ForecastRepository)
 
     // Presentation layer
-    viewModelOf(::ForecastViewModel)
-    viewModelOf(::ForecastDayViewModel)
+    viewModelOf(::WeeklyForecastViewModel)
+    viewModelOf(::DailyForecastViewModel)
 }

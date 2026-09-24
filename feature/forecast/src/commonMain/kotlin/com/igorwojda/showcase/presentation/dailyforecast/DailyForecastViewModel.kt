@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.presentation.forecastday
+package com.igorwojda.showcase.presentation.dailyforecast
 
 import com.igorwojda.showcase.data.ForecastRepository
 import com.igorwojda.showcase.domain.model.DailyWeatherModel
@@ -14,14 +14,14 @@ import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
 /** Weather for a single [date]; reuses the forecast cached by [ForecastRepository]. */
-class ForecastDayViewModel(
+class DailyForecastViewModel(
     private val date: LocalDate,
     private val forecastRepository: ForecastRepository,
-) : StoreViewModel<ForecastDayState, ForecastDayIntent, ForecastDayAction>() {
+) : StoreViewModel<DailyForecastState, DailyForecastIntent, DailyForecastAction>() {
 
-    override val store = configuredStore(initial = ForecastDayState.Loading, name = "ForecastDay") {
+    override val store = configuredStore(initial = DailyForecastState.Loading, name = "DailyForecast") {
         recover { e ->
-            updateState { ForecastDayState.Error(e.message ?: "Unknown error") }
+            updateState { DailyForecastState.Error(e.message ?: "Unknown error") }
             null // exception handled – don't rethrow
         }
 
@@ -29,29 +29,29 @@ class ForecastDayViewModel(
 
         reduce { intent ->
             when (intent) {
-                ForecastDayIntent.Retry -> loadDay()
+                DailyForecastIntent.Retry -> loadDay()
             }
         }
     }
 
-    private suspend fun PipelineContext<ForecastDayState, ForecastDayIntent, ForecastDayAction>.loadDay() {
-        updateState { ForecastDayState.Loading }
+    private suspend fun PipelineContext<DailyForecastState, DailyForecastIntent, DailyForecastAction>.loadDay() {
+        updateState { DailyForecastState.Loading }
         val day = forecastRepository.getDailyWeather(date)
         updateState {
-            if (day == null) ForecastDayState.Error("No forecast for $date") else ForecastDayState.Content(day)
+            if (day == null) DailyForecastState.Error("No forecast for $date") else DailyForecastState.Content(day)
         }
     }
 }
 
-sealed interface ForecastDayState : MVIState {
-    data object Loading : ForecastDayState
-    data class Content(val day: DailyWeatherModel) : ForecastDayState
-    data class Error(val message: String) : ForecastDayState
+sealed interface DailyForecastState : MVIState {
+    data object Loading : DailyForecastState
+    data class Content(val day: DailyWeatherModel) : DailyForecastState
+    data class Error(val message: String) : DailyForecastState
 }
 
-sealed interface ForecastDayIntent : MVIIntent {
-    data object Retry : ForecastDayIntent
+sealed interface DailyForecastIntent : MVIIntent {
+    data object Retry : DailyForecastIntent
 }
 
 /** The screen has no one-off events yet. */
-sealed interface ForecastDayAction : MVIAction
+sealed interface DailyForecastAction : MVIAction

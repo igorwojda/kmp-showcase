@@ -2,8 +2,8 @@ import SwiftUI
 import KMPObservableViewModelSwiftUI
 import iosBridge
 
-struct ForecastScreen: View {
-    @StateViewModel private var viewModel = provideForecastViewModel()
+struct WeeklyForecastScreen: View {
+    @StateViewModel private var viewModel = provideWeeklyForecastViewModel()
     @State private var toast: String?
 
     var body: some View {
@@ -13,7 +13,7 @@ struct ForecastScreen: View {
                 // `onEnum(of:)` makes the sealed interface exhaustive – a new state stops compiling here.
                 switch onEnum(of: state) {
                 case .content(let content):
-                    ForecastContent(forecast: content.forecast)
+                    WeeklyForecastContent(forecast: content.forecast)
                 case .error(let error):
                     ErrorContent(message: error.message, onRetry: reload)
                 case .loading:
@@ -23,7 +23,7 @@ struct ForecastScreen: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("Weather")
             .navigationDestination(for: LocalDate.self) { date in
-                ForecastDayScreen(date: date)
+                DailyForecastScreen(date: date)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -55,11 +55,11 @@ struct ForecastScreen: View {
     }
 
     private func reload() {
-        viewModel.onIntent(intent: ForecastIntentReload.shared)
+        viewModel.onIntent(intent: WeeklyForecastIntentReload.shared)
     }
 }
 
-private struct ForecastContent: View {
+private struct WeeklyForecastContent: View {
     let forecast: ForecastModel
 
     var body: some View {
@@ -107,7 +107,7 @@ private func dayLabel(for date: LocalDate, at index: Int) -> String {
 }
 
 #Preview("Content") {
-    ForecastContent(forecast: previewForecast)
+    WeeklyForecastContent(forecast: previewForecast)
 }
 
 private let previewForecast = ForecastModel(

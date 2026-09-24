@@ -2,23 +2,23 @@ import SwiftUI
 import KMPObservableViewModelSwiftUI
 import iosBridge
 
-struct ForecastDayScreen: View {
-    @StateViewModel private var viewModel: ForecastDayViewModel
+struct DailyForecastScreen: View {
+    @StateViewModel private var viewModel: DailyForecastViewModel
     private let date: LocalDate
 
     init(date: LocalDate) {
         self.date = date
-        _viewModel = StateViewModel(wrappedValue: provideForecastDayViewModel(date: date))
+        _viewModel = StateViewModel(wrappedValue: provideDailyForecastViewModel(date: date))
     }
 
     var body: some View {
         Observing(viewModel.states) { state in
             switch onEnum(of: state) {
             case .content(let content):
-                ForecastDayContent(day: content.day)
+                DailyForecastContent(day: content.day)
             case .error(let error):
                 ErrorContent(message: error.message) {
-                    viewModel.onIntent(intent: ForecastDayIntentRetry.shared)
+                    viewModel.onIntent(intent: DailyForecastIntentRetry.shared)
                 }
             case .loading:
                 ProgressView()
@@ -30,7 +30,7 @@ struct ForecastDayScreen: View {
     }
 }
 
-private struct ForecastDayContent: View {
+private struct DailyForecastContent: View {
     let day: DailyWeatherModel
 
     var body: some View {
@@ -115,7 +115,7 @@ private struct DetailRow: View {
 }
 
 #Preview {
-    ForecastDayContent(
+    DailyForecastContent(
         day: DailyWeatherModel(
             date: LocalDate(year: 2026, month: 9, day: 23),
             temperatureMin: 9.5,

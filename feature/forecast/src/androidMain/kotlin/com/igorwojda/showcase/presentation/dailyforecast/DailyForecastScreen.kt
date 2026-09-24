@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.presentation.forecastday
+package com.igorwojda.showcase.presentation.dailyforecast
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,7 +35,7 @@ import com.igorwojda.showcase.presentation.common.ErrorContent
 import com.igorwojda.showcase.presentation.common.format
 import com.igorwojda.showcase.presentation.common.fullDateFormatter
 import com.igorwojda.showcase.presentation.common.timeFormatter
-import com.igorwojda.showcase.presentation.forecast.WeatherCondition
+import com.igorwojda.showcase.presentation.weeklyforecast.WeatherCondition
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import org.koin.androidx.compose.koinViewModel
@@ -45,11 +45,11 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForecastDayScreen(
+fun DailyForecastScreen(
     date: LocalDate,
     onBack: () -> Unit,
     // Scoped to the back stack entry, so each day gets its own ViewModel.
-    viewModel: ForecastDayViewModel = koinViewModel { parametersOf(date) },
+    viewModel: DailyForecastViewModel = koinViewModel { parametersOf(date) },
 ) {
     val store = viewModel.store
     val state by store.subscribe()
@@ -72,18 +72,18 @@ fun ForecastDayScreen(
                 .padding(contentPadding),
         ) {
             when (val currentState = state) {
-                ForecastDayState.Loading -> CircularProgressIndicator(
+                DailyForecastState.Loading -> CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                 )
 
-                is ForecastDayState.Content -> ForecastDayContent(
+                is DailyForecastState.Content -> DailyForecastContent(
                     day = currentState.day,
                     modifier = Modifier.fillMaxSize(),
                 )
 
-                is ForecastDayState.Error -> ErrorContent(
+                is DailyForecastState.Error -> ErrorContent(
                     message = currentState.message,
-                    onRetry = { store.intent(ForecastDayIntent.Retry) },
+                    onRetry = { store.intent(DailyForecastIntent.Retry) },
                     modifier = Modifier.align(Alignment.Center),
                 )
             }
@@ -92,7 +92,7 @@ fun ForecastDayScreen(
 }
 
 @Composable
-private fun ForecastDayContent(
+private fun DailyForecastContent(
     day: DailyWeatherModel,
     modifier: Modifier = Modifier,
 ) {
@@ -211,9 +211,9 @@ private fun DetailRow(
 
 @Preview(showBackground = true)
 @Composable
-private fun ForecastDayContentPreview() {
+private fun DailyForecastContentPreview() {
     MaterialTheme {
-        ForecastDayContent(
+        DailyForecastContent(
             day = DailyWeatherModel(
                 date = LocalDate(2026, 9, 23),
                 temperatureMin = 9.5,
