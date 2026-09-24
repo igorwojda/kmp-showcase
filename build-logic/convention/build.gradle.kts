@@ -20,6 +20,13 @@ gradlePlugin {
                     .pluginId
             implementationClass = "AndroidApplicationConventionPlugin"
         }
+        register("androidLint") {
+            id =
+                libs.plugins.showcase.android.lint
+                    .get()
+                    .pluginId
+            implementationClass = "AndroidLintConventionPlugin"
+        }
         register("baseFeature") {
             id =
                 libs.plugins.showcase.basefeature
