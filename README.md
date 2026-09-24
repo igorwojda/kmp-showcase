@@ -192,7 +192,7 @@ UI layer decides where to go.
 
 ## Dependency Injection
 
-[Koin](https://insert-koin.io) wires the graph. All definitions live in shared code, one Koin module per Gradle module
+[Koin](https://insert-koin.io) is used for dependency injection. All definitions live in shared code, one Koin module per Gradle module
 ([`baseModule`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/di/BaseModule.kt),
 [`forecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/ForecastModule.kt)),
 so both platforms resolve the same instances.
@@ -202,6 +202,14 @@ Koin modules to [`initializeKoin`](./feature/base/src/commonMain/kotlin/com/igor
 in `:feature:base`, which adds `baseModule` and the platform's own config through `includes(config)`
 ([Koin KMP setup](https://insert-koin.io/docs/reference/koin-core/kmp-setup/)). Feature modules never start Koin, so
 they don't depend on each other.
+
+### Koin Modules List
+
+Each app chooses its own features, so the list of feature Koin modules is kept twice: in `KMPShowcaseApplication`
+(`:androidApp`) and in `KoinInit.ios.kt` (`:iosBridge`).
+
+**Trade-off:** each new feature must be added to both. The alternative is one shared module that both apps depend on,
+which lists the modules once, but then the Android app is no longer where features are chosen.
 
 ### Android
 
