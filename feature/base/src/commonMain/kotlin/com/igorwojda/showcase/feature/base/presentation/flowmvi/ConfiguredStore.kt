@@ -18,14 +18,15 @@ inline fun <S : MVIState, I : MVIIntent, A : MVIAction> StoreViewModel<S, I, A>.
     initial: S,
     name: String,
     crossinline block: BuildStore<S, I, A>,
-): Store<S, I, A> = store(initial, scope = viewModelScope.coroutineScope) {
-    configure {
-        this.name = name
-        debuggable = true
+): Store<S, I, A> =
+    store(initial, scope = viewModelScope.coroutineScope) {
+        configure {
+            this.name = name
+            debuggable = true
+        }
+
+        enableLogging()
+        enableRemoteDebugging(host = "127.0.0.1")
+
+        block()
     }
-
-    enableLogging()
-    enableRemoteDebugging(host = "127.0.0.1")
-
-    block()
-}

@@ -8,15 +8,15 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 
 class KMPShowcaseApplication : Application() {
-
     override fun onCreate() {
         super.onCreate()
 
         // iOs Koin modules are defined in iosBridge module.
-        val androidModules = listOf(
-            featureForecastModule,
-            featurePermissionModule,
-        )
+        val androidModules =
+            listOf(
+                featureForecastModule,
+                featurePermissionModule,
+            )
 
         initializeKoin(androidModules) {
             androidLogger()

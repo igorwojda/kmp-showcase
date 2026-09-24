@@ -25,7 +25,9 @@ private data object LocationPermissionRoute : NavKey
 private data object WeeklyForecastRoute : NavKey
 
 @Serializable
-private data class DailyForecastRoute(val date: LocalDate) : NavKey
+private data class DailyForecastRoute(
+    val date: LocalDate,
+) : NavKey
 
 /**
  * Navigation 3 host. The back stack is saved across configuration changes and process death, and
@@ -36,9 +38,10 @@ private data class DailyForecastRoute(val date: LocalDate) : NavKey
 @Composable
 fun App() {
     val context = LocalContext.current
-    val backStack = rememberNavBackStack(
-        if (context.isLocationPermissionGranted()) WeeklyForecastRoute else LocationPermissionRoute,
-    )
+    val backStack =
+        rememberNavBackStack(
+            if (context.isLocationPermissionGranted()) WeeklyForecastRoute else LocationPermissionRoute,
+        )
 
     // The permission can be lost while the app is away (revoked in Settings, one-time grant expired, auto-reset
     // of unused apps), and a back stack restored after process death still starts on the forecast.
@@ -53,25 +56,27 @@ fun App() {
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator(),
-            ),
-            entryProvider = entryProvider {
-                entry<LocationPermissionRoute> {
-                    // Replaced, so Back from the forecast doesn't return to the permission screen.
-                    LocationPermissionScreen(onPermissionGranted = { backStack.resetTo(WeeklyForecastRoute) })
-                }
-                entry<WeeklyForecastRoute> {
-                    WeeklyForecastScreen(onDayClick = { date -> backStack.add(DailyForecastRoute(date)) })
-                }
-                entry<DailyForecastRoute> { route ->
-                    DailyForecastScreen(
-                        date = route.date,
-                        onBack = { backStack.removeLastOrNull() },
-                    )
-                }
-            },
+            entryDecorators =
+                listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
+            entryProvider =
+                entryProvider {
+                    entry<LocationPermissionRoute> {
+                        // Replaced, so Back from the forecast doesn't return to the permission screen.
+                        LocationPermissionScreen(onPermissionGrant = { backStack.resetTo(WeeklyForecastRoute) })
+                    }
+                    entry<WeeklyForecastRoute> {
+                        WeeklyForecastScreen(onDayClick = { date -> backStack.add(DailyForecastRoute(date)) })
+                    }
+                    entry<DailyForecastRoute> { route ->
+                        DailyForecastScreen(
+                            date = route.date,
+                            onBack = { backStack.removeLastOrNull() },
+                        )
+                    }
+                },
         )
     }
 }

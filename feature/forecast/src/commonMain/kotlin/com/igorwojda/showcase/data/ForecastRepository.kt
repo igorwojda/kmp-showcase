@@ -60,18 +60,19 @@ class ForecastRepository(
      *
      * Throws on network / parsing failure.
      */
-    suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? =
-        getForecast().daily.firstOrNull { it.date == date }
+    suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? = getForecast().daily.firstOrNull { it.date == date }
 
     private suspend fun fetchForecast(request: ForecastRequestModel): ForecastModel =
-        httpClient.get(request) {
-            url {
-                protocol = URLProtocol.HTTPS
-                host = HOST
-            }
-        }.body<ForecastResponseModel>().toForecast()
+        httpClient
+            .get(request) {
+                url {
+                    protocol = URLProtocol.HTTPS
+                    host = HOST
+                }
+            }.body<ForecastResponseModel>()
+            .toForecast()
 
-    private class CachedForecast(
+    private data class CachedForecast(
         val forecast: ForecastModel,
         val fetchedAt: Instant,
     )
@@ -87,37 +88,40 @@ class ForecastRepository(
 
 // TODO: Nested Mappers?
 private fun ForecastResponseModel.toForecast(): ForecastModel {
-    val hourlyByDate = hourly.time.indices
-        .map { i -> HourlyTemperatureModel(time = hourly.time[i], temperature = hourly.temperature[i]) }
-        .groupBy { it.time.date }
+    val hourlyByDate =
+        hourly.time.indices
+            .map { i -> HourlyTemperatureModel(time = hourly.time[i], temperature = hourly.temperature[i]) }
+            .groupBy { it.time.date }
 
     return ForecastModel(
         latitude = latitude,
         longitude = longitude,
-        current = CurrentWeatherModel(
-            time = current.time,
-            temperature = current.temperature,
-            temperatureUnit = currentUnits.temperature,
-            windSpeed = current.windSpeed,
-            windSpeedUnit = currentUnits.windSpeed,
-            weatherCode = current.weatherCode,
-        ),
-        daily = daily.time.indices.map { i ->
-            DailyWeatherModel(
-                date = daily.time[i],
-                temperatureMin = daily.temperatureMin[i],
-                temperatureMax = daily.temperatureMax[i],
-                temperatureUnit = dailyUnits.temperatureMax,
-                weatherCode = daily.weatherCode[i],
-                sunrise = daily.sunrise[i],
-                sunset = daily.sunset[i],
-                precipitationSum = daily.precipitationSum[i],
-                precipitationUnit = dailyUnits.precipitationSum,
-                precipitationProbabilityMax = daily.precipitationProbabilityMax[i],
-                windSpeedMax = daily.windSpeedMax[i],
-                windSpeedUnit = dailyUnits.windSpeedMax,
-                hourlyTemperatures = hourlyByDate[daily.time[i]].orEmpty(),
-            )
-        },
+        current =
+            CurrentWeatherModel(
+                time = current.time,
+                temperature = current.temperature,
+                temperatureUnit = currentUnits.temperature,
+                windSpeed = current.windSpeed,
+                windSpeedUnit = currentUnits.windSpeed,
+                weatherCode = current.weatherCode,
+            ),
+        daily =
+            daily.time.indices.map { i ->
+                DailyWeatherModel(
+                    date = daily.time[i],
+                    temperatureMin = daily.temperatureMin[i],
+                    temperatureMax = daily.temperatureMax[i],
+                    temperatureUnit = dailyUnits.temperatureMax,
+                    weatherCode = daily.weatherCode[i],
+                    sunrise = daily.sunrise[i],
+                    sunset = daily.sunset[i],
+                    precipitationSum = daily.precipitationSum[i],
+                    precipitationUnit = dailyUnits.precipitationSum,
+                    precipitationProbabilityMax = daily.precipitationProbabilityMax[i],
+                    windSpeedMax = daily.windSpeedMax[i],
+                    windSpeedUnit = dailyUnits.windSpeedMax,
+                    hourlyTemperatures = hourlyByDate[daily.time[i]].orEmpty(),
+                )
+            },
     )
 }

@@ -18,21 +18,21 @@ class DailyForecastViewModel(
     private val date: LocalDate,
     private val forecastRepository: ForecastRepository,
 ) : StoreViewModel<DailyForecastState, DailyForecastIntent, DailyForecastAction>() {
+    override val store =
+        configuredStore(initial = DailyForecastState.Loading, name = "DailyForecast") {
+            recover { e ->
+                updateState { DailyForecastState.Error(e.message ?: "Unknown error") }
+                null // exception handled – don't rethrow
+            }
 
-    override val store = configuredStore(initial = DailyForecastState.Loading, name = "DailyForecast") {
-        recover { e ->
-            updateState { DailyForecastState.Error(e.message ?: "Unknown error") }
-            null // exception handled – don't rethrow
-        }
+            init { loadDay() }
 
-        init { loadDay() }
-
-        reduce { intent ->
-            when (intent) {
-                DailyForecastIntent.Retry -> loadDay()
+            reduce { intent ->
+                when (intent) {
+                    DailyForecastIntent.Retry -> loadDay()
+                }
             }
         }
-    }
 
     private suspend fun PipelineContext<DailyForecastState, DailyForecastIntent, DailyForecastAction>.loadDay() {
         updateState { DailyForecastState.Loading }
@@ -45,8 +45,14 @@ class DailyForecastViewModel(
 
 sealed interface DailyForecastState : MVIState {
     data object Loading : DailyForecastState
-    data class Content(val day: DailyWeatherModel) : DailyForecastState
-    data class Error(val message: String) : DailyForecastState
+
+    data class Content(
+        val day: DailyWeatherModel,
+    ) : DailyForecastState
+
+    data class Error(
+        val message: String,
+    ) : DailyForecastState
 }
 
 sealed interface DailyForecastIntent : MVIIntent {

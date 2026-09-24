@@ -18,6 +18,9 @@ import androidx.compose.ui.unit.dp
 /** Cold-to-warm gradient used by the daily temperature range bars. */
 private val temperatureGradient = listOf(Color(0xFF4FC3F7), Color(0xFFFFB74D))
 
+/** A single-degree day would otherwise collapse to an invisible bar. */
+private const val MIN_FILL_FRACTION = 0.05f
+
 /**
  * Horizontal bar showing where [low]..[high] sits inside the [scaleMin]..[scaleMax] range
  * shared by every day of the forecast.
@@ -33,26 +36,27 @@ internal fun TemperatureRangeBar(
     val scaleSpan = (scaleMax - scaleMin).takeIf { it > 0.0 } ?: 1.0
     val startFraction = ((low - scaleMin) / scaleSpan).toFloat().coerceIn(0f, 1f)
     val endFraction = ((high - scaleMin) / scaleSpan).toFloat().coerceIn(startFraction, 1f)
-    // A single-degree day would otherwise collapse to an invisible bar.
-    val fillFraction = (endFraction - startFraction).coerceAtLeast(0.05f)
+    val fillFraction = (endFraction - startFraction).coerceAtLeast(MIN_FILL_FRACTION)
     val leadingFraction = startFraction.coerceAtMost(1f - fillFraction)
     val trailingFraction = 1f - leadingFraction - fillFraction
 
     Row(
-        modifier = modifier
-            .height(8.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+        modifier =
+            modifier
+                .height(8.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant),
     ) {
         if (leadingFraction > 0f) {
             Spacer(modifier = Modifier.weight(leadingFraction))
         }
         Box(
-            modifier = Modifier
-                .weight(fillFraction)
-                .fillMaxHeight()
-                .clip(CircleShape)
-                .background(Brush.horizontalGradient(temperatureGradient)),
+            modifier =
+                Modifier
+                    .weight(fillFraction)
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(Brush.horizontalGradient(temperatureGradient)),
         )
         if (trailingFraction > 0f) {
             Spacer(modifier = Modifier.weight(trailingFraction))

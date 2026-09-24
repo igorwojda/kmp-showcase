@@ -36,6 +36,7 @@ import pro.respawn.flowmvi.compose.dsl.subscribe
 @Composable
 fun WeeklyForecastScreen(
     onDayClick: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: WeeklyForecastViewModel = koinViewModel(),
 ) {
     val store = viewModel.store
@@ -49,6 +50,7 @@ fun WeeklyForecastScreen(
     }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = { Text("Weather") },
@@ -56,26 +58,33 @@ fun WeeklyForecastScreen(
         },
     ) { contentPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
         ) {
             when (val currentState = state) {
-                WeeklyForecastState.Loading -> CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                )
+                WeeklyForecastState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                }
 
-                is WeeklyForecastState.Content -> WeeklyForecastContent(
-                    forecast = currentState.forecast,
-                    onDayClick = onDayClick,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                is WeeklyForecastState.Content -> {
+                    WeeklyForecastContent(
+                        forecast = currentState.forecast,
+                        onDayClick = onDayClick,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
 
-                is WeeklyForecastState.Error -> ErrorContent(
-                    message = currentState.message,
-                    onRetry = { store.intent(WeeklyForecastIntent.Reload) },
-                    modifier = Modifier.align(Alignment.Center),
-                )
+                is WeeklyForecastState.Error -> {
+                    ErrorContent(
+                        message = currentState.message,
+                        onRetry = { store.intent(WeeklyForecastIntent.Reload) },
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                }
             }
         }
     }
@@ -125,11 +134,15 @@ private fun WeeklyForecastContent(
 }
 
 /** "Today" / "Tomorrow" for the first two days of the forecast, a weekday name for the rest. */
-private fun dayLabel(date: LocalDate, index: Int): String = when (index) {
-    0 -> "Today"
-    1 -> "Tomorrow"
-    else -> date.format(dayOfWeekFormatter)
-}
+private fun dayLabel(
+    date: LocalDate,
+    index: Int,
+): String =
+    when (index) {
+        0 -> "Today"
+        1 -> "Tomorrow"
+        else -> date.format(dayOfWeekFormatter)
+    }
 
 @Preview(showBackground = true)
 @Composable
@@ -139,34 +152,42 @@ private fun WeeklyForecastContentPreview() {
     }
 }
 
-private val previewForecast = ForecastModel(
-    latitude = 52.23,
-    longitude = 21.01,
-    current = CurrentWeatherModel(
-        time = LocalDateTime(2026, 9, 22, 14, 30),
-        temperature = 18.4,
-        temperatureUnit = "°C",
-        windSpeed = 11.2,
-        windSpeedUnit = "km/h",
-        weatherCode = 2,
-    ),
-    daily = listOf(
-        previewDay(LocalDate(2026, 9, 22), 11.0, 19.0, 2),
-        previewDay(LocalDate(2026, 9, 23), 9.5, 17.0, 61),
-        previewDay(LocalDate(2026, 9, 24), 8.0, 15.5, 3),
-        previewDay(LocalDate(2026, 9, 25), 10.0, 21.0, 0),
-        previewDay(LocalDate(2026, 9, 26), 12.0, 23.5, 1),
-    ),
-)
+private val previewForecast =
+    ForecastModel(
+        latitude = 52.23,
+        longitude = 21.01,
+        current =
+            CurrentWeatherModel(
+                time = LocalDateTime(2026, 9, 22, 14, 30),
+                temperature = 18.4,
+                temperatureUnit = "°C",
+                windSpeed = 11.2,
+                windSpeedUnit = "km/h",
+                weatherCode = 2,
+            ),
+        daily =
+            listOf(
+                previewDay(LocalDate(2026, 9, 22), 11.0, 19.0, 2),
+                previewDay(LocalDate(2026, 9, 23), 9.5, 17.0, 61),
+                previewDay(LocalDate(2026, 9, 24), 8.0, 15.5, 3),
+                previewDay(LocalDate(2026, 9, 25), 10.0, 21.0, 0),
+                previewDay(LocalDate(2026, 9, 26), 12.0, 23.5, 1),
+            ),
+    )
 
-private fun previewDay(date: LocalDate, min: Double, max: Double, weatherCode: Int) = DailyWeatherModel(
+private fun previewDay(
+    date: LocalDate,
+    min: Double,
+    max: Double,
+    weatherCode: Int,
+) = DailyWeatherModel(
     date = date,
     temperatureMin = min,
     temperatureMax = max,
     temperatureUnit = "°C",
     weatherCode = weatherCode,
-    sunrise = LocalDateTime(date.year, date.month, date.day, 6, 32),
-    sunset = LocalDateTime(date.year, date.month, date.day, 18, 41),
+    sunrise = LocalDateTime(date.year, date.month, date.day, hour = 6, minute = 32),
+    sunset = LocalDateTime(date.year, date.month, date.day, hour = 18, minute = 41),
     precipitationSum = 0.0,
     precipitationUnit = "mm",
     precipitationProbabilityMax = 10,

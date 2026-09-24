@@ -15,24 +15,24 @@ import pro.respawn.flowmvi.plugins.reduce
 class WeeklyForecastViewModel(
     private val forecastRepository: ForecastRepository,
 ) : StoreViewModel<WeeklyForecastState, WeeklyForecastIntent, WeeklyForecastAction>() {
+    override val store =
+        configuredStore(initial = WeeklyForecastState.Loading, name = "WeeklyForecast") {
+            recover { e ->
+                updateState { WeeklyForecastState.Error(e.message ?: "Unknown error") }
+                null // exception handled – don't rethrow
+            }
 
-    override val store = configuredStore(initial = WeeklyForecastState.Loading, name = "WeeklyForecast") {
-        recover { e ->
-            updateState { WeeklyForecastState.Error(e.message ?: "Unknown error") }
-            null // exception handled – don't rethrow
-        }
+            init { loadForecast() }
 
-        init { loadForecast() }
-
-        reduce { intent ->
-            when (intent) {
-                WeeklyForecastIntent.Reload -> {
-                    loadForecast(forceRefresh = true)
-                    action(WeeklyForecastAction.ShowToast("Reloaded"))
+            reduce { intent ->
+                when (intent) {
+                    WeeklyForecastIntent.Reload -> {
+                        loadForecast(forceRefresh = true)
+                        action(WeeklyForecastAction.ShowToast("Reloaded"))
+                    }
                 }
             }
         }
-    }
 
     private suspend fun PipelineContext<WeeklyForecastState, WeeklyForecastIntent, WeeklyForecastAction>.loadForecast(
         forceRefresh: Boolean = false,
@@ -45,8 +45,14 @@ class WeeklyForecastViewModel(
 
 sealed interface WeeklyForecastState : MVIState {
     data object Loading : WeeklyForecastState
-    data class Content(val forecast: ForecastModel) : WeeklyForecastState
-    data class Error(val message: String) : WeeklyForecastState
+
+    data class Content(
+        val forecast: ForecastModel,
+    ) : WeeklyForecastState
+
+    data class Error(
+        val message: String,
+    ) : WeeklyForecastState
 }
 
 sealed interface WeeklyForecastIntent : MVIIntent {
@@ -54,5 +60,7 @@ sealed interface WeeklyForecastIntent : MVIIntent {
 }
 
 sealed interface WeeklyForecastAction : MVIAction {
-    data class ShowToast(val message: String) : WeeklyForecastAction
+    data class ShowToast(
+        val message: String,
+    ) : WeeklyForecastAction
 }

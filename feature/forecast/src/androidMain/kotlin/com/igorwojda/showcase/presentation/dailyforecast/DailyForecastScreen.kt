@@ -48,6 +48,7 @@ import kotlin.math.roundToInt
 fun DailyForecastScreen(
     date: LocalDate,
     onBack: () -> Unit,
+    modifier: Modifier = Modifier,
     // Scoped to the back stack entry, so each day gets its own ViewModel.
     viewModel: DailyForecastViewModel = koinViewModel { parametersOf(date) },
 ) {
@@ -55,6 +56,7 @@ fun DailyForecastScreen(
     val state by store.subscribe()
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = { Text(date.format(fullDateFormatter)) },
@@ -67,25 +69,32 @@ fun DailyForecastScreen(
         },
     ) { contentPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
         ) {
             when (val currentState = state) {
-                DailyForecastState.Loading -> CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                )
+                DailyForecastState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                }
 
-                is DailyForecastState.Content -> DailyForecastContent(
-                    day = currentState.day,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                is DailyForecastState.Content -> {
+                    DailyForecastContent(
+                        day = currentState.day,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
 
-                is DailyForecastState.Error -> ErrorContent(
-                    message = currentState.message,
-                    onRetry = { store.intent(DailyForecastIntent.Retry) },
-                    modifier = Modifier.align(Alignment.Center),
-                )
+                is DailyForecastState.Error -> {
+                    ErrorContent(
+                        message = currentState.message,
+                        onRetry = { store.intent(DailyForecastIntent.Retry) },
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                }
             }
         }
     }
@@ -99,9 +108,10 @@ private fun DailyForecastContent(
     val condition = WeatherCondition.fromCode(day.weatherCode)
 
     Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(all = 16.dp),
+        modifier =
+            modifier
+                .verticalScroll(rememberScrollState())
+                .padding(all = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Card(
@@ -109,9 +119,10 @@ private fun DailyForecastContent(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = 20.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(all = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
@@ -165,9 +176,10 @@ private fun HourlyTemperatureRow(
         items(hours) { hour ->
             Card {
                 Column(
-                    modifier = Modifier
-                        .width(64.dp)
-                        .padding(vertical = 12.dp),
+                    modifier =
+                        Modifier
+                            .width(64.dp)
+                            .padding(vertical = 12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -194,9 +206,10 @@ private fun DetailRow(
 ) {
     Card(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(text = label, style = MaterialTheme.typography.bodyMedium)
@@ -214,26 +227,28 @@ private fun DetailRow(
 private fun DailyForecastContentPreview() {
     MaterialTheme {
         DailyForecastContent(
-            day = DailyWeatherModel(
-                date = LocalDate(2026, 9, 23),
-                temperatureMin = 9.5,
-                temperatureMax = 17.0,
-                temperatureUnit = "°C",
-                weatherCode = 61,
-                sunrise = LocalDateTime(2026, 9, 23, 6, 32),
-                sunset = LocalDateTime(2026, 9, 23, 18, 41),
-                precipitationSum = 4.2,
-                precipitationUnit = "mm",
-                precipitationProbabilityMax = 80,
-                windSpeedMax = 22.0,
-                windSpeedUnit = "km/h",
-                hourlyTemperatures = (0..23).map { hour ->
-                    HourlyTemperatureModel(
-                        time = LocalDateTime(2026, 9, 23, hour, 0),
-                        temperature = 9.5 + hour % 12 * 0.6,
-                    )
-                },
-            ),
+            day =
+                DailyWeatherModel(
+                    date = LocalDate(2026, 9, 23),
+                    temperatureMin = 9.5,
+                    temperatureMax = 17.0,
+                    temperatureUnit = "°C",
+                    weatherCode = 61,
+                    sunrise = LocalDateTime(2026, 9, 23, 6, 32),
+                    sunset = LocalDateTime(2026, 9, 23, 18, 41),
+                    precipitationSum = 4.2,
+                    precipitationUnit = "mm",
+                    precipitationProbabilityMax = 80,
+                    windSpeedMax = 22.0,
+                    windSpeedUnit = "km/h",
+                    hourlyTemperatures =
+                        (0..23).map { hour ->
+                            HourlyTemperatureModel(
+                                time = LocalDateTime(2026, 9, 23, hour, 0),
+                                temperature = 9.5 + hour % 12 * 0.6,
+                            )
+                        },
+                ),
         )
     }
 }

@@ -14,29 +14,53 @@ import pro.respawn.flowmvi.plugins.reduce
  * screen talks to them: it runs [LocationPermissionAction]s and reports every status as
  * [LocationPermissionIntent.StatusChanged].
  */
-class LocationPermissionViewModel :
-    StoreViewModel<LocationPermissionState, LocationPermissionIntent, LocationPermissionAction>() {
-
-    override val store = configuredStore(initial = LocationPermissionState.Checking, name = "LocationPermission") {
-        reduce { intent ->
-            when (intent) {
-                LocationPermissionIntent.Allow -> action(LocationPermissionAction.LaunchPermissionRequest)
-                LocationPermissionIntent.OpenSettings -> action(LocationPermissionAction.LaunchSettings)
-                is LocationPermissionIntent.StatusChanged -> when (intent.status) {
-                    LocationPermissionStatus.Granted -> action(LocationPermissionAction.PermissionGranted)
-                    LocationPermissionStatus.NotDetermined -> updateState { LocationPermissionState.NotDetermined }
-                    LocationPermissionStatus.Denied -> updateState { LocationPermissionState.Denied }
-                    LocationPermissionStatus.PermanentlyDenied -> updateState {
-                        LocationPermissionState.PermanentlyDenied
+class LocationPermissionViewModel : StoreViewModel<LocationPermissionState, LocationPermissionIntent, LocationPermissionAction>() {
+    override val store =
+        configuredStore(initial = LocationPermissionState.Checking, name = "LocationPermission") {
+            reduce { intent ->
+                when (intent) {
+                    LocationPermissionIntent.Allow -> {
+                        action(LocationPermissionAction.LaunchPermissionRequest)
                     }
-                    LocationPermissionStatus.Restricted -> updateState { LocationPermissionState.Restricted }
-                    LocationPermissionStatus.ServicesDisabled -> updateState {
-                        LocationPermissionState.ServicesDisabled
+
+                    LocationPermissionIntent.OpenSettings -> {
+                        action(LocationPermissionAction.LaunchSettings)
+                    }
+
+                    is LocationPermissionIntent.StatusChanged -> {
+                        when (intent.status) {
+                            LocationPermissionStatus.Granted -> {
+                                action(LocationPermissionAction.PermissionGranted)
+                            }
+
+                            LocationPermissionStatus.NotDetermined -> {
+                                updateState { LocationPermissionState.NotDetermined }
+                            }
+
+                            LocationPermissionStatus.Denied -> {
+                                updateState { LocationPermissionState.Denied }
+                            }
+
+                            LocationPermissionStatus.PermanentlyDenied -> {
+                                updateState {
+                                    LocationPermissionState.PermanentlyDenied
+                                }
+                            }
+
+                            LocationPermissionStatus.Restricted -> {
+                                updateState { LocationPermissionState.Restricted }
+                            }
+
+                            LocationPermissionStatus.ServicesDisabled -> {
+                                updateState {
+                                    LocationPermissionState.ServicesDisabled
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
-    }
 }
 
 /** Location permission as reported by the platform. */
@@ -62,17 +86,26 @@ enum class LocationPermissionStatus {
 sealed interface LocationPermissionState : MVIState {
     /** Waiting for the first status from the platform, so the screen doesn't flash the wrong message. */
     data object Checking : LocationPermissionState
+
     data object NotDetermined : LocationPermissionState
+
     data object Denied : LocationPermissionState
+
     data object PermanentlyDenied : LocationPermissionState
+
     data object Restricted : LocationPermissionState
+
     data object ServicesDisabled : LocationPermissionState
 }
 
 sealed interface LocationPermissionIntent : MVIIntent {
     data object Allow : LocationPermissionIntent
+
     data object OpenSettings : LocationPermissionIntent
-    data class StatusChanged(val status: LocationPermissionStatus) : LocationPermissionIntent
+
+    data class StatusChanged(
+        val status: LocationPermissionStatus,
+    ) : LocationPermissionIntent
 }
 
 sealed interface LocationPermissionAction : MVIAction {

@@ -35,9 +35,10 @@ internal fun CurrentWeatherCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(all = 20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(all = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -55,9 +56,10 @@ internal fun CurrentWeatherCard(
             )
 
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 WeatherDetail(
@@ -77,7 +79,10 @@ internal fun CurrentWeatherCard(
     }
 }
 
-private fun coordinatesLabel(latitude: Double, longitude: Double): String {
+private fun coordinatesLabel(
+    latitude: Double,
+    longitude: Double,
+): String {
     val latitudeHemisphere = if (latitude >= 0) "N" else "S"
     val longitudeHemisphere = if (longitude >= 0) "E" else "W"
     return String.format(

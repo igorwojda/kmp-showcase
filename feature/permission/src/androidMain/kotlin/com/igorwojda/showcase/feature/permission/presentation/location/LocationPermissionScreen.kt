@@ -24,30 +24,33 @@ import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
 fun LocationPermissionScreen(
-    onPermissionGranted: () -> Unit,
+    onPermissionGrant: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: LocationPermissionViewModel = koinViewModel(),
 ) {
     val store = viewModel.store
 
     // Reports the first status, and every change, e.g. after the user allows it in Settings.
-    val requester = rememberLocationPermissionRequester { status ->
-        store.intent(LocationPermissionIntent.StatusChanged(status))
-    }
+    val requester =
+        rememberLocationPermissionRequester { status ->
+            store.intent(LocationPermissionIntent.StatusChanged(status))
+        }
 
     // The lambda consumes MVIActions as they arrive; it only runs while the UI is visible.
     val state by store.subscribe { action ->
         when (action) {
             LocationPermissionAction.LaunchPermissionRequest -> requester.request()
             LocationPermissionAction.LaunchSettings -> requester.openSettings()
-            LocationPermissionAction.PermissionGranted -> onPermissionGranted()
+            LocationPermissionAction.PermissionGranted -> onPermissionGrant()
         }
     }
 
-    Scaffold { contentPadding ->
+    Scaffold(modifier = modifier) { contentPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
         ) {
             LocationPermissionContent(
                 state = state,
@@ -67,42 +70,54 @@ private fun LocationPermissionContent(
     modifier: Modifier = Modifier,
 ) {
     when (state) {
-        LocationPermissionState.Checking -> Unit
+        LocationPermissionState.Checking -> {
+            // Nothing to show until the status is known
+        }
 
-        LocationPermissionState.NotDetermined -> PermissionMessage(
-            message = "KMP Showcase uses your approximate location to show the weather where you are.",
-            buttonText = "Allow location access",
-            onButtonClick = onAllowClick,
-            modifier = modifier,
-        )
+        LocationPermissionState.NotDetermined -> {
+            PermissionMessage(
+                message = "KMP Showcase uses your approximate location to show the weather where you are.",
+                buttonText = "Allow location access",
+                onButtonClick = onAllowClick,
+                modifier = modifier,
+            )
+        }
 
-        LocationPermissionState.Denied -> PermissionMessage(
-            message = "Without location access KMP Showcase can't show the weather where you are.",
-            buttonText = "Try again",
-            onButtonClick = onAllowClick,
-            modifier = modifier,
-        )
+        LocationPermissionState.Denied -> {
+            PermissionMessage(
+                message = "Without location access KMP Showcase can't show the weather where you are.",
+                buttonText = "Try again",
+                onButtonClick = onAllowClick,
+                modifier = modifier,
+            )
+        }
 
-        LocationPermissionState.PermanentlyDenied -> PermissionMessage(
-            message = "Location access is turned off for KMP Showcase. Allow it in Settings to continue.",
-            buttonText = "Open Settings",
-            onButtonClick = onOpenSettingsClick,
-            modifier = modifier,
-        )
+        LocationPermissionState.PermanentlyDenied -> {
+            PermissionMessage(
+                message = "Location access is turned off for KMP Showcase. Allow it in Settings to continue.",
+                buttonText = "Open Settings",
+                onButtonClick = onOpenSettingsClick,
+                modifier = modifier,
+            )
+        }
 
-        LocationPermissionState.ServicesDisabled -> PermissionMessage(
-            message = "Location is turned off on this device. Turn it on in Settings to continue.",
-            buttonText = "Open Settings",
-            onButtonClick = onOpenSettingsClick,
-            modifier = modifier,
-        )
+        LocationPermissionState.ServicesDisabled -> {
+            PermissionMessage(
+                message = "Location is turned off on this device. Turn it on in Settings to continue.",
+                buttonText = "Open Settings",
+                onButtonClick = onOpenSettingsClick,
+                modifier = modifier,
+            )
+        }
 
-        LocationPermissionState.Restricted -> PermissionMessage(
-            message = "Location access is restricted on this device, e.g. by parental controls or device management.",
-            buttonText = null,
-            onButtonClick = {},
-            modifier = modifier,
-        )
+        LocationPermissionState.Restricted -> {
+            PermissionMessage(
+                message = "Location access is restricted on this device, e.g. by parental controls or device management.",
+                buttonText = null,
+                onButtonClick = {},
+                modifier = modifier,
+            )
+        }
     }
 }
 
@@ -130,13 +145,14 @@ private fun PermissionMessage(
 }
 
 private class LocationPermissionStateProvider : PreviewParameterProvider<LocationPermissionState> {
-    override val values = sequenceOf(
-        LocationPermissionState.NotDetermined,
-        LocationPermissionState.Denied,
-        LocationPermissionState.PermanentlyDenied,
-        LocationPermissionState.ServicesDisabled,
-        LocationPermissionState.Restricted,
-    )
+    override val values =
+        sequenceOf(
+            LocationPermissionState.NotDetermined,
+            LocationPermissionState.Denied,
+            LocationPermissionState.PermanentlyDenied,
+            LocationPermissionState.ServicesDisabled,
+            LocationPermissionState.Restricted,
+        )
 }
 
 @Preview(showBackground = true)

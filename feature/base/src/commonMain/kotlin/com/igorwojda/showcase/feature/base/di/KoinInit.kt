@@ -1,11 +1,11 @@
 package com.igorwojda.showcase.feature.base.di
 
-import kotlin.experimental.ExperimentalObjCRefinement
-import kotlin.native.HiddenFromObjC
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.includes
+import kotlin.experimental.ExperimentalObjCRefinement
+import kotlin.native.HiddenFromObjC
 
 /**
  * Starts the single Koin container: [baseModule] plus the [featureModules] the app ships.
@@ -18,7 +18,10 @@ import org.koin.dsl.includes
  */
 @OptIn(ExperimentalObjCRefinement::class)
 @HiddenFromObjC
-fun initializeKoin(featureModules: List<Module>, config: KoinAppDeclaration? = null) {
+fun initializeKoin(
+    featureModules: List<Module>,
+    config: KoinAppDeclaration? = null,
+) {
     startKoin {
         includes(config)
         modules(listOf(baseModule) + featureModules)

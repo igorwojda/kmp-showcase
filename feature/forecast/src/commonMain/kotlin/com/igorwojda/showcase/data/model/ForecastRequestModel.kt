@@ -20,16 +20,17 @@ internal data class ForecastRequestModel(
     @SerialName("current")
     val current: List<String> = listOf("temperature_2m", "wind_speed_10m", "weather_code"),
     @SerialName("daily")
-    val daily: List<String> = listOf(
-        "temperature_2m_min",
-        "temperature_2m_max",
-        "weather_code",
-        "sunrise",
-        "sunset",
-        "precipitation_sum",
-        "precipitation_probability_max",
-        "wind_speed_10m_max",
-    ),
+    val daily: List<String> =
+        listOf(
+            "temperature_2m_min",
+            "temperature_2m_max",
+            "weather_code",
+            "sunrise",
+            "sunset",
+            "precipitation_sum",
+            "precipitation_probability_max",
+            "wind_speed_10m_max",
+        ),
     @SerialName("hourly")
     val hourly: List<String> = listOf("temperature_2m"),
     @SerialName("timezone")
