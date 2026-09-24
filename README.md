@@ -139,7 +139,8 @@ module's build script only declares what's specific to it:
 
 | Plugin | Class | Used by | Adds |
 |--------|-------|---------|------|
-| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, all app dependencies (`:feature:forecast`, `:feature:permission`, Jetpack Compose, lifecycle, Navigation 3) |
+| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, Android Lint (`showcase.android.lint`), all app dependencies (`:feature:forecast`, `:feature:permission`, Jetpack Compose, lifecycle, Navigation 3) |
+| `showcase.android.lint` | [`AndroidLintConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidLintConventionPlugin.kt) | `:androidApp` (applied by `showcase.android.application`) | Android Lint with warnings as errors, plus `lintCheck` / `lintApply` aliases for AGP's `lint` / `lintFix` (see [Linters](#linters)) |
 | `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
 | `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
 | `showcase.spotless` | [`SpotlessConventionPlugin`](./build-logic/convention/src/main/kotlin/SpotlessConventionPlugin.kt) | root project | [Spotless](https://github.com/diffplug/spotless) running ktlint + [Compose rules](https://mrmans0n.github.io/compose-rules/) over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
@@ -454,17 +455,26 @@ Test setup (`kotlin-test` in `commonTest`, `withHostTest {}` on the KMP Android 
 ## Linters
 
 Kotlin linters run once from the root project over the whole repository (all modules and `build-logic`), so modules
-don't configure them:
+don't configure them. Android Lint runs per Android module, configured in
+[`AndroidLintConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidLintConventionPlugin.kt):
 
 ```bash
 ./gradlew detektApply             # Apply Detekt formatting fixes
 ./gradlew detektCheck             # Run Detekt Check
 ./gradlew spotlessApply           # Apply spotless code formatting fixes
 ./gradlew spotlessCheck           # Run spotless Check
+./gradlew lintApply               # Apply safe Android Lint fixes
+./gradlew lintCheck               # Run Android Lint Check
 ```
 
 - ktlint rules: [.editorconfig](./.editorconfig), plus [Compose rules](https://mrmans0n.github.io/compose-rules/).
 - Detekt rules: [detekt.yml](./detekt.yml), on top of the Detekt defaults. Reports: `build/reports/detekt/`.
+- `lintCheck` / `lintApply` are aliases for AGP's `lint` / `lintFix`, so every linter is invoked the same way.
+- Android Lint rules: [lint.xml](./lint.xml), on top of the Lint defaults. Warnings are errors, so a check is either
+  fixed or disabled in `lint.xml`. Reports: `androidApp/build/reports/`.
+- Android Lint covers the `:androidApp` module (Kotlin sources, manifest, resources and the Gradle files). The
+  `:feature:*` modules are not analyzed - AGP's Kotlin Multiplatform library plugin doesn't create Lint tasks for KMP
+  modules yet, so `checkDependencies` has nothing to pull in for them.
 - Formatting is done by ktlint only. Detekt runs without its `detekt-formatting` (ktlint wrapper) plugin, so
   `detektApply` fixes only Detekt's own auto-correctable rules.
 
@@ -489,6 +499,7 @@ swiftlint lint --strict           # Run SwiftLint Check (warnings fail, same as 
 | Build iOS App | macOS | `xcodebuild` simulator build of `iosApp` (its build phase builds the Kotlin framework) |
 | Detekt | Ubuntu | `./gradlew detektCheck`, uploads the report |
 | Spotless (ktlint) | Ubuntu | `./gradlew spotlessCheck` |
+| Android Lint | Ubuntu | `./gradlew lintCheck`, uploads the report |
 | SwiftLint | Ubuntu | `swiftlint lint --strict` in the SwiftLint container |
 
 ## Debugging FlowMVI

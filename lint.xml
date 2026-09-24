@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android Lint rules, on top of the Lint defaults. Used by every Android module (configured in the convention
+     plugins). Warnings are errors, so a check has to be either fixed or disabled here. -->
+<lint>
+    <!-- Dependency freshness checks: they resolve the latest versions over the network, so the same commit passes
+         today and fails tomorrow. Dependency updates are done deliberately (some versions are pinned on purpose). -->
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+</lint>

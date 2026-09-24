@@ -94,6 +94,7 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 
 # Convention plugins (build-logic)
 showcase-android-application = { id = "showcase.android.application" }
+showcase-android-lint = { id = "showcase.android.lint" }
 showcase-basefeature = { id = "showcase.basefeature" }
 showcase-feature = { id = "showcase.feature" }
 showcase-spotless = { id = "showcase.spotless" }
