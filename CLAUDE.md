@@ -3,6 +3,11 @@
 
 # Project Conventions
 
+## Build scripts
+
+- Make sure build scripts in modules are aligned.
+- Move as much logic as possible to Gradle convention plugins.
+
 ## Architecture
 - Clean Architecture is used as a base for the project. The project is divided into three layers:
   - `Domain` - Contains business logic and entities.
