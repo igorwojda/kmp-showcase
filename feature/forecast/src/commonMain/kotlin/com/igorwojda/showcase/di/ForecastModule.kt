@@ -8,8 +8,11 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 /** Data, domain and presentation dependencies of the forecast feature, shared by Android and iOS. */
-val forecastModule = module {
+val featureForecastModule = module {
+    // Data layer
     singleOf(::ForecastRepository)
+
+    // Presentation layer
     viewModelOf(::ForecastViewModel)
     viewModelOf(::ForecastDayViewModel)
 }

@@ -194,7 +194,7 @@ UI layer decides where to go.
 
 [Koin](https://insert-koin.io) is used for dependency injection. All definitions live in shared code, one Koin module per Gradle module
 ([`baseModule`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/di/BaseModule.kt),
-[`forecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/ForecastModule.kt)),
+[`featureForecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/ForecastModule.kt)),
 so both platforms resolve the same instances.
 
 Only the composition roots start Koin, because only they know which features the app ships. They pass the features'
@@ -225,16 +225,16 @@ flowchart LR
     end
 
     subgraph forecast[":feature:forecast"]
-        forecastModule["forecastModule"]
+        featureForecastModule["featureForecastModule"]
         screens["ForecastScreen<br/>ForecastDayScreen"]
     end
 
     koin[("Koin container")]
 
-    application -- "listOf(forecastModule)<br/>androidLogger(), androidContext()" --> initializeKoin
+    application -- "listOf(featureForecastModule)<br/>androidLogger(), androidContext()" --> initializeKoin
     initializeKoin -- "startKoin" --> koin
     baseModule -. "loaded" .-> koin
-    forecastModule -. "loaded" .-> koin
+    featureForecastModule -. "loaded" .-> koin
     screens -- "koinViewModel()" --> koin
 
     classDef root fill:#DECDFF,stroke:#8C4FFF,stroke-width:3px,color:#222222;
@@ -244,7 +244,7 @@ flowchart LR
 
     class application root;
     class screens ui;
-    class initializeKoin,baseModule,forecastModule code;
+    class initializeKoin,baseModule,featureForecastModule code;
     class koin container;
 
     style androidApp fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
@@ -254,7 +254,7 @@ flowchart LR
 
 The app module is the composition root.
 [`KMPShowcaseApplication.onCreate()`](./androidApp/src/main/kotlin/com/igorwojda/showcase/KMPShowcaseApplication.kt)
-calls `initializeKoin(listOf(forecastModule)) { androidLogger(); androidContext(...) }`. Composables get their
+calls `initializeKoin(listOf(featureForecastModule)) { androidLogger(); androidContext(...) }`. Composables get their
 ViewModel with `koinViewModel()`; `ForecastDayScreen` passes its date with `koinViewModel { parametersOf(date) }`.
 
 **Adding a feature:** depend on it in
@@ -281,7 +281,7 @@ flowchart LR
         end
 
         subgraph forecast[":feature:forecast"]
-            forecastModule["forecastModule"]
+            featureForecastModule["featureForecastModule"]
             accessors["provideForecastViewModel()<br/>provideForecastDayViewModel(date)"]
         end
 
@@ -289,10 +289,10 @@ flowchart LR
     end
 
     iosApp --> bridgeInit
-    bridgeInit -- "listOf(forecastModule)" --> initializeKoin
+    bridgeInit -- "listOf(featureForecastModule)" --> initializeKoin
     initializeKoin -- "startKoin" --> koin
     baseModule -. "loaded" .-> koin
-    forecastModule -. "loaded" .-> koin
+    featureForecastModule -. "loaded" .-> koin
     swiftScreens --> accessors
     accessors -- "get()" --> koin
 
@@ -303,7 +303,7 @@ flowchart LR
 
     class bridgeInit root;
     class swiftScreens ui;
-    class iosApp,initializeKoin,baseModule,forecastModule,accessors code;
+    class iosApp,initializeKoin,baseModule,featureForecastModule,accessors code;
     class koin container;
 
     style swift fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
