@@ -319,7 +319,9 @@ links one framework, `iosBridge`, that exports all features.
 
 - `iOSApp.init()` calls the module's
   [`initializeKoin()`](./iosBridge/src/iosMain/kotlin/com/igorwojda/showcase/iosbridge/di/KoinInit.ios.kt), which
-  passes the features' Koin modules on. SKIE exposes top-level Kotlin functions as top-level Swift functions.
+  passes the features' Koin modules on. SKIE exposes top-level Kotlin functions as top-level Swift functions. The
+  `:feature:base` `initializeKoin(featureModules, config)` is marked `@HiddenFromObjC`, so Swift sees only one
+  `initializeKoin()`.
 - Swift can't use Koin's reified `get()`, so each feature gets explicit accessors, e.g.
   [`Koin.ios.kt`](./feature/forecast/src/iosMain/kotlin/com/igorwojda/showcase/di/Koin.ios.kt) with
   `provideForecastViewModel()` and `provideForecastDayViewModel(date:)`. SwiftUI screens keep the ViewModel in
