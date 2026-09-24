@@ -12,7 +12,7 @@ import pro.respawn.flowmvi.plugins.init
 import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
-class WeeklyForecastViewModel(
+class WeeklyForecastViewModel internal constructor(
     private val forecastRepository: ForecastRepository,
 ) : StoreViewModel<WeeklyForecastState, WeeklyForecastIntent, WeeklyForecastAction>() {
     override val store =

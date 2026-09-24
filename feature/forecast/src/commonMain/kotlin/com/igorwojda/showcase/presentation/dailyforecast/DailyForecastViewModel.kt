@@ -14,7 +14,7 @@ import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
 /** Weather for a single [date]; reuses the forecast cached by [ForecastRepository]. */
-class DailyForecastViewModel(
+class DailyForecastViewModel internal constructor(
     private val date: LocalDate,
     private val forecastRepository: ForecastRepository,
 ) : StoreViewModel<DailyForecastState, DailyForecastIntent, DailyForecastAction>() {
