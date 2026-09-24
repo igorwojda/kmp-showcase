@@ -4,7 +4,7 @@ import SwiftUI
 private let temperatureGradient = LinearGradient(
     colors: [
         Color(red: 0x4F / 255, green: 0xC3 / 255, blue: 0xF7 / 255),
-        Color(red: 0xFF / 255, green: 0xB7 / 255, blue: 0x4D / 255),
+        Color(red: 0xFF / 255, green: 0xB7 / 255, blue: 0x4D / 255)
     ],
     startPoint: .leading,
     endPoint: .trailing

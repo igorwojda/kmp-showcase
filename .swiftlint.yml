@@ -1,0 +1,12 @@
+# SwiftLint configuration: https://realm.github.io/SwiftLint/rule-directory.html
+# Runs from the root over the whole repository: the iOS app plus each feature's `src/iosMain/swift` folder.
+
+excluded:
+  - "**/build"
+
+line_length:
+  warning: 140 # Matches max_line_length in .editorconfig
+
+type_name:
+  excluded:
+    - iOSApp # SwiftUI entry point, named after the Xcode target
