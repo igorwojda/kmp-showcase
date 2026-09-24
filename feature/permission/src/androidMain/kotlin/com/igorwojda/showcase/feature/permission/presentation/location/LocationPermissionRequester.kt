@@ -32,9 +32,7 @@ internal interface LocationPermissionRequester {
  * (see [LocationPermissionChecker.statusAfterRequest]) is kept here, not in the shared ViewModel.
  */
 @Composable
-internal fun rememberLocationPermissionRequester(
-    onStatusChange: (LocationPermissionStatus) -> Unit,
-): LocationPermissionRequester {
+internal fun rememberLocationPermissionRequester(onStatusChange: (LocationPermissionStatus) -> Unit): LocationPermissionRequester {
     val activity = checkNotNull(LocalActivity.current) { "The location permission must be requested from an Activity" }
     val checker = remember(activity) { LocationPermissionChecker(activity) }
     val currentOnStatusChange by rememberUpdatedState(onStatusChange)
@@ -46,11 +44,12 @@ internal fun rememberLocationPermissionRequester(
     // A second request while the dialog is open is answered "not granted" without asking; it isn't a denial.
     var isRequestPending by remember { mutableStateOf(false) }
 
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        isRequestPending = false
-        val answerTime = (SystemClock.elapsedRealtime() - requestLaunchedAt).milliseconds
-        currentOnStatusChange(checker.statusAfterRequest(isGranted, rationaleBeforeRequest, answerTime))
-    }
+    val permissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            isRequestPending = false
+            val answerTime = (SystemClock.elapsedRealtime() - requestLaunchedAt).milliseconds
+            currentOnStatusChange(checker.statusAfterRequest(isGranted, rationaleBeforeRequest, answerTime))
+        }
 
     LifecycleResumeEffect(checker) {
         if (!isRequestPending) {

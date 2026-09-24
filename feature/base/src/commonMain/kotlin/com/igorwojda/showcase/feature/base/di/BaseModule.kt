@@ -8,19 +8,20 @@ import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
 /** Dependencies shared by all feature modules. */
-val baseModule = module {
-    single {
-        HttpClient {
-            install(ContentNegotiation) {
-                json(
-                    Json {
-                        prettyPrint = true
-                        isLenient = true
-                        ignoreUnknownKeys = true
-                    },
-                )
+val baseModule =
+    module {
+        single {
+            HttpClient {
+                install(ContentNegotiation) {
+                    json(
+                        Json {
+                            prettyPrint = true
+                            isLenient = true
+                            ignoreUnknownKeys = true
+                        },
+                    )
+                }
+                install(Resources)
             }
-            install(Resources)
         }
     }
-}

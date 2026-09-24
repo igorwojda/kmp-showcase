@@ -26,6 +26,14 @@ kmpObservableViewModel = "1.1.0"
 
 flowmvi = "3.3.0-alpha03"
 
+# Code quality
+spotless = "8.10.2"
+ktlint = "1.8.0"
+# Jetpack Compose ktlint rules, run by Spotless next to the standard ktlint rules
+composeRules = "0.6.7"
+# Held at 1.23.8: latest stable, 2.x is still in alpha.
+detekt = "1.23.8"
+
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -70,6 +78,9 @@ koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 # Build logic (convention plugins)
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
+detekt-gradlePlugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+composeRules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version.ref = "composeRules" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -78,8 +89,12 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 
 # Convention plugins (build-logic)
 showcase-android-application = { id = "showcase.android.application" }
 showcase-basefeature = { id = "showcase.basefeature" }
 showcase-feature = { id = "showcase.feature" }
+showcase-spotless = { id = "showcase.spotless" }
+showcase-detekt = { id = "showcase.detekt" }

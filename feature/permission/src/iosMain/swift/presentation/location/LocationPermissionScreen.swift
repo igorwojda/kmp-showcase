@@ -3,7 +3,7 @@ import KMPObservableViewModelSwiftUI
 import iosBridge
 
 struct LocationPermissionScreen: View {
-    let onPermissionGranted: () -> Void
+    let onPermissionGrant: () -> Void
 
     @StateViewModel private var viewModel = provideLocationPermissionViewModel()
     @State private var authorization = LocationAuthorization()
@@ -29,7 +29,7 @@ struct LocationPermissionScreen: View {
                         _ = await UIApplication.shared.open(url)
                     }
                 case .permissionGranted:
-                    onPermissionGranted()
+                    onPermissionGrant()
                 }
             }
         }

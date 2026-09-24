@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ResolveDeniedLocationPermissionTest {
-
     @Test
     fun `first denial can be asked again`() {
         assertEquals(LocationPermissionStatus.Denied, resolve(rationaleBefore = false, rationaleAfter = true))

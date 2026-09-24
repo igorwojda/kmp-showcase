@@ -30,7 +30,6 @@ import pro.respawn.flowmvi.dsl.state
 abstract class StoreViewModel<S : MVIState, I : MVIIntent, A : MVIAction> :
     ViewModel(),
     Container<S, I, A> {
-
     /**
      * iOS consumer only: the store's state, typed as [S]. SKIE turns it into a Swift `AsyncSequence`.
      * Android consumer should use [store] directly.
@@ -63,7 +62,8 @@ abstract class StoreViewModel<S : MVIState, I : MVIIntent, A : MVIAction> :
      * A cold flow backed by its own store subscription, open while the flow is collected.
      * Inside [select], `states` and `actions` are the subscription's flows, not this class's properties.
      */
-    private fun <T> subscription(select: Provider<S, I, A>.() -> Flow<T>): Flow<T> = channelFlow {
-        with(store) { subscribe { select().collect { send(it) } } }.join()
-    }
+    private fun <T> subscription(select: Provider<S, I, A>.() -> Flow<T>): Flow<T> =
+        channelFlow {
+            with(store) { subscribe { select().collect { send(it) } } }.join()
+        }
 }

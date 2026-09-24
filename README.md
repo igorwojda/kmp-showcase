@@ -142,6 +142,8 @@ module's build script only declares what's specific to it:
 | `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, all app dependencies (`:feature:forecast`, `:feature:permission`, Jetpack Compose, lifecycle, Navigation 3) |
 | `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
 | `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
+| `showcase.spotless` | [`SpotlessConventionPlugin`](./build-logic/convention/src/main/kotlin/SpotlessConventionPlugin.kt) | root project | [Spotless](https://github.com/diffplug/spotless) running ktlint + [Compose rules](https://mrmans0n.github.io/compose-rules/) over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
+| `showcase.detekt` | [`DetektConventionPlugin`](./build-logic/convention/src/main/kotlin/DetektConventionPlugin.kt) | root project | [Detekt](https://detekt.dev) `detektCheck` / `detektApply` tasks over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
 
 - `:iosBridge` has no convention plugin. It's the only module that builds an iOS framework, so the framework and
   SKIE setup live in its own build script.
@@ -448,6 +450,35 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 Test setup (`kotlin-test` in `commonTest`, `withHostTest {}` on the KMP Android target) lives in
 `FeatureConventionPlugin`, so every feature module gets it.
+
+## Linters
+
+Linters run once from the root project over the whole repository (all modules and `build-logic`), so modules don't
+configure them:
+
+```bash
+./gradlew detektApply             # Apply Detekt formatting fixes
+./gradlew detektCheck             # Run Detekt Check
+./gradlew spotlessApply           # Apply spotless code formatting fixes
+./gradlew spotlessCheck           # Run spotless Check
+```
+
+- ktlint rules: [.editorconfig](./.editorconfig), plus [Compose rules](https://mrmans0n.github.io/compose-rules/).
+- Detekt rules: [detekt.yml](./detekt.yml), on top of the Detekt defaults. Reports: `build/reports/detekt/`.
+- Formatting is done by ktlint only. Detekt runs without its `detekt-formatting` (ktlint wrapper) plugin, so
+  `detektApply` fixes only Detekt's own auto-correctable rules.
+- Swift code isn't linted.
+
+## CI
+
+[GitHub Actions](./.github/workflows/check.yml) run on every pull request and push to `main`:
+
+| Job | Runner | Runs |
+|-----|--------|------|
+| Build Android App | Ubuntu | `./gradlew :androidApp:assembleDebug`, uploads the debug APK |
+| Build iOS App | macOS | `xcodebuild` simulator build of `iosApp` (its build phase builds the Kotlin framework) |
+| Detekt | Ubuntu | `./gradlew detektCheck`, uploads the report |
+| Spotless (ktlint) | Ubuntu | `./gradlew spotlessCheck` |
 
 ## Debugging FlowMVI
 

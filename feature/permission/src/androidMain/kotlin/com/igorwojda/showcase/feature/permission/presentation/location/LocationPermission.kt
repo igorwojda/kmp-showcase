@@ -23,40 +23,54 @@ fun Context.isLocationPermissionGranted(): Boolean =
  * Android reports "never asked", "dialog dismissed" and "permanently denied" the same way (not granted, no
  * rationale), so the checker remembers earlier answers in [SharedPreferences][android.content.SharedPreferences].
  */
-internal class LocationPermissionChecker(private val activity: Activity) {
-
+internal class LocationPermissionChecker(
+    private val activity: Activity,
+) {
     private val preferences = activity.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
     /** The status without asking the user, e.g. when the screen opens or the user returns from Settings. */
-    fun currentStatus(): LocationPermissionStatus = when {
-        activity.isLocationPermissionGranted() -> LocationPermissionStatus.Granted.also { record(it) }
-        isRevokedByPolicy() -> LocationPermissionStatus.Restricted
-        shouldShowRationale() -> LocationPermissionStatus.Denied
-        // No rationale after an earlier denial: the system won't show the dialog anymore.
-        preferences.getBoolean(KEY_WAS_DENIED, false) -> LocationPermissionStatus.PermanentlyDenied
-        else -> LocationPermissionStatus.NotDetermined
-    }
+    fun currentStatus(): LocationPermissionStatus =
+        when {
+            activity.isLocationPermissionGranted() -> LocationPermissionStatus.Granted.also { record(it) }
+
+            isRevokedByPolicy() -> LocationPermissionStatus.Restricted
+
+            shouldShowRationale() -> LocationPermissionStatus.Denied
+
+            // No rationale after an earlier denial: the system won't show the dialog anymore.
+            preferences.getBoolean(KEY_WAS_DENIED, false) -> LocationPermissionStatus.PermanentlyDenied
+
+            else -> LocationPermissionStatus.NotDetermined
+        }
 
     /** Read right before the request; [statusAfterRequest] compares it with the value after the answer. */
-    fun shouldShowRationale(): Boolean =
-        ActivityCompat.shouldShowRequestPermissionRationale(activity, LOCATION_PERMISSION)
+    fun shouldShowRationale(): Boolean = ActivityCompat.shouldShowRequestPermissionRationale(activity, LOCATION_PERMISSION)
 
     /** The status after the request answered [isGranted], [answerTime] after it was launched. */
     fun statusAfterRequest(
         isGranted: Boolean,
         rationaleBefore: Boolean,
         answerTime: Duration,
-    ): LocationPermissionStatus = when {
-        isGranted -> LocationPermissionStatus.Granted
-        isRevokedByPolicy() -> LocationPermissionStatus.Restricted
-        else -> resolveDeniedLocationPermission(
-            rationaleBefore = rationaleBefore,
-            rationaleAfter = shouldShowRationale(),
-            wasAnsweredWithoutDialog = answerTime < DIALOG_MIN_ANSWER_TIME,
-            wasDenied = preferences.getBoolean(KEY_WAS_DENIED, false),
-            wasDismissed = preferences.getBoolean(KEY_WAS_DISMISSED, false),
-        )
-    }.also { record(it) }
+    ): LocationPermissionStatus =
+        when {
+            isGranted -> {
+                LocationPermissionStatus.Granted
+            }
+
+            isRevokedByPolicy() -> {
+                LocationPermissionStatus.Restricted
+            }
+
+            else -> {
+                resolveDeniedLocationPermission(
+                    rationaleBefore = rationaleBefore,
+                    rationaleAfter = shouldShowRationale(),
+                    wasAnsweredWithoutDialog = answerTime < DIALOG_MIN_ANSWER_TIME,
+                    wasDenied = preferences.getBoolean(KEY_WAS_DENIED, false),
+                    wasDismissed = preferences.getBoolean(KEY_WAS_DISMISSED, false),
+                )
+            }
+        }.also { record(it) }
 
     fun appSettingsIntent(): Intent =
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", activity.packageName, null))
@@ -68,10 +82,13 @@ internal class LocationPermissionChecker(private val activity: Activity) {
         val editor = preferences.edit()
         when (status) {
             LocationPermissionStatus.Granted -> editor.clear()
+
             LocationPermissionStatus.Denied,
             LocationPermissionStatus.PermanentlyDenied,
             -> editor.putBoolean(KEY_WAS_DENIED, true)
+
             LocationPermissionStatus.NotDetermined -> editor.putBoolean(KEY_WAS_DISMISSED, true)
+
             LocationPermissionStatus.Restricted,
             LocationPermissionStatus.ServicesDisabled,
             -> Unit
@@ -108,9 +125,10 @@ internal fun resolveDeniedLocationPermission(
     wasAnsweredWithoutDialog: Boolean,
     wasDenied: Boolean,
     wasDismissed: Boolean,
-): LocationPermissionStatus = when {
-    rationaleAfter -> LocationPermissionStatus.Denied
-    rationaleBefore -> LocationPermissionStatus.PermanentlyDenied
-    wasAnsweredWithoutDialog || wasDenied || wasDismissed -> LocationPermissionStatus.PermanentlyDenied
-    else -> LocationPermissionStatus.NotDetermined
-}
+): LocationPermissionStatus =
+    when {
+        rationaleAfter -> LocationPermissionStatus.Denied
+        rationaleBefore -> LocationPermissionStatus.PermanentlyDenied
+        wasAnsweredWithoutDialog || wasDenied || wasDismissed -> LocationPermissionStatus.PermanentlyDenied
+        else -> LocationPermissionStatus.NotDetermined
+    }
