@@ -1,9 +1,5 @@
 package com.igorwojda.showcase.feature.permission.presentation.location
 
-import android.os.SystemClock
-import androidx.activity.compose.LocalActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,11 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -28,9 +19,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import org.koin.androidx.compose.koinViewModel
-import kotlin.time.Duration.Companion.milliseconds
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
@@ -39,44 +28,19 @@ fun LocationPermissionScreen(
     viewModel: LocationPermissionViewModel = koinViewModel(),
 ) {
     val store = viewModel.store
-    val activity = checkNotNull(LocalActivity.current) { "LocationPermissionScreen must be hosted in an Activity" }
-    val checker = remember(activity) { LocationPermissionChecker(activity) }
 
-    // Saved, so an answer that arrives after rotation or process death is still interpreted correctly.
-    // `elapsedRealtime` keeps counting across process death.
-    var rationaleBeforeRequest by rememberSaveable { mutableStateOf(false) }
-    var requestLaunchedAt by rememberSaveable { mutableLongStateOf(0L) }
-    // A second request while the dialog is open is answered "not granted" without asking; it isn't a denial.
-    var isRequestPending by remember { mutableStateOf(false) }
-
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        isRequestPending = false
-        val answerTime = (SystemClock.elapsedRealtime() - requestLaunchedAt).milliseconds
-        val status = checker.statusAfterRequest(isGranted, rationaleBeforeRequest, answerTime)
+    // Reports the first status, and every change, e.g. after the user allows it in Settings.
+    val requester = rememberLocationPermissionRequester { status ->
         store.intent(LocationPermissionIntent.StatusChanged(status))
     }
 
     // The lambda consumes MVIActions as they arrive; it only runs while the UI is visible.
     val state by store.subscribe { action ->
         when (action) {
-            LocationPermissionAction.LaunchPermissionRequest -> if (!isRequestPending) {
-                isRequestPending = true
-                rationaleBeforeRequest = checker.shouldShowRationale()
-                requestLaunchedAt = SystemClock.elapsedRealtime()
-                permissionLauncher.launch(LOCATION_PERMISSION)
-            }
-
-            LocationPermissionAction.LaunchSettings -> activity.startActivity(checker.appSettingsIntent())
+            LocationPermissionAction.LaunchPermissionRequest -> requester.request()
+            LocationPermissionAction.LaunchSettings -> requester.openSettings()
             LocationPermissionAction.PermissionGranted -> onPermissionGranted()
         }
-    }
-
-    // Reports the first status, and re-checks when the user comes back, e.g. after granting it in Settings.
-    LifecycleResumeEffect(checker) {
-        if (!isRequestPending) {
-            store.intent(LocationPermissionIntent.StatusChanged(checker.currentStatus()))
-        }
-        onPauseOrDispose {}
     }
 
     Scaffold { contentPadding ->

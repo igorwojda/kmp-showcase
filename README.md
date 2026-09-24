@@ -370,7 +370,11 @@ the answer. The forecast is shown only with the permission (see [Navigation](#na
 is requested (`ACCESS_COARSE_LOCATION`, iOS "when in use"); that's enough for weather.
 
 The OS permission APIs are UI APIs (Android Activity Result API, iOS `CLLocationManager`), so each platform's screen
-talks to them. The shared
+talks to them through a platform helper:
+[`LocationPermissionRequester`](./feature/permission/src/androidMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/LocationPermissionRequester.kt)
+on Android,
+[`LocationAuthorization`](./feature/permission/src/iosMain/swift/presentation/location/LocationAuthorization.swift)
+on iOS. The shared
 [`LocationPermissionViewModel`](./feature/permission/src/commonMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/LocationPermissionViewModel.kt)
 gets every status as `LocationPermissionIntent.StatusChanged`, keeps the screen state and emits the actions
 (show the dialog, open Settings, permission granted). No permission library is used.
@@ -389,11 +393,12 @@ gets every status as `LocationPermissionIntent.StatusChanged`, keeps the screen 
 
 - **Android can't tell "never asked", "dismissed" and "permanently denied" apart** (all are "not granted, no
   rationale"), so
-  [`LocationPermissionChecker`](./feature/permission/src/androidMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/LocationPermission.android.kt)
+  [`LocationPermissionChecker`](./feature/permission/src/androidMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/LocationPermission.kt)
   stores earlier denials and dismissals in `SharedPreferences`, and measures how fast the request is answered.
   The decision is the pure `resolveDeniedLocationPermission`, covered by host tests.
-- **Rotation and process death while the dialog is open.** The rationale flag and launch time are in
-  `rememberSaveable`, and the Activity Result API redelivers the answer. A second request while the dialog is open
+- **Rotation and process death while the dialog is open.** `LocationPermissionRequester` keeps the rationale flag
+  and launch time in `rememberSaveable` (not in the shared ViewModel: only Android needs them), and the Activity
+  Result API redelivers the answer. A second request while the dialog is open
   is ignored, because Android would answer it "not granted" without asking.
 
 **Known limitations:**
