@@ -8,8 +8,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 /**
- * Android application with Jetpack Compose UI: SDK versions, JVM target, release build type and all app
- * dependencies (feature modules, Compose, Navigation 3). The app module declares only its identity
+ * Android application with Jetpack Compose UI: SDK versions, JVM target, release build type, Android Lint and all
+ * app dependencies (feature modules, Compose, Navigation 3). The app module declares only its identity
  * (namespace, application id, version).
  */
 class AndroidApplicationConventionPlugin : Plugin<Project> {
@@ -51,6 +51,13 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 }
                 buildFeatures {
                     compose = true
+                }
+                lint {
+                    warningsAsErrors = true
+                    lintConfig = rootProject.file("lint.xml")
+                    // Covers Android library dependencies. KMP library modules (:feature:*) are not covered: AGP's
+                    // Kotlin Multiplatform library plugin does not create lint tasks for them yet.
+                    checkDependencies = true
                 }
             }
 
