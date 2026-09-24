@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  *
  * The Android namespace is derived from the module path, e.g. `:feature:base` → `com.igorwojda.showcase.feature.base`.
  */
-class KmpBaseFeatureConventionPlugin : Plugin<Project> {
+class BaseFeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 

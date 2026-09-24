@@ -9,15 +9,15 @@ import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
- * Feature module: a [KmpBaseFeatureConventionPlugin] library that depends on `:feature:base`
+ * Feature module: a [BaseFeatureConventionPlugin] library that depends on `:feature:base`
  * and holds its Android Jetpack Compose UI in `androidMain`. The iOS framework is built by `:iosBridge`.
  */
-class KmpFeatureConventionPlugin : Plugin<Project> {
+class FeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
         fun lib(alias: String) = libs.findLibrary(alias).get()
 
-        pluginManager.apply(KmpBaseFeatureConventionPlugin::class.java)
+        pluginManager.apply(BaseFeatureConventionPlugin::class.java)
         pluginManager.apply(libs.findPlugin("composeCompiler").get().get().pluginId)
 
         extensions.configure<KotlinMultiplatformExtension> {

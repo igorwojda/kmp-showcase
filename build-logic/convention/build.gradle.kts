@@ -14,13 +14,13 @@ gradlePlugin {
             id = libs.plugins.showcase.android.application.get().pluginId
             implementationClass = "AndroidApplicationConventionPlugin"
         }
-        register("kmpBaseFeature") {
-            id = libs.plugins.showcase.kmp.basefeature.get().pluginId
-            implementationClass = "KmpBaseFeatureConventionPlugin"
+        register("baseFeature") {
+            id = libs.plugins.showcase.basefeature.get().pluginId
+            implementationClass = "BaseFeatureConventionPlugin"
         }
-        register("kmpFeature") {
-            id = libs.plugins.showcase.kmp.feature.get().pluginId
-            implementationClass = "KmpFeatureConventionPlugin"
+        register("feature") {
+            id = libs.plugins.showcase.feature.get().pluginId
+            implementationClass = "FeatureConventionPlugin"
         }
     }
 }

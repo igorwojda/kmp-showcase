@@ -81,5 +81,5 @@ skie = { id = "co.touchlab.skie", version.ref = "skie" }
 
 # Convention plugins (build-logic)
 showcase-android-application = { id = "showcase.android.application" }
-showcase-kmp-basefeature = { id = "showcase.kmp.basefeature" }
-showcase-kmp-feature = { id = "showcase.kmp.feature" }
+showcase-basefeature = { id = "showcase.basefeature" }
+showcase-feature = { id = "showcase.feature" }

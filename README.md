@@ -140,14 +140,14 @@ module's build script only declares what's specific to it:
 | Plugin | Class | Used by | Adds |
 |--------|-------|---------|------|
 | `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, all app dependencies (`:feature:forecast`, `:feature:permission`, Jetpack Compose, lifecycle, Navigation 3) |
-| `showcase.kmp.basefeature` | [`KmpBaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpBaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
-| `showcase.kmp.feature` | [`KmpFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/KmpFeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain` |
+| `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
+| `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
 
 - `:iosBridge` has no convention plugin. It's the only module that builds an iOS framework, so the framework and
   SKIE setup live in its own build script.
 - The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
 - Versions come from the shared [version catalog](./gradle/libs.versions.toml), which `build-logic` reads too.
-- A new feature module needs only `alias(libs.plugins.showcase.kmp.feature)` plus its own dependencies.
+- A new feature module needs only `alias(libs.plugins.showcase.feature)` plus its own dependencies.
 
 ### Feature UI Lives in the Feature Module
 
@@ -164,7 +164,7 @@ feature/forecast/src/
 - **One package for all view code.** Screens, components and UI helpers go under `presentation`
   (`presentation/<feature>`, shared helpers in `presentation/common`), on both platforms. There is no `ui` package.
 - **Android** is a normal KMP `androidMain` source set. The Compose compiler and Compose dependencies come from the
-  `showcase.kmp.feature` [convention plugin](#convention-plugins), so feature build scripts don't repeat them.
+  `showcase.feature` [convention plugin](#convention-plugins), so feature build scripts don't repeat them.
 - **iOS** Swift can't be compiled by Gradle, so the files are compiled by the Xcode app target through one
   synchronized folder per module in `iosApp.xcodeproj` (`forecast` → `feature/forecast/src/iosMain/swift`,
   `permission` → `feature/permission/src/iosMain/swift`). New files there are picked up automatically. All folders
@@ -442,7 +442,7 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 - Android host tests: `./gradlew :feature:permission:testAndroidHostTest`
 
 Test setup (`kotlin-test` in `commonTest`, `withHostTest {}` on the KMP Android target) lives in
-`KmpFeatureConventionPlugin`, so every feature module gets it.
+`FeatureConventionPlugin`, so every feature module gets it.
 
 ## Debugging FlowMVI
 

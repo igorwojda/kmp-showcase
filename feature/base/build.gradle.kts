@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.showcase.kmp.basefeature)
+    alias(libs.plugins.showcase.basefeature)
 }
 
 kotlin {
