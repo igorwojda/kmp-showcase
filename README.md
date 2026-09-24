@@ -439,8 +439,10 @@ Open project in [Android Studio](https://developer.android.com/studio), select p
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 - iOS tests: `./gradlew :feature:forecast:iosSimulatorArm64Test`
-- Android host tests: `./gradlew :feature:permission:testAndroidHostTest`. Enabled only in `:feature:permission`
-  (`withHostTest {}` on the KMP Android target); other modules need the same opt-in first.
+- Android host tests: `./gradlew :feature:permission:testAndroidHostTest`
+
+Test setup (`kotlin-test` in `commonTest`, `withHostTest {}` on the KMP Android target) lives in
+`KmpFeatureConventionPlugin`, so every feature module gets it.
 
 ## Debugging FlowMVI
 

@@ -1,6 +1,8 @@
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.getByType
@@ -19,8 +21,17 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
         pluginManager.apply(libs.findPlugin("composeCompiler").get().get().pluginId)
 
         extensions.configure<KotlinMultiplatformExtension> {
+            (this as ExtensionAware).extensions.configure<KotlinMultiplatformAndroidLibraryTarget> {
+                // Android host (JVM) unit tests
+                withHostTest {}
+            }
+
             sourceSets.commonMain.dependencies {
                 api(project(":feature:base"))
+            }
+            // Shared by all test source sets (androidHostTest, iosTest)
+            sourceSets.commonTest.dependencies {
+                implementation(lib("kotlin-test"))
             }
             sourceSets.androidMain.dependencies {
                 // Jetpack Compose UI (Android screens)
