@@ -24,7 +24,7 @@ import kotlin.time.Instant
  * the first request (e.g. DailyForecastScreen) reuse the downloaded forecast instead of hitting the
  * network again.
  */
-class ForecastRepository(
+internal class ForecastRepository(
     private val httpClient: HttpClient,
 ) {
     private val cacheMutex = Mutex()

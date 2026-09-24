@@ -21,12 +21,13 @@ kotlin {
             api(libs.koin.core)
             api(libs.koin.core.viewmodel)
 
-            // Network
-            api(libs.ktor.client.core)
-            api(libs.ktor.client.content.negotiation)
+            // Network. Kept as implementation so the Ktor types stay out of the Obj-C framework header
+            // (:iosBridge exports this module); feature modules that call the API declare Ktor themselves.
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
             // Type-safe requests: @Resource classes become URL path + query parameters
-            api(libs.ktor.client.resources)
-            api(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.resources)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
         androidMain.dependencies {
             // Provides the Android engine for Ktor
