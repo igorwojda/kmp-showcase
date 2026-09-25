@@ -18,6 +18,7 @@ module, the UI is native on each platform.
     - [Convention Plugins](#convention-plugins)
     - [Type Safe Project Accessors](#type-safe-project-accessors)
     - [Unified Version Configuration](#unified-version-configuration)
+      - [Java/JVM Version Configuration](#javajvm-version-configuration)
       - [Version Catalog Access in `build-logic`](#version-catalog-access-in-build-logic)
   - [Design Decisions](#design-decisions)
     - [UI State Management via Flow MVI](#ui-state-management-via-flow-mvi)
@@ -359,6 +360,27 @@ implementation(projects.feature.forecast)
 All dependency and Gradle plugin versions are defined in the TOML version catalog file
 ([libs.versions.toml](gradle/libs.versions.toml)). This includes the Android SDK levels (`android-compileSdk`,
 `android-minSdk`, `android-targetSdk`), which the convention plugins read, so every module targets the same SDKs.
+
+#### Java/JVM Version Configuration
+
+The Java/JVM version is defined once, as the `java` entry in [libs.versions.toml](gradle/libs.versions.toml). The
+convention plugins read it through `javaVersion` / `jvmTarget` helpers in
+[VersionCatalogExt.kt](build-logic/convention/src/main/kotlin/VersionCatalogExt.kt), so Java and Kotlin in every
+module (Android app and KMP libraries) always target the same bytecode version:
+
+```kotlin
+compileOptions {
+    sourceCompatibility = libs.javaVersion
+    targetCompatibility = libs.javaVersion
+}
+
+compilerOptions {
+    jvmTarget.set(libs.jvmTarget)
+}
+```
+
+This is the bytecode target only. The JDK that runs Gradle is set separately by the Gradle daemon JVM criteria
+([gradle-daemon-jvm.properties](gradle/gradle-daemon-jvm.properties)).
 
 #### Version Catalog Access in `build-logic`
 

@@ -3,6 +3,8 @@ agp = "9.4.1"
 android-compileSdk = "37"
 android-minSdk = "31"
 android-targetSdk = "37"
+# Java/JVM bytecode target for every module (Java compileOptions and Kotlin jvmTarget), read by the convention plugins
+java = "17"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.8.0"
 androidx-composeBom = "2026.09.00"
