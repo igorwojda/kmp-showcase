@@ -14,8 +14,9 @@ struct WeeklyForecastScreen: View {
                 switch onEnum(of: state) {
                 case .content(let content):
                     WeeklyForecastContent(forecast: content.forecast)
+                        .refreshable { await refresh() }
                 case .error(let error):
-                    ErrorContent(message: error.message, onRetry: reload)
+                    ErrorContent(message: error.message, onRetry: retry)
                 case .loading:
                     ProgressView()
                 }
@@ -24,11 +25,6 @@ struct WeeklyForecastScreen: View {
             .navigationTitle("Weather")
             .navigationDestination(for: LocalDate.self) { date in
                 DailyForecastScreen(date: date)
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Reload", action: reload)
-                }
             }
         }
         .overlay(alignment: .bottom) {
@@ -54,8 +50,22 @@ struct WeeklyForecastScreen: View {
         }
     }
 
-    private func reload() {
-        viewModel.onIntent(intent: WeeklyForecastIntentReload.shared)
+    private func retry() {
+        viewModel.onIntent(intent: WeeklyForecastIntentRetry.shared)
+    }
+
+    /// `.refreshable` shows its spinner until this returns, so wait for the store to start and finish the refresh.
+    private func refresh() async {
+        viewModel.onIntent(intent: WeeklyForecastIntentRefresh.shared)
+        var started = false
+        for await state in viewModel.states {
+            guard case .content(let content) = onEnum(of: state) else { return }
+            if content.isRefreshing {
+                started = true
+            } else if started {
+                return
+            }
+        }
     }
 }
 

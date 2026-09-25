@@ -29,7 +29,7 @@ A weather app built with KMP that displays weather for current week and each day
 local caching, navigation, and state management.
 
 **Features:**
-- **Weekly Forecast** - display weekly weather forecast with daily summary and temperature range
+- **Weekly Forecast** - display weekly weather forecast with daily summary and temperature range; pull to refresh
 - **Daily Forecast** - display detailed daily weather forecast with hourly temperature and precipitation
 
 <p>
@@ -329,8 +329,8 @@ they don't depend on each other.
 
 [`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/repository/ForecastRepositoryImpl.kt)
 keeps the latest forecast in an in-memory cache (guarded by a `Mutex`). The first request hits the network; `DailyForecastViewModel` then reads the day from the cache (via `GetDailyWeatherUseCase`).
-`WeeklyForecastIntent.Reload` bypasses the cache (`forceRefresh = true`) and replaces the cached
-value. The cached forecast expires after 15 minutes (wall clock) and is re-downloaded on the next request; the cache itself
+Pull-to-refresh (`WeeklyForecastIntent.Refresh`) bypasses the cache (`forceRefresh = true`) and replaces the cached
+value; if it fails, the current forecast stays on screen and a toast shows the error. The cached forecast expires after 15 minutes (wall clock) and is re-downloaded on the next request; the cache itself
 lives as long as the process.
 
 ## Naming Conventions

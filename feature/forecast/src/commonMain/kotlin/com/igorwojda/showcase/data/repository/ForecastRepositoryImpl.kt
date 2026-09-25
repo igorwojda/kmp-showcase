@@ -44,12 +44,7 @@ internal class ForecastRepositoryImpl(
     override suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? = getForecast().daily.firstOrNull { it.date == date }
 
     private suspend fun fetchForecast(): ForecastModel {
-        // Warsaw, Poland location is hardcoded to simplify sample app.
-        // In a real app, the user would be able to select a location or use the device's location.
-        val warsawLatitude = 52.2297
-        val warsawLongitude = 21.0122
-
-        val request = ForecastRequestModel(warsawLatitude, warsawLongitude, FORECAST_DAYS)
+        val request = ForecastRequestModel(WARSAW_LATITUDE, WARSAW_LONGITUDE, FORECAST_DAYS)
 
         return httpClient
             .get(request) {
@@ -69,6 +64,11 @@ internal class ForecastRepositoryImpl(
     private companion object {
         const val HOST = "api.open-meteo.com"
         const val FORECAST_DAYS = 7
+
+        // Warsaw, Poland location is hardcoded to simplify sample app.
+        // In a real app, the user would be able to select a location or use the device's location.
+        const val WARSAW_LATITUDE = 52.2297
+        const val WARSAW_LONGITUDE = 21.0122
         val CACHE_TTL = 15.minutes
     }
 }
