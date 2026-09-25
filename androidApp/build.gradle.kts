@@ -12,3 +12,8 @@ android {
         versionName = "1.0"
     }
 }
+
+dependencies {
+    // Features shipped in the app
+    implementation(projects.feature.forecast)
+}

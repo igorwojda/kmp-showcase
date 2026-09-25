@@ -14,8 +14,8 @@ kotlin {
             binaryOption("bundleId", "com.igorwojda.showcase.iosBridge")
             // Swift uses the features' ViewModels, StoreViewModel (their base class) and the LocalDate / LocalDateTime
             // of the domain models, so these types must be visible to Swift.
-            export(dependencies.project(":feature:base"))
-            export(dependencies.project(":feature:forecast"))
+            export(projects.feature.base)
+            export(projects.feature.forecast)
             export(libs.kotlinx.datetime)
         }
     }
@@ -23,8 +23,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // Only api dependencies can be exported
-            api(project(":feature:base"))
-            api(project(":feature:forecast"))
+            api(projects.feature.base)
+            api(projects.feature.forecast)
             api(libs.kotlinx.datetime)
         }
     }

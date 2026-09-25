@@ -1,5 +1,8 @@
 rootProject.name = "kmp-showcase"
 
+// Type-safe project accessors, e.g. projects.feature.forecast instead of project(":feature:forecast")
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     includeBuild("build-logic")
     repositories {
