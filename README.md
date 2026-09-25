@@ -4,6 +4,30 @@ A [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev
 demonstrating how to share code for Android and iOS. The data, domain and presentation logic live in a common Kotlin 
 module, the UI is native on each platform.
 
+- [💎 KMP Showcase](#-kmp-showcase)
+  - [Application Scope](#application-scope)
+  - [Tech-Stack](#tech-stack)
+  - [Architecture](#architecture)
+  - [Design Decisions](#design-decisions)
+    - [Consuming Common ViewModels](#consuming-common-viewmodels)
+    - [Shared Store Setup](#shared-store-setup)
+    - [Convention Plugins](#convention-plugins)
+    - [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)
+    - [Navigation](#navigation)
+  - [Dependency Injection](#dependency-injection)
+    - [Koin Modules List](#koin-modules-list)
+    - [Android](#android)
+    - [iOS](#ios)
+    - [No Koin Compiler Plugin (Yet)](#no-koin-compiler-plugin-yet)
+  - [Caching](#caching)
+  - [Naming Conventions](#naming-conventions)
+    - [Screens vs Components](#screens-vs-components)
+  - [Running the apps](#running-the-apps)
+  - [Running tests](#running-tests)
+  - [Linters](#linters)
+  - [CI](#ci)
+  - [Debugging FlowMVI](#debugging-flowmvi)
+
 ## Application Scope
 
 A weather app built with KMP that displays weather for current week and each day sourced from the 
@@ -163,14 +187,14 @@ flowchart LR
 
 * [/feature/base](./feature/base/src) holds code shared by all feature modules, e.g. `StoreViewModel`.
 
+## Getting Started
+
+1. Clone the repository `git clone https://github.com/igorwojda/kmp-showcase.git`
+2. Open project in Android Studio `File -> Open -> Select cloned directory`
+
+```
+
 ## Design Decisions
-
-### ViewModels Use Use Cases
-
-ViewModels never touch repositories directly; they call use cases from the
-[`domain/usecase`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/domain/usecase) package
-(`GetForecastUseCase`, `GetDailyWeatherUseCase`). Each use case exposes a single `operator fun invoke` and is
-registered with `factoryOf` in the feature's Koin module.
 
 ### Consuming Common ViewModels
 
@@ -443,12 +467,6 @@ but in 1.2.1 definitions from another Gradle module are invisible on Kotlin/Nati
 missing-dependency error (`HttpClient` from `:feature:base`,
 [koin-compiler-plugin#113](https://github.com/InsertKoinIO/koin-compiler-plugin/issues/113)).
 
-## Location
-
-The forecast is always for Warsaw. The coordinates are hardcoded in
-[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/repository/ForecastRepositoryImpl.kt),
-so the app needs no location permission.
-
 ## Caching
 
 [`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/repository/ForecastRepositoryImpl.kt)
@@ -477,19 +495,6 @@ On the iOS side this deviates from Apple's idiom, where every view type is suffi
 it keeps vocabulary aligned across the two platforms, and makes "is this navigable?"
 answerable from the type name instead of only from ViewModel ownership and folder
 placement. Apply it to every destination without exception.
-
-## Running the apps
-
-Open project in [Android Studio](https://developer.android.com/studio), select platform and run the applicaiton.
-
-## Running tests
-
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
-
-- iOS tests: `./gradlew :feature:forecast:iosSimulatorArm64Test`
-
-Test setup (`kotlin-test` in `commonTest`, `withHostTest {}` on the KMP Android target) lives in
-`FeatureConventionPlugin`, so every feature module gets it.
 
 ## Linters
 
