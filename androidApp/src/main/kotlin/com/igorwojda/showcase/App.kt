@@ -8,8 +8,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.igorwojda.showcase.presentation.dailyforecast.DailyForecastScreen
-import com.igorwojda.showcase.presentation.weeklyforecast.WeeklyForecastScreen
+import com.igorwojda.showcase.feature.forecast.presentation.dailyforecast.DailyForecastScreen
+import com.igorwojda.showcase.feature.forecast.presentation.weeklyforecast.WeeklyForecastScreen
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 

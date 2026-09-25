@@ -187,7 +187,7 @@ flowchart LR
 
 * [/feature/forecast](./feature/forecast/src) is the forecast feature shared between app targets in the project.
   The most important subfolder is [commonMain](./feature/forecast/src/commonMain/kotlin).
-  [androidMain](./feature/forecast/src/androidMain/kotlin) holds the Jetpack Compose UI in the [presentation](./feature/forecast/src/androidMain/kotlin/com/igorwojda/showcase/presentation) package (`WeeklyForecastScreen`, `DailyForecastScreen`).
+  [androidMain](./feature/forecast/src/androidMain/kotlin) holds the Jetpack Compose UI in the [presentation](./feature/forecast/src/androidMain/kotlin/com/igorwojda/showcase/feature/forecast/presentation) package (`WeeklyForecastScreen`, `DailyForecastScreen`).
   [iosMain/swift](./feature/forecast/src/iosMain/swift) holds the SwiftUI UI in the same `presentation` layout
   (see [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)).
 
@@ -200,7 +200,7 @@ Architecture layers. The shared layers live in `commonMain`; only the view code 
 
 ```
 feature/forecast/src/
-├── commonMain/kotlin/com/igorwojda/showcase/
+├── commonMain/kotlin/com/igorwojda/showcase/feature/forecast/
 │   ├── presentation/   ViewModels, State, Intent, Action (shared)
 │   ├── domain/
 │   │   ├── model/      domain models
@@ -333,6 +333,7 @@ module's build script only declares what's specific to it:
 - `:iosBridge` has no convention plugin. It's the only module that builds an iOS framework, so the framework and
   SKIE setup live in its own build script.
 - The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
+  It is also the module's Kotlin package root, so packages of different features never collide.
 - A new feature module needs only `alias(libs.plugins.showcase.feature)` plus its own dependencies.
 
 ### Type Safe Project Accessors
@@ -525,7 +526,7 @@ UI layer decides where to go.
 
 [Koin](https://insert-koin.io) is used for dependency injection. All definitions live in shared code, one Koin module per Gradle module
 ([`baseModule`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/di/BaseModule.kt),
-[`featureForecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/FeatureForecastModule.kt)),
+[`featureForecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/feature/forecast/di/FeatureForecastModule.kt)),
 so both platforms resolve the same instances.
 
 Only the composition roots start Koin, because only they know which features the app ships. They pass the features'
@@ -536,7 +537,7 @@ they don't depend on each other.
 
 ## Caching
 
-[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/repository/ForecastRepositoryImpl.kt)
+[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/feature/forecast/data/repository/ForecastRepositoryImpl.kt)
 keeps the latest forecast in an in-memory cache (guarded by a `Mutex`). The first request hits the network; `DailyForecastViewModel` then reads the day from the cache (via `GetDailyWeatherUseCase`).
 Pull-to-refresh (`WeeklyForecastIntent.Refresh`) bypasses the cache (`forceRefresh = true`) and replaces the cached
 value; if it fails, the current forecast stays on screen and a toast shows the error. The cached forecast expires after 15 minutes (wall clock) and is re-downloaded on the next request; the cache itself
