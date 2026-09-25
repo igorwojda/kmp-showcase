@@ -1,7 +1,7 @@
 package com.igorwojda.showcase.presentation.dailyforecast
 
-import com.igorwojda.showcase.data.ForecastRepository
 import com.igorwojda.showcase.domain.model.DailyWeatherModel
+import com.igorwojda.showcase.domain.repository.ForecastRepository
 import com.igorwojda.showcase.feature.base.presentation.flowmvi.StoreViewModel
 import com.igorwojda.showcase.feature.base.presentation.flowmvi.configuredStore
 import kotlinx.datetime.LocalDate

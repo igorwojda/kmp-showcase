@@ -6,6 +6,7 @@ import com.igorwojda.showcase.domain.model.CurrentWeatherModel
 import com.igorwojda.showcase.domain.model.DailyWeatherModel
 import com.igorwojda.showcase.domain.model.ForecastModel
 import com.igorwojda.showcase.domain.model.HourlyTemperatureModel
+import com.igorwojda.showcase.domain.repository.ForecastRepository
 import com.igorwojda.showcase.domain.repository.LocationRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -25,20 +26,15 @@ import kotlin.time.Instant
  * (e.g. DailyForecastScreen) reuse the downloaded forecast instead of reading the location and hitting the
  * network again. The location is read only when a forecast is downloaded.
  */
-internal class ForecastRepository(
+internal class ForecastRepositoryImpl(
     private val httpClient: HttpClient,
     private val locationRepository: LocationRepository,
-) {
+) : ForecastRepository {
     private val cacheMutex = Mutex()
     private var cache: CachedForecast? = null
 
-    /**
-     * Current weather plus a [FORECAST_DAYS]-day daily forecast for the device location.
-     *
-     * Returns the cached forecast when it is younger than [CACHE_TTL], unless [forceRefresh] is set.
-     * Throws on location / network / parsing failure.
-     */
-    suspend fun getForecast(forceRefresh: Boolean = false): ForecastModel =
+    /** A [FORECAST_DAYS]-day forecast; the cached one while it is younger than [CACHE_TTL]. */
+    override suspend fun getForecast(forceRefresh: Boolean): ForecastModel =
         // The lock also stops concurrent callers from downloading the same forecast twice.
         cacheMutex.withLock {
             val now = Clock.System.now()
@@ -48,12 +44,7 @@ internal class ForecastRepository(
                 ?: fetchForecast().also { cache = CachedForecast(it, now) }
         }
 
-    /**
-     * Weather for a single [date] of the (cached) forecast, or `null` when the forecast doesn't contain [date].
-     *
-     * Throws on location / network / parsing failure.
-     */
-    suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? = getForecast().daily.firstOrNull { it.date == date }
+    override suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? = getForecast().daily.firstOrNull { it.date == date }
 
     private suspend fun fetchForecast(): ForecastModel {
         val location = locationRepository.getCurrentLocation()

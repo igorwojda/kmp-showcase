@@ -3,6 +3,10 @@
 
 # Project Conventions
 
+## Koin
+ -  Use this syntax to bind interface to concrete type`singleOf(::ForecastRepositoryImpl) bind 
+ ForecastRepository::class`
+
 ## Build scripts
 
 - Make sure build scripts in modules are aligned.
@@ -11,12 +15,13 @@
 ## Architecture
 
 - Clean Architecture is used as a base for the project. The project is divided into three layers:
-  - `Domain` - Contains business logic and entities.
-  - `Data`- Responsible for data management, including repositories and data sources.
-  - `Presentation` - Handles UI logic and user interactions.
+  - `Domain`
+  - `Data`
+  - `Presentation` 
 
 ## Data Layer
 
+- Responsible for data management, including repositories and data sources.
 - represented by the `data` package
 
 ### Models
@@ -24,6 +29,7 @@
 - Stores data models in `model` package
 
 ### Repositories
+
 - Stores repository implementations in `repository` package
 - Class implementing the `Repository` interface should have `Impl` suffix. e.g. `ForecastRepositoryImpl`
 
@@ -33,7 +39,8 @@
   (e.g. `ForecastRequestModel`, `ForecastResponseModel`).
 
 ## Domain Layer
-
+- 
+- Contains business logic and domain data models.
 - represented by the `domain` package
 
 ### Models
@@ -52,6 +59,7 @@
 
 ## Presentation Layer
 
+- Handles UI logic and user interactions
 - represented by the `presentation` package
 
 ### ViewModel

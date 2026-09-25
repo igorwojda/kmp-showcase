@@ -1,7 +1,7 @@
 package com.igorwojda.showcase.presentation.weeklyforecast
 
-import com.igorwojda.showcase.data.ForecastRepository
 import com.igorwojda.showcase.domain.model.ForecastModel
+import com.igorwojda.showcase.domain.repository.ForecastRepository
 import com.igorwojda.showcase.feature.base.presentation.flowmvi.StoreViewModel
 import com.igorwojda.showcase.feature.base.presentation.flowmvi.configuredStore
 import pro.respawn.flowmvi.api.MVIAction

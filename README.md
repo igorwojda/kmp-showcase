@@ -411,7 +411,7 @@ gets every status as `LocationPermissionIntent.StatusChanged`, keeps the screen 
 ### Device Location
 
 The forecast is downloaded for the device location.
-[`ForecastRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepository.kt) reads it
+[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepositoryImpl.kt) reads it
 from [`LocationRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/domain/repository/LocationRepository.kt), a
 shared interface implemented by `LocationRepositoryImpl` with each platform's API:
 
@@ -428,7 +428,7 @@ shared interface implemented by `LocationRepositoryImpl` with each platform's AP
 
 ## Caching
 
-[`ForecastRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepository.kt)
+[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepositoryImpl.kt)
 keeps the latest forecast in an in-memory cache (guarded by a `Mutex`). The first request reads the
 [device location](#device-location) and hits the network; `DailyForecastViewModel` then reads the day from the cache.
 `WeeklyForecastIntent.Reload` bypasses the cache (`forceRefresh = true`), reads the location again and replaces the cached
