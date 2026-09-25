@@ -192,8 +192,6 @@ flowchart LR
 1. Clone the repository `git clone https://github.com/igorwojda/kmp-showcase.git`
 2. Open project in Android Studio `File -> Open -> Select cloned directory`
 
-```
-
 ## Design Decisions
 
 ### Consuming Common ViewModels
