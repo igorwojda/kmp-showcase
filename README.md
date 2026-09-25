@@ -251,21 +251,6 @@ a non-debuggable store, so both must change together.
 Shared Gradle setup for the app and KMP modules lives in [build-logic](./build-logic/convention/src/main/kotlin), so each
 module's build script only declares what's specific to it:
 
-| Plugin | Class | Used by | Adds |
-|--------|-------|---------|------|
-| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, Android Lint (`showcase.android.lint`), all app dependencies (`:feature:forecast`, Jetpack Compose, lifecycle, Navigation 3) |
-| `showcase.android.lint` | [`AndroidLintConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidLintConventionPlugin.kt) | `:androidApp` (applied by `showcase.android.application`) | Android Lint with warnings as errors, plus `lintCheck` / `lintApply` aliases for AGP's `lint` / `lintFix` (see [Linters](#linters)) |
-| `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
-| `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
-| `showcase.spotless` | [`SpotlessConventionPlugin`](./build-logic/convention/src/main/kotlin/SpotlessConventionPlugin.kt) | root project | [Spotless](https://github.com/diffplug/spotless) running ktlint + [Compose rules](https://mrmans0n.github.io/compose-rules/) over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
-| `showcase.detekt` | [`DetektConventionPlugin`](./build-logic/convention/src/main/kotlin/DetektConventionPlugin.kt) | root project | [Detekt](https://detekt.dev) `detektCheck` / `detektApply` tasks over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
-
-- `:iosBridge` has no convention plugin. It's the only module that builds an iOS framework, so the framework and
-  SKIE setup live in its own build script.
-- The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
-- Versions come from the shared [version catalog](./gradle/libs.versions.toml), which `build-logic` reads too.
-- A new feature module needs only `alias(libs.plugins.showcase.feature)` plus its own dependencies.
-
 ### Feature UI Lives in the Feature Module
 
 A feature's native UI sits next to its shared logic, in the feature module, not in the app modules. The app
