@@ -21,18 +21,97 @@ local caching, navigation, and state management.
 
 ## Tech-Stack
 
-Built with modern Android development tools and libraries, prioritizing, project structure stability,\
-and production-readiness.
+Built with modern Kotlin Multiplatform tools and libraries, prioritizing code sharing, native UI on each platform,
+project structure stability and production-readiness.
 
 **Core Technologies:**
+- **[Kotlin](https://kotlinlang.org/)** - Modern, expressive programming language
+  - **[Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)** - Share data, domain and presentation logic between Android and iOS
+  - **[Coroutines](https://kotlinlang.org/docs/coroutines-overview.html)** - Asynchronous programming
+  - **[Flow](https://kotlinlang.org/docs/flow.html)** - Reactive data streams
+  - **[Serialization](https://kotlinlang.org/docs/serialization.html)** - JSON parsing
+  - **[kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime)** - Multiplatform date and time
 
-- [SKIE](https://skie.touchlab.co) - Kotlin native compiler plugin that that improves Kotlin-Swift interoperability 
-(`Flow → AsyncSequence/Observing`, `sealed class → exhaustive Swift enum (onEnum(of:))`, `suspend → async`, default arguments, etc.)
-- [KMP-ObservableViewModel](https://github.com/rickclephas/KMP-ObservableViewModel) - share Kotlin ViewModels 
-  between Android and iOS while using native UI on each platform. Its main job is making Kotlin state changes 
-  observable by SwiftUI and clear `viewModelScope` when the view goes away.
-- [Ktor Resources](https://ktor.io/docs/client-resources.html) - type-safe HTTP requests. A `@Resource` request class
-  (e.g. `ForecastRequestModel`) is serialized into the URL path and query parameters, so no manual `append(...)`.
+**Kotlin-Swift Interop:**
+- **[SKIE](https://skie.touchlab.co)** - Kotlin Native compiler plugin that improves Kotlin-Swift interoperability
+  (`Flow` → `AsyncSequence` / `Observing`, `sealed class` → exhaustive Swift enum (`onEnum(of:)`), `suspend` → `async`,
+  default arguments, etc.)
+- **[KMP-ObservableViewModel](https://github.com/rickclephas/KMP-ObservableViewModel)** - Share Kotlin ViewModels
+  between Android and iOS. Makes Kotlin state changes observable by SwiftUI and clears `viewModelScope` when the view
+  goes away
+
+**Presentation:**
+- **[FlowMVI](https://github.com/respawn-llc/FlowMVI)** - MVI framework (state, intents, actions, plugins)
+- **[AndroidX ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)** - Multiplatform
+  lifecycle-aware ViewModel
+
+**Android UI:**
+- **[Jetpack Compose](https://developer.android.com/jetpack/compose)** - Declarative UI framework
+- **[Material Design 3](https://m3.material.io/)** - Design system
+- **[Navigation 3](https://developer.android.com/guide/navigation/navigation-3)** - Back stack based navigation with
+  ViewModels scoped to back stack entries
+
+**iOS UI:**
+- **[SwiftUI](https://developer.apple.com/xcode/swiftui/)** - Declarative UI framework
+- **[NavigationStack](https://developer.apple.com/documentation/swiftui/navigationstack)** - Value-based navigation
+
+**Networking:**
+- **[Ktor Client](https://ktor.io/docs/client-create-and-configure.html)** - Multiplatform HTTP client (Android engine on
+  Android, Darwin engine on iOS)
+  - **[Ktor Resources](https://ktor.io/docs/client-resources.html)** - Type-safe HTTP requests. A `@Resource` request
+    class (e.g. `ForecastRequestModel`) is serialized into the URL path and query parameters, so no manual `append(...)`
+  - **[Content Negotiation](https://ktor.io/docs/client-serialization.html)** - JSON (de)serialization with
+    kotlinx.serialization
+
+**Dependency Injection:**
+- **[Koin](https://insert-koin.io/)** - Lightweight multiplatform dependency injection framework
+
+**Architecture:**
+- **[Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)** - Separation
+  of concerns with defined layers
+- **MVVM + MVI** - Shared ViewModels exposing a single UI state
+- **Shared logic, native UI** - Data, domain and presentation in Kotlin; Jetpack Compose and SwiftUI screens
+- **Modular Design** - Feature-based modules for scalability
+
+**Testing:**
+- **[kotlin-test](https://kotlinlang.org/api/core/kotlin-test/)** - Multiplatform test library (`commonTest`, Android
+  host tests, iOS simulator tests)
+
+**Code Quality:**
+- **[Ktlint](https://github.com/pinterest/ktlint)** - Kotlin code formatting and issue detection
+  - **[Nlopez Jetpack Compose Rules](https://mrmans0n.github.io/compose-rules/)** - Set of custom rules for Jetpack
+    Compose
+- **[Detekt](https://detekt.dev/)** - Static analysis and complexity checks
+- **[Android Lint](https://developer.android.com/studio/write/lint)** - Android-specific code analysis
+- **[Spotless](https://github.com/diffplug/spotless)** - Code formatting enforcement
+- **[SwiftLint](https://realm.github.io/SwiftLint/)** - Swift style and conventions
+
+**Build & CI:**
+- **[Gradle Kotlin DSL](https://docs.gradle.org/current/userguide/kotlin_dsl.html)** - Type-safe build scripts
+- **[Version Catalogs](https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog)** - Centralized
+  dependency management
+- **[Convention Plugins](https://docs.gradle.org/current/samples/sample_convention_plugins.html)** - Shared build logic
+  (see [Convention Plugins](#convention-plugins))
+- **[Swift Package Manager](https://www.swift.org/documentation/package-manager/)** - iOS dependencies
+  (`KMPObservableViewModelSwiftUI`)
+
+**GitHub Actions:**
+- **[Check](.github/workflows/check.yml)** - CI pipeline building both apps and running all linters (see [CI](#ci))
+
+**Gradle Plugins:**
+- **[Android Application](https://developer.android.com/build/releases/gradle-plugin)** (`com.android.application`) -
+  Android app module configuration
+- **[Android KMP Library](https://developer.android.com/kotlin/multiplatform/plugin)**
+  (`com.android.kotlin.multiplatform.library`) - Android target for KMP modules
+- **[Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform-dsl-reference.html)**
+  (`org.jetbrains.kotlin.multiplatform`) - Kotlin compilation for Android and iOS
+- **[Kotlin Serialization](https://kotlinlang.org/docs/serialization.html)** (`org.jetbrains.kotlin.plugin.serialization`) -
+  JSON serialization support
+- **[Kotlin Compose Compiler](https://developer.android.com/jetpack/androidx/releases/compose-kotlin)**
+  (`org.jetbrains.kotlin.plugin.compose`) - Compose compiler plugin
+- **[SKIE](https://skie.touchlab.co)** (`co.touchlab.skie`) - Swift-friendly framework API
+- **[Detekt](https://detekt.dev/)** (`io.gitlab.arturbosch.detekt`) - Static code analysis
+- **[Spotless](https://github.com/diffplug/spotless)** (`com.diffplug.spotless`) - Code formatting
 
 ## Architecture
 
