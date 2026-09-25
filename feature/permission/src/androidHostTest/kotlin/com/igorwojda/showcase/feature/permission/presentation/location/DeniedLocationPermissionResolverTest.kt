@@ -3,7 +3,9 @@ package com.igorwojda.showcase.feature.permission.presentation.location
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ResolveDeniedLocationPermissionTest {
+class DeniedLocationPermissionResolverTest {
+    private val sut = DeniedLocationPermissionResolver()
+
     @Test
     fun `first denial can be asked again`() {
         assertEquals(LocationPermissionStatus.Denied, resolve(rationaleBefore = false, rationaleAfter = true))
@@ -57,5 +59,5 @@ class ResolveDeniedLocationPermissionTest {
         wasAnsweredWithoutDialog: Boolean = false,
         wasDenied: Boolean = false,
         wasDismissed: Boolean = false,
-    ) = resolveDeniedLocationPermission(rationaleBefore, rationaleAfter, wasAnsweredWithoutDialog, wasDenied, wasDismissed)
+    ) = sut.resolve(rationaleBefore, rationaleAfter, wasAnsweredWithoutDialog, wasDenied, wasDismissed)
 }

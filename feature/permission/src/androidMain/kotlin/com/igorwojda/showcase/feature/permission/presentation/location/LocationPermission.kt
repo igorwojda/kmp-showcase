@@ -25,6 +25,7 @@ fun Context.isLocationPermissionGranted(): Boolean =
  */
 internal class LocationPermissionChecker(
     private val activity: Activity,
+    private val deniedResolver: DeniedLocationPermissionResolver = DeniedLocationPermissionResolver(),
 ) {
     private val preferences = activity.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
@@ -62,7 +63,7 @@ internal class LocationPermissionChecker(
             }
 
             else -> {
-                resolveDeniedLocationPermission(
+                deniedResolver.resolve(
                     rationaleBefore = rationaleBefore,
                     rationaleAfter = shouldShowRationale(),
                     wasAnsweredWithoutDialog = answerTime < DIALOG_MIN_ANSWER_TIME,
@@ -109,26 +110,3 @@ internal class LocationPermissionChecker(
     }
 }
 
-/**
- * The status after the system dialog returned "not granted".
- *
- * - [rationaleAfter]: the user denied, and the dialog can be shown again.
- * - [rationaleBefore] without [rationaleAfter]: the second denial, which is permanent.
- * - No rationale before or after: the dialog was dismissed, or it wasn't shown because the permission is already
- *   permanently denied. It's the latter when the answer came too fast for a person ([wasAnsweredWithoutDialog]) or
- *   after an earlier denial ([wasDenied]). A repeated dismissal ([wasDismissed]) is treated as permanent too, so
- *   the user is never stuck on a button that does nothing.
- */
-internal fun resolveDeniedLocationPermission(
-    rationaleBefore: Boolean,
-    rationaleAfter: Boolean,
-    wasAnsweredWithoutDialog: Boolean,
-    wasDenied: Boolean,
-    wasDismissed: Boolean,
-): LocationPermissionStatus =
-    when {
-        rationaleAfter -> LocationPermissionStatus.Denied
-        rationaleBefore -> LocationPermissionStatus.PermanentlyDenied
-        wasAnsweredWithoutDialog || wasDenied || wasDismissed -> LocationPermissionStatus.PermanentlyDenied
-        else -> LocationPermissionStatus.NotDetermined
-    }

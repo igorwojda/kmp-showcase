@@ -398,7 +398,9 @@ gets every status as `LocationPermissionIntent.StatusChanged`, keeps the screen 
   rationale"), so
   [`LocationPermissionChecker`](./feature/permission/src/androidMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/LocationPermission.kt)
   stores earlier denials and dismissals in `SharedPreferences`, and measures how fast the request is answered.
-  The decision is the pure `resolveDeniedLocationPermission`, covered by host tests.
+  The decision is made by the pure
+  [`DeniedLocationPermissionResolver`](./feature/permission/src/androidMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/DeniedLocationPermissionResolver.kt),
+  covered by host tests.
 - **Rotation and process death while the dialog is open.** `LocationPermissionRequester` keeps the rationale flag
   and launch time in `rememberSaveable` (not in the shared ViewModel: only Android needs them), and the Activity
   Result API redelivers the answer. A second request while the dialog is open
