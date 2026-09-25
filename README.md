@@ -319,21 +319,7 @@ each module.
 
 [Convention plugins](https://docs.gradle.org/current/samples/sample_convention_plugins.html) in
 [build-logic](./build-logic/convention/src/main/kotlin) standardize build configuration across modules, so each
-module's build script only declares what's specific to it:
-
-| Plugin | Class | Used by | Adds |
-|--------|-------|---------|------|
-| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, Android Lint (`showcase.android.lint`), Jetpack Compose, lifecycle and Navigation 3 dependencies |
-| `showcase.android.lint` | [`AndroidLintConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidLintConventionPlugin.kt) | `:androidApp` (applied by `showcase.android.application`) | Android Lint with warnings as errors, plus `lintCheck` / `lintApply` aliases for AGP's `lint` / `lintFix` (see [Linters](#linters)) |
-| `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
-| `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything in `showcase.basefeature`, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
-| `showcase.iosbridge` | [`IosBridgeConventionPlugin`](./build-logic/convention/src/main/kotlin/IosBridgeConventionPlugin.kt) | `:iosBridge` | KMP + [SKIE](https://skie.touchlab.co) plugins, static `iosBridge` framework for `iosArm64` / `iosSimulatorArm64`, export of every `commonMain` `api` dependency, `kotlinx-datetime` (exported), SKIE configuration |
-| `showcase.spotless` | [`SpotlessConventionPlugin`](./build-logic/convention/src/main/kotlin/SpotlessConventionPlugin.kt) | root project | [Spotless](https://github.com/diffplug/spotless) running ktlint + [Compose rules](https://mrmans0n.github.io/compose-rules/) over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
-| `showcase.detekt` | [`DetektConventionPlugin`](./build-logic/convention/src/main/kotlin/DetektConventionPlugin.kt) | root project | [Detekt](https://detekt.dev) `detektCheck` / `detektApply` tasks over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
-
-- The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
-  It is also the module's Kotlin package root, so packages of different features never collide.
-- A new feature module needs only `alias(libs.plugins.showcase.feature)` plus its own dependencies.
+module's build script only declares what's specific to it.
 
 ### Type Safe Project Accessors
 
