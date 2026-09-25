@@ -596,6 +596,8 @@ style:
         value: 'FIXME:'
       - reason: 'Forbidden STOPSHIP todo marker in comment, please address the problem before shipping the code.'
         value: 'STOPSHIP:'
+      - reason: 'Forbidden TODO marker in comment, please do the changes or create an issue.'
+        value: '\bTODO\b' # Regex, so it also catches `TODO` without a colon and `TODO(name)`
     allowedPatterns: ''
   ForbiddenImport:
     active: true

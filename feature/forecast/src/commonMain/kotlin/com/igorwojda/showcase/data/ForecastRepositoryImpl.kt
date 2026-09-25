@@ -72,7 +72,6 @@ internal class ForecastRepositoryImpl(
     }
 }
 
-// TODO: Nested Mappers?
 private fun ForecastResponseModel.toForecast(): ForecastModel {
     val hourlyByDate =
         hourly.time.indices
