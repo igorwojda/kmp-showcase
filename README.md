@@ -8,9 +8,11 @@ module, the UI is native on each platform.
   - [Application Scope](#application-scope)
   - [Tech-Stack](#tech-stack)
   - [Architecture](#architecture)
+  - [Getting Started](#getting-started)
   - [Design Decisions](#design-decisions)
-    - [Consuming Common ViewModels](#consuming-common-viewmodels)
-    - [Shared Store Setup](#shared-store-setup)
+    - [UI State Management via Flow MVI](#ui-state-management-via-flow-mvi)
+      - [Consuming Common ViewModels](#consuming-common-viewmodels)
+      - [Shared Store Setup](#shared-store-setup)
     - [Convention Plugins](#convention-plugins)
     - [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)
     - [Navigation](#navigation)
@@ -188,7 +190,25 @@ flowchart LR
 
 ## Design Decisions
 
-### Consuming Common ViewModels
+### UI State Management via Flow MVI
+
+Screens are driven by [FlowMVI](https://github.com/respawn-llc/FlowMVI) stores, owned by shared ViewModels. Each screen
+has one immutable `State`, a set of `Intent`s (user events) and `Action`s (one-off side effects, e.g. a toast).
+
+- **Unidirectional data flow.** The UI sends intents and renders state, and only the store changes state. It's easy
+  to follow what happened and why.
+- **One state per screen.** A sealed `State` (`Loading` / `Content` / `Error`) can't represent impossible combinations,
+  and SKIE turns it into an exhaustive Swift enum.
+- **Written once, used on both platforms.** State, intents and business rules live in `commonMain`; Compose and
+  SwiftUI only render.
+- **Plugins instead of boilerplate.** Loading (`init`), intent handling (`reduce`) and error handling (`recover`) are
+  small reusable plugins, so ViewModels contain little more than the feature logic.
+- **Thread-safe state updates.** `updateState` is serialized by the store, so parallel coroutines can't overwrite each
+  other's changes.
+- **Built-in tooling.** Logging and [remote debugging](#debugging-flowmvi) come as plugins, installed once for every
+  store.
+
+#### Consuming Common ViewModels
 
 ViewModels extend [`StoreViewModel`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/flowmvi/StoreViewModel.kt),
 which owns a FlowMVI `store` (built with [`configuredStore`](#shared-store-setup)). Each platform consumes it through a different API:
@@ -221,7 +241,7 @@ automatically with the SwiftUI task.
 **Trade-off:** a screen that collects both flows holds two subscriptions. That's fine with the default
 `ActionShareBehavior.Distribute`, but `ActionShareBehavior.Restrict` (one subscription per store) would throw.
 
-### Shared Store Setup
+#### Shared Store Setup
 
 Every store is built with
 [`configuredStore`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/flowmvi/ConfiguredStore.kt)
