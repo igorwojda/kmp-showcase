@@ -13,20 +13,24 @@ module, the UI is native on each platform.
       - [Domain Layer](#domain-layer)
       - [Data Layer](#data-layer)
       - [Common Module Components](#common-module-components)
-  - [Getting Started](#getting-started)
+  - [Gradle Config](#gradle-config)
+    - [Dependency Management](#dependency-management)
+    - [Convention Plugins](#convention-plugins)
+    - [Type Safe Project Accessors](#type-safe-project-accessors)
+    - [Unified Version Configuration](#unified-version-configuration)
+      - [Version Catalog Access in `build-logic`](#version-catalog-access-in-build-logic)
   - [Design Decisions](#design-decisions)
     - [UI State Management via Flow MVI](#ui-state-management-via-flow-mvi)
       - [Consuming Common ViewModels](#consuming-common-viewmodels)
       - [Shared Store Setup](#shared-store-setup)
-    - [Convention Plugins](#convention-plugins)
     - [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)
     - [Navigation](#navigation)
-  - [Dependency Injection](#dependency-injection)
+    - [Dependency Injection](#dependency-injection)
   - [Caching](#caching)
   - [Naming Conventions](#naming-conventions)
     - [Screens vs Components](#screens-vs-components)
   - [Linters](#linters)
-  - [CI-Pipeline](#ci-pipeline)
+  - [CI Pipeline](#ci-pipeline)
   - [Debugging FlowMVI](#debugging-flowmvi)
 
 ## Application Scope
@@ -293,10 +297,83 @@ Components:
 - **Tests** - `commonTest` source set with `kotlin-test`, run on the Android host and the iOS simulator (set up by the
   convention plugin; no tests yet).
 
-## Getting Started
+## Gradle Config
 
-1. Clone the repository `git clone https://github.com/igorwojda/kmp-showcase.git`
-2. Open project in Android Studio `File -> Open -> Select cloned directory`
+### Dependency Management
+
+Gradle [version catalog](https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog)
+([libs.versions.toml](gradle/libs.versions.toml)) is used for centralized dependency management. Third-party
+dependency coordinates (group, artifact, version) are shared across all modules and `build-logic`.
+
+The version catalog consists of a few major sections:
+
+- `[versions]` - declare versions that can be referenced by all dependencies
+- `[libraries]` - declare the aliases to library coordinates
+- `[plugins]` - declare Gradle plugin dependencies (including the project's own convention plugins)
+
+Each module applies a convention plugin, so common dependencies are shared without the need to add them explicitly in
+each module.
+
+### Convention Plugins
+
+[Convention plugins](https://docs.gradle.org/current/samples/sample_convention_plugins.html) in
+[build-logic](./build-logic/convention/src/main/kotlin) standardize build configuration across modules, so each
+module's build script only declares what's specific to it:
+
+| Plugin | Class | Used by | Adds |
+|--------|-------|---------|------|
+| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, Android Lint (`showcase.android.lint`), Jetpack Compose, lifecycle and Navigation 3 dependencies |
+| `showcase.android.lint` | [`AndroidLintConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidLintConventionPlugin.kt) | `:androidApp` (applied by `showcase.android.application`) | Android Lint with warnings as errors, plus `lintCheck` / `lintApply` aliases for AGP's `lint` / `lintFix` (see [Linters](#linters)) |
+| `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
+| `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
+| `showcase.spotless` | [`SpotlessConventionPlugin`](./build-logic/convention/src/main/kotlin/SpotlessConventionPlugin.kt) | root project | [Spotless](https://github.com/diffplug/spotless) running ktlint + [Compose rules](https://mrmans0n.github.io/compose-rules/) over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
+| `showcase.detekt` | [`DetektConventionPlugin`](./build-logic/convention/src/main/kotlin/DetektConventionPlugin.kt) | root project | [Detekt](https://detekt.dev) `detektCheck` / `detektApply` tasks over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
+
+- `:iosBridge` has no convention plugin. It's the only module that builds an iOS framework, so the framework and
+  SKIE setup live in its own build script.
+- The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
+- A new feature module needs only `alias(libs.plugins.showcase.feature)` plus its own dependencies.
+
+### Type Safe Project Accessors
+
+[Type-safe project accessors](https://docs.gradle.org/current/userguide/declaring_dependencies_basics.html#sec:type-safe-project-accessors)
+are enabled in [settings.gradle.kts](settings.gradle.kts) (`enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")`), so
+module build scripts reference other modules by generated, compile-checked accessors instead of error-prone string
+paths:
+
+```kotlin
+// Before
+implementation(project(":feature:forecast"))
+
+// After
+implementation(projects.feature.forecast)
+```
+
+- Used in [androidApp/build.gradle.kts](androidApp/build.gradle.kts) (the features the app ships) and
+  [iosBridge/build.gradle.kts](iosBridge/build.gradle.kts) (`api(...)` and `export(...)` of every feature).
+- Accessors are generated only for the main build's scripts, not for `build-logic` sources, so
+  `FeatureConventionPlugin` still uses `project(":feature:base")`.
+
+### Unified Version Configuration
+
+All dependency and Gradle plugin versions are defined in the TOML version catalog file
+([libs.versions.toml](gradle/libs.versions.toml)). This includes the Android SDK levels (`android-compileSdk`,
+`android-minSdk`, `android-targetSdk`), which the convention plugins read, so every module targets the same SDKs.
+
+#### Version Catalog Access in `build-logic`
+
+[build-logic/settings.gradle.kts](build-logic/settings.gradle.kts) imports the same catalog
+(`versionCatalogs { create("libs") { from(files("../gradle/libs.versions.toml")) } }`), so `build-logic`'s own build
+script uses type-safe `libs.*` accessors, e.g. for the Android and Kotlin Gradle plugins.
+
+Convention plugin sources can't use the generated accessors, so they look entries up by name through small helpers in
+[VersionCatalogExt.kt](build-logic/convention/src/main/kotlin/VersionCatalogExt.kt):
+
+```kotlin
+implementation(libs.lib("androidx-compose-runtime"))
+compileSdk = libs.version("android-compileSdk").toInt()
+pluginManager.apply(libs.pluginId("composeCompiler"))
+```
 
 ## Design Decisions
 
@@ -376,11 +453,6 @@ override val store = configuredStore(initial = WeeklyForecastState.Loading, name
 fix is to take a debug flag from the app and install both only when it's set. `enableRemoteDebugging` throws on
 a non-debuggable store, so both must change together.
 
-### Convention Plugins
-
-Shared Gradle setup for the app and KMP modules lives in [build-logic](./build-logic/convention/src/main/kotlin), so each
-module's build script only declares what's specific to it:
-
 ### Feature UI Lives in the Feature Module
 
 A feature's native UI sits next to its shared logic, in the feature module, not in the app modules. The app
@@ -427,7 +499,7 @@ UI layer decides where to go.
   the screen is popped, on both platforms.
 - **`WeeklyForecastScreen` is the start destination** on both platforms.
 
-## Dependency Injection
+### Dependency Injection
 
 [Koin](https://insert-koin.io) is used for dependency injection. All definitions live in shared code, one Koin module per Gradle module
 ([`baseModule`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/di/BaseModule.kt),
