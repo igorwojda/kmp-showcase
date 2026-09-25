@@ -1,8 +1,23 @@
-# KMP Showcase
+# 💎 KMP Showcase
 
 A [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html) sample application 
-demonstrating how to share code for Android and iOS. Data, domain and presentation logic live in a common Kotlin module; 
-the UI is native on each platform.
+demonstrating how to share code for Android and iOS. The data, domain and presentation logic live in a common Kotlin 
+module, the UI is native on each platform.
+
+## Application Scope
+
+A weather app built with KMP that displays weather for current week and each day sourced from the 
+[Open-Meteo API](https://open-meteo.com/). The application demonstrates real-world scenarios including network requests, 
+local caching, navigation, and state management.
+
+**Features:**
+- **Weely Forecast** - display weekly weather forecast with daily summary and temperature range
+- **Daily Forecast** - display detailed daily weather forecast with hourly temperature and precipitation
+
+<p>
+  <img src="misc/image/weekly_forecast.webp" width="250" />
+  <img src="misc/image/daily_forecast.webp" width="250" />
+</p>
 
 ## Tech-Stack
 
