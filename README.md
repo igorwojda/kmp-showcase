@@ -1,8 +1,8 @@
 # 💎 KMP Showcase
 
 A [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html) sample application 
-demonstrating how to share code for Android and iOS. The data, domain and presentation logic live in a common Kotlin 
-module, the UI is native on each platform.
+demonstrating how to share code for Android and iOS. The data, domain and presentation logic live in common Kotlin 
+feature modules, the UI is native on each platform.
 
 - [💎 KMP Showcase](#-kmp-showcase)
   - [Application Scope](#application-scope)
@@ -42,7 +42,7 @@ local caching, navigation, and state management.
 
 **Features:**
 - **Weekly Forecast** - display weekly weather forecast with daily summary and temperature range; pull to refresh
-- **Daily Forecast** - display detailed daily weather forecast with hourly temperature and precipitation
+- **Daily Forecast** - display detailed daily weather forecast with hourly temperature, precipitation, wind and sunrise / sunset
 
 <p>
   <img src="misc/image/weekly_forecast.webp" width="250" />
@@ -64,7 +64,7 @@ project structure stability and production-readiness.
 
 **Kotlin-Swift Interop:**
 - **[SKIE](https://skie.touchlab.co)** - Kotlin Native compiler plugin that improves Kotlin-Swift interoperability
-  (`Flow` → `AsyncSequence` / `Observing`, `sealed class` → exhaustive Swift enum (`onEnum(of:)`), `suspend` → `async`,
+  (`Flow` → `AsyncSequence` / `Observing`, `sealed` class / interface → exhaustive Swift enum (`onEnum(of:)`), `suspend` → `async`,
   default arguments, etc.)
 - **[KMP-ObservableViewModel](https://github.com/rickclephas/KMP-ObservableViewModel)** - Share Kotlin ViewModels
   between Android and iOS. Makes Kotlin state changes observable by SwiftUI and clears `viewModelScope` when the view
@@ -126,7 +126,7 @@ project structure stability and production-readiness.
   (`KMPObservableViewModelSwiftUI`)
 
 **GitHub Actions:**
-- **[Check](.github/workflows/check.yml)** - CI pipeline building both apps and running all linters (see [CI](#ci))
+- **[Check](.github/workflows/check.yml)** - CI pipeline building both apps and running all linters (see [CI Pipeline](#ci-pipeline))
 
 **Gradle Plugins:**
 - **[Android Application](https://developer.android.com/build/releases/gradle-plugin)** (`com.android.application`) -
@@ -148,7 +148,7 @@ project structure stability and production-readiness.
 ```mermaid
 flowchart LR
     subgraph native["Native UI"]
-        android["androidApp<br/>()Jetpack Compose)"]
+        android["androidApp<br/>(Jetpack Compose)"]
         ios["iosApp<br/>(SwiftUI)"]
     end
 
@@ -179,8 +179,8 @@ flowchart LR
     style shared fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
 ```
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. Feature SwiftUI code lives in the feature modules (see below).
+* [/iosApp](./iosApp/iosApp) contains the iOS application entry point. Feature SwiftUI code lives in the feature
+  modules (see below).
 
 * [/iosBridge](./iosBridge) builds the single framework the iOS app links (`import iosBridge`). It exports
   every feature module and starts Koin for iOS (see [Dependency Injection](#dependency-injection)).
@@ -326,7 +326,7 @@ module's build script only declares what's specific to it:
 | `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, Android Lint (`showcase.android.lint`), Jetpack Compose, lifecycle and Navigation 3 dependencies |
 | `showcase.android.lint` | [`AndroidLintConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidLintConventionPlugin.kt) | `:androidApp` (applied by `showcase.android.application`) | Android Lint with warnings as errors, plus `lintCheck` / `lintApply` aliases for AGP's `lint` / `lintFix` (see [Linters](#linters)) |
 | `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
-| `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
+| `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything in `showcase.basefeature`, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
 | `showcase.spotless` | [`SpotlessConventionPlugin`](./build-logic/convention/src/main/kotlin/SpotlessConventionPlugin.kt) | root project | [Spotless](https://github.com/diffplug/spotless) running ktlint + [Compose rules](https://mrmans0n.github.io/compose-rules/) over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
 | `showcase.detekt` | [`DetektConventionPlugin`](./build-logic/convention/src/main/kotlin/DetektConventionPlugin.kt) | root project | [Detekt](https://detekt.dev) `detektCheck` / `detektApply` tasks over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
 
@@ -544,7 +544,7 @@ lives as long as the process.
 
 ## Naming Conventions
 
-### Screens vs Components.
+### Screens vs Components
 
 UI types are named by role, consistently on both platforms:
 

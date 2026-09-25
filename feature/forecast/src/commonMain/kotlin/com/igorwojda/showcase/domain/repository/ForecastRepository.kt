@@ -4,7 +4,7 @@ import com.igorwojda.showcase.domain.model.DailyWeatherModel
 import com.igorwojda.showcase.domain.model.ForecastModel
 import kotlinx.datetime.LocalDate
 
-/** Weather forecast for Warsaw. */
+/** Weather forecast for a single location. */
 internal interface ForecastRepository {
     /**
      * Current weather plus a daily forecast for the coming days.

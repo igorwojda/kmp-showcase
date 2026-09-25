@@ -7,8 +7,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 /**
  * Android application with Jetpack Compose UI: SDK versions, JVM target, release build type, Android Lint (see
- * [AndroidLintConventionPlugin]) and all app dependencies (feature modules, Compose, Navigation 3). The app module
- * declares only its identity (namespace, application id, version).
+ * [AndroidLintConventionPlugin]) and the Compose, lifecycle and Navigation 3 dependencies. The app module declares
+ * only its identity (namespace, application id, version) and the feature modules it ships.
  */
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) =

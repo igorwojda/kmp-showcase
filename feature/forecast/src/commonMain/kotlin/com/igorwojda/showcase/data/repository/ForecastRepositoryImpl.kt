@@ -21,8 +21,8 @@ import kotlin.time.Instant
 /**
  * Downloads weather data for Warsaw from the Open-Meteo API.
  *
- * The latest forecast is kept in an in-memory cache for [CACHE_TTL], so screens opened after the first request
- * (e.g. DailyForecastScreen) reuse the downloaded forecast instead of hitting the network again.
+ * The latest forecast is kept in an in-memory cache for [CACHE_TTL], so requests after the first one (e.g. a single
+ * day via `GetDailyWeatherUseCase`) reuse the downloaded forecast instead of hitting the network again.
  */
 internal class ForecastRepositoryImpl(
     private val httpClient: HttpClient,

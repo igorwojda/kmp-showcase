@@ -10,7 +10,7 @@ class KMPShowcaseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // iOs Koin modules are defined in iosBridge module.
+        // iOS Koin modules are listed in the iosBridge module.
         val androidModules =
             listOf(
                 featureForecastModule,

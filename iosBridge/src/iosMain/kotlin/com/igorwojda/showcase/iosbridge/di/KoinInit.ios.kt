@@ -5,7 +5,7 @@ import com.igorwojda.showcase.feature.base.di.initializeKoin
 
 /** Starts Koin for the iOS app with the modules of every feature in this framework. Called from Swift. */
 fun initializeKoin() {
-    // Android modules are defined in KMPShowcaseApplication class.
+    // Android Koin modules are listed in the KMPShowcaseApplication class.
     val iOSModules =
         listOf(
             featureForecastModule,
