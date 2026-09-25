@@ -9,6 +9,7 @@
 - Move as much logic as possible to Gradle convention plugins.
 
 ## Architecture
+
 - Clean Architecture is used as a base for the project. The project is divided into three layers:
   - `Domain` - Contains business logic and entities.
   - `Data`- Responsible for data management, including repositories and data sources.
@@ -16,11 +17,42 @@
 
 ## Data Layer
 
+- represented by the `data` package
+
+### Models
+
+- Stores data models in `model` package
+
+### Repositories
+- Stores repository implementations in `repository` package
+- Class implementing the `Repository` interface should have `Impl` suffix. e.g. `ForecastRepositoryImpl`
+
 ### Network Models
+
 - Classes used for network requests and responses use a `Model` suffix: `...RequestModel`, `...ResponseModel`
   (e.g. `ForecastRequestModel`, `ForecastResponseModel`).
 
+## Domain Layer
+
+- represented by the `domain` package
+
+### Models
+
+- Stores domain models in `model` package
+
+### Repositories
+
+- Stores repository interfaces in `repository` package
+- Interface names should have `Repository` suffix e.g. `ForecastRepository`
+
+### Use Cases
+
+- Stores use cases in `usecase` package
+
+
 ## Presentation Layer
+
+- represented by the `presentation` package
 
 ### ViewModel
 - Every method that is called from the UI should have `on` prefix. e.g. `onButtonClick()`.
@@ -41,7 +73,7 @@ feature/forecast/src/
   synchronized folder e.g `forecast` in `iosApp.xcodeproj`, pointing at `feature/forecast/src/iosMain/swift`). New files
   there are picked up automatically.
 
-## File naming
+## Common
 
 ### Platform-specific Files Use A Platform Suffix
 - Use a platform suffix (Pattern: `<Name>.<platform>.kt`); The base name stays platform-agnostic 

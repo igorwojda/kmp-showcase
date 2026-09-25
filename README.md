@@ -407,15 +407,36 @@ gets every status as `LocationPermissionIntent.StatusChanged`, keeps the screen 
 **Known limitations:**
 - Dismissing the dialog twice in a row reads as a permanent denial. The user can still allow it in Settings.
 - `Restricted` has no way forward: the user can't change it, and the forecast requires the permission.
-- The forecast still uses fixed coordinates (Warsaw); the permission isn't used to fetch the device location yet.
+
+### Device Location
+
+The forecast is downloaded for the device location.
+[`ForecastRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepository.kt) reads it
+from [`LocationRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/domain/repository/LocationRepository.kt), a
+shared interface implemented by `LocationRepositoryImpl` with each platform's API:
+
+| Platform | API | Fallback |
+|----------|-----|----------|
+| Android | `LocationManager.getCurrentLocation` (fused, network or GPS provider, the first one enabled) | last known location of that provider |
+| iOS | `CLLocationManager.requestLocation()` (kilometer accuracy) | none, the error is shown |
+
+- **No Google Play services.** The platform `LocationManager` is enough for weather and adds no dependency.
+- **Platform Koin module.** `featureForecastModule` includes `featureForecastPlatformModule` (`expect`/`actual`), which
+  binds `LocationRepository` to the platform implementation.
+- The permission is granted before the forecast opens (see [Navigation](#navigation)). If it's missing anyway, or no
+  location is available, the forecast shows an error.
 
 ## Caching
 
 [`ForecastRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepository.kt)
-keeps downloaded forecasts in an in-memory cache (per request parameters, guarded by a `Mutex`). The first request
-hits the network; `DailyForecastViewModel` then reads the day from the cache. `WeeklyForecastIntent.Reload` bypasses the cache
-(`forceRefresh = true`) and replaces the cached value. Entries expire after 15 minutes (wall clock) and are
-re-downloaded on the next request; the cache itself lives as long as the process.
+keeps the latest forecast in an in-memory cache (guarded by a `Mutex`). The first request reads the
+[device location](#device-location) and hits the network; `DailyForecastViewModel` then reads the day from the cache.
+`WeeklyForecastIntent.Reload` bypasses the cache (`forceRefresh = true`), reads the location again and replaces the cached
+value. The cached forecast expires after 15 minutes (wall clock) and is re-downloaded on the next request; the cache itself
+lives as long as the process.
+
+**Trade-off:** the location is read only on download, so after the user moves the forecast is for the old place until
+it expires or is reloaded. Reading the location on every request would slow down each screen that only needs the cache.
 
 ## Naming Conventions
 

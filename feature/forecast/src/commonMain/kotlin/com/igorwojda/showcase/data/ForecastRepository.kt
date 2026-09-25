@@ -6,6 +6,7 @@ import com.igorwojda.showcase.domain.model.CurrentWeatherModel
 import com.igorwojda.showcase.domain.model.DailyWeatherModel
 import com.igorwojda.showcase.domain.model.ForecastModel
 import com.igorwojda.showcase.domain.model.HourlyTemperatureModel
+import com.igorwojda.showcase.domain.repository.LocationRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.resources.get
@@ -18,52 +19,47 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 /**
- * Downloads weather data from the Open-Meteo API.
+ * Downloads weather data for the device location ([LocationRepository]) from the Open-Meteo API.
  *
- * Responses are kept in an in-memory cache (per request) for [CACHE_TTL], so screens opened after
- * the first request (e.g. DailyForecastScreen) reuse the downloaded forecast instead of hitting the
- * network again.
+ * The latest forecast is kept in an in-memory cache for [CACHE_TTL], so screens opened after the first request
+ * (e.g. DailyForecastScreen) reuse the downloaded forecast instead of reading the location and hitting the
+ * network again. The location is read only when a forecast is downloaded.
  */
 internal class ForecastRepository(
     private val httpClient: HttpClient,
+    private val locationRepository: LocationRepository,
 ) {
     private val cacheMutex = Mutex()
-    private val cache = mutableMapOf<ForecastRequestModel, CachedForecast>()
+    private var cache: CachedForecast? = null
 
     /**
-     * Current weather plus a [forecastDays]-day daily forecast for the given coordinates.
+     * Current weather plus a [FORECAST_DAYS]-day daily forecast for the device location.
      *
      * Returns the cached forecast when it is younger than [CACHE_TTL], unless [forceRefresh] is set.
-     * Throws on network / parsing failure.
+     * Throws on location / network / parsing failure.
      */
-    suspend fun getForecast(
-        latitude: Double = DEFAULT_LATITUDE,
-        longitude: Double = DEFAULT_LONGITUDE,
-        forecastDays: Int = DEFAULT_FORECAST_DAYS,
-        forceRefresh: Boolean = false,
-    ): ForecastModel {
-        val request = ForecastRequestModel(latitude, longitude, forecastDays)
-
+    suspend fun getForecast(forceRefresh: Boolean = false): ForecastModel =
         // The lock also stops concurrent callers from downloading the same forecast twice.
-        return cacheMutex.withLock {
+        cacheMutex.withLock {
             val now = Clock.System.now()
-            cache[request]
+            cache
                 ?.takeUnless { forceRefresh || now - it.fetchedAt >= CACHE_TTL }
                 ?.forecast
-                ?: fetchForecast(request).also { cache[request] = CachedForecast(it, now) }
+                ?: fetchForecast().also { cache = CachedForecast(it, now) }
         }
-    }
 
     /**
-     * Weather for a single [date] of the (cached) default forecast, or `null` when the forecast
-     * doesn't contain [date].
+     * Weather for a single [date] of the (cached) forecast, or `null` when the forecast doesn't contain [date].
      *
-     * Throws on network / parsing failure.
+     * Throws on location / network / parsing failure.
      */
     suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? = getForecast().daily.firstOrNull { it.date == date }
 
-    private suspend fun fetchForecast(request: ForecastRequestModel): ForecastModel =
-        httpClient
+    private suspend fun fetchForecast(): ForecastModel {
+        val location = locationRepository.getCurrentLocation()
+        val request = ForecastRequestModel(location.latitude, location.longitude, FORECAST_DAYS)
+
+        return httpClient
             .get(request) {
                 url {
                     protocol = URLProtocol.HTTPS
@@ -71,6 +67,7 @@ internal class ForecastRepository(
                 }
             }.body<ForecastResponseModel>()
             .toForecast()
+    }
 
     private data class CachedForecast(
         val forecast: ForecastModel,
@@ -79,9 +76,7 @@ internal class ForecastRepository(
 
     private companion object {
         const val HOST = "api.open-meteo.com"
-        const val DEFAULT_LATITUDE = 52.23 // Warsaw
-        const val DEFAULT_LONGITUDE = 21.01
-        const val DEFAULT_FORECAST_DAYS = 7
+        const val FORECAST_DAYS = 7
         val CACHE_TTL = 15.minutes
     }
 }
