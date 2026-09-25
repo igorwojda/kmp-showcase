@@ -496,6 +496,8 @@ don't configure them. Android Lint runs per Android module, configured in
 - Android Lint covers the `:androidApp` module (Kotlin sources, manifest, resources and the Gradle files). The
   `:feature:*` modules are not analyzed - AGP's Kotlin Multiplatform library plugin doesn't create Lint tasks for KMP
   modules yet, so `checkDependencies` has nothing to pull in for them.
+- `TODO` / `FIXME` markers are not allowed in code: Detekt `ForbiddenComment` flags them in Kotlin comments,
+  `NotImplementedDeclaration` flags Kotlin `TODO()` calls, and the SwiftLint `todo` rule (on by default) covers Swift.
 - Formatting is done by ktlint only. Detekt runs without its `detekt-formatting` (ktlint wrapper) plugin, so
   `detektApply` fixes only Detekt's own auto-correctable rules.
 
