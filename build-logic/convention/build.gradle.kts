@@ -6,6 +6,7 @@ dependencies {
     // compileOnly: the root build applies these plugins (apply false), so they're already on the classpath.
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
+    compileOnly(libs.skie.gradlePlugin)
     // implementation: applied only through the convention plugins below, so build-logic has to provide them.
     implementation(libs.spotless.gradlePlugin)
     implementation(libs.detekt.gradlePlugin)
@@ -40,6 +41,13 @@ gradlePlugin {
                     .get()
                     .pluginId
             implementationClass = "FeatureConventionPlugin"
+        }
+        register("iosBridge") {
+            id =
+                libs.plugins.showcase.iosbridge
+                    .get()
+                    .pluginId
+            implementationClass = "IosBridgeConventionPlugin"
         }
         register("spotless") {
             id =

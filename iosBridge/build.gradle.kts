@@ -1,43 +1,14 @@
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    // SKIE belongs only in the module that builds the framework; it covers every exported module.
-    alias(libs.plugins.skie)
+    alias(libs.plugins.showcase.iosbridge)
 }
 
 // iOS composition root: bundles every feature into the single framework the iOS app links, and starts Koin.
 kotlin {
-    listOf(iosArm64(), iosSimulatorArm64()).forEach { target ->
-        target.binaries.framework {
-            baseName = "iosBridge"
-            isStatic = true
-            // Kotlin/Native cannot infer a bundle ID for a static framework; set it explicitly to silence the warning.
-            binaryOption("bundleId", "com.igorwojda.showcase.iosBridge")
-            // Swift uses the features' ViewModels, StoreViewModel (their base class) and the LocalDate / LocalDateTime
-            // of the domain models, so these types must be visible to Swift.
-            export(projects.feature.base)
-            export(projects.feature.forecast)
-            export(libs.kotlinx.datetime)
-        }
-    }
-
     sourceSets {
         commonMain.dependencies {
-            // Only api dependencies can be exported
+            // Features exported to Swift (their ViewModels and StoreViewModel, their base class)
             api(projects.feature.base)
             api(projects.feature.forecast)
-            api(libs.kotlinx.datetime)
         }
-    }
-}
-
-skie {
-    features {
-        // https://skie.touchlab.co/features/flows-in-swiftui
-        enableSwiftUIObservingPreview.set(true)
-    }
-
-    analytics {
-        // Skip the network call to Touchlab that otherwise runs on every iOS build.
-        disableUpload.set(true)
     }
 }

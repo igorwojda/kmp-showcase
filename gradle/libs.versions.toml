@@ -70,6 +70,7 @@ koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
+skie-gradlePlugin = { module = "co.touchlab.skie:gradle-plugin", version.ref = "skie" }
 detekt-gradlePlugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 composeRules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version.ref = "composeRules" }
 
@@ -88,5 +89,6 @@ showcase-android-application = { id = "showcase.android.application" }
 showcase-android-lint = { id = "showcase.android.lint" }
 showcase-basefeature = { id = "showcase.basefeature" }
 showcase-feature = { id = "showcase.feature" }
+showcase-iosbridge = { id = "showcase.iosbridge" }
 showcase-spotless = { id = "showcase.spotless" }
 showcase-detekt = { id = "showcase.detekt" }
