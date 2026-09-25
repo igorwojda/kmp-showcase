@@ -1,6 +1,6 @@
 package com.igorwojda.showcase.di
 
-import com.igorwojda.showcase.data.LocationRepositoryImpl
+import com.igorwojda.showcase.data.repository.LocationRepositoryImpl
 import com.igorwojda.showcase.domain.repository.LocationRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module

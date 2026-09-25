@@ -1,6 +1,6 @@
 package com.igorwojda.showcase.di
 
-import com.igorwojda.showcase.data.ForecastRepositoryImpl
+import com.igorwojda.showcase.data.repository.ForecastRepositoryImpl
 import com.igorwojda.showcase.domain.repository.ForecastRepository
 import com.igorwojda.showcase.presentation.dailyforecast.DailyForecastViewModel
 import com.igorwojda.showcase.presentation.weeklyforecast.WeeklyForecastViewModel

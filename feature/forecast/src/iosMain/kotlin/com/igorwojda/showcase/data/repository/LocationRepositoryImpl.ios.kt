@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.data
+package com.igorwojda.showcase.data.repository
 
 import com.igorwojda.showcase.domain.model.LocationModel
 import com.igorwojda.showcase.domain.repository.LocationRepository

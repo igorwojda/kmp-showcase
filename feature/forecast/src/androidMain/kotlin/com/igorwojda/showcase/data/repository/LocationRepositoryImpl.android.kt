@@ -1,4 +1,4 @@
-package com.igorwojda.showcase.data
+package com.igorwojda.showcase.data.repository
 
 import android.Manifest
 import android.content.Context
