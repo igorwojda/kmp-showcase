@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -71,17 +72,23 @@ fun WeeklyForecastScreen(
                 }
 
                 is WeeklyForecastState.Content -> {
-                    WeeklyForecastContent(
-                        forecast = currentState.forecast,
-                        onDayClick = onDayClick,
+                    PullToRefreshBox(
+                        isRefreshing = currentState.isRefreshing,
+                        onRefresh = { store.intent(WeeklyForecastIntent.Refresh) },
                         modifier = Modifier.fillMaxSize(),
-                    )
+                    ) {
+                        WeeklyForecastContent(
+                            forecast = currentState.forecast,
+                            onDayClick = onDayClick,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 }
 
                 is WeeklyForecastState.Error -> {
                     ErrorContent(
                         message = currentState.message,
-                        onRetry = { store.intent(WeeklyForecastIntent.Reload) },
+                        onRetry = { store.intent(WeeklyForecastIntent.Retry) },
                         modifier = Modifier.align(Alignment.Center),
                     )
                 }
