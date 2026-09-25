@@ -7,7 +7,6 @@ import com.igorwojda.showcase.domain.model.DailyWeatherModel
 import com.igorwojda.showcase.domain.model.ForecastModel
 import com.igorwojda.showcase.domain.model.HourlyTemperatureModel
 import com.igorwojda.showcase.domain.repository.ForecastRepository
-import com.igorwojda.showcase.domain.repository.LocationRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.resources.get
@@ -20,15 +19,13 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 /**
- * Downloads weather data for the device location ([LocationRepository]) from the Open-Meteo API.
+ * Downloads weather data for Warsaw from the Open-Meteo API.
  *
  * The latest forecast is kept in an in-memory cache for [CACHE_TTL], so screens opened after the first request
- * (e.g. DailyForecastScreen) reuse the downloaded forecast instead of reading the location and hitting the
- * network again. The location is read only when a forecast is downloaded.
+ * (e.g. DailyForecastScreen) reuse the downloaded forecast instead of hitting the network again.
  */
 internal class ForecastRepositoryImpl(
     private val httpClient: HttpClient,
-    private val locationRepository: LocationRepository,
 ) : ForecastRepository {
     private val cacheMutex = Mutex()
     private var cache: CachedForecast? = null
@@ -47,8 +44,12 @@ internal class ForecastRepositoryImpl(
     override suspend fun getDailyWeather(date: LocalDate): DailyWeatherModel? = getForecast().daily.firstOrNull { it.date == date }
 
     private suspend fun fetchForecast(): ForecastModel {
-        val location = locationRepository.getCurrentLocation()
-        val request = ForecastRequestModel(location.latitude, location.longitude, FORECAST_DAYS)
+        // Warsaw, Poland location is hardcoded to simplify sample app.
+        // In a real app, the user would be able to select a location or use the device's location.
+        val warsawLatitude = 52.2297
+        val warsawLongitude = 21.0122
+
+        val request = ForecastRequestModel(warsawLatitude, warsawLongitude, FORECAST_DAYS)
 
         return httpClient
             .get(request) {

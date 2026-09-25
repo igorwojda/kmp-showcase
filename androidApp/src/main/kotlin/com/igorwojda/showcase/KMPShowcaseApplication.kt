@@ -3,7 +3,6 @@ package com.igorwojda.showcase
 import android.app.Application
 import com.igorwojda.showcase.di.featureForecastModule
 import com.igorwojda.showcase.feature.base.di.initializeKoin
-import com.igorwojda.showcase.feature.permission.di.featurePermissionModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 
@@ -15,7 +14,6 @@ class KMPShowcaseApplication : Application() {
         val androidModules =
             listOf(
                 featureForecastModule,
-                featurePermissionModule,
             )
 
         initializeKoin(androidModules) {

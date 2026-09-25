@@ -1,7 +1,7 @@
 package com.igorwojda.showcase.presentation.dailyforecast
 
 import com.igorwojda.showcase.domain.model.DailyWeatherModel
-import com.igorwojda.showcase.domain.repository.ForecastRepository
+import com.igorwojda.showcase.domain.usecase.GetDailyWeatherUseCase
 import com.igorwojda.showcase.feature.base.presentation.flowmvi.StoreViewModel
 import com.igorwojda.showcase.feature.base.presentation.flowmvi.configuredStore
 import kotlinx.datetime.LocalDate
@@ -13,10 +13,10 @@ import pro.respawn.flowmvi.plugins.init
 import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
-/** Weather for a single [date]; reuses the forecast cached by [ForecastRepository]. */
+/** Weather for a single [date]; reuses the cached forecast via [GetDailyWeatherUseCase]. */
 class DailyForecastViewModel internal constructor(
     private val date: LocalDate,
-    private val forecastRepository: ForecastRepository,
+    private val getDailyWeatherUseCase: GetDailyWeatherUseCase,
 ) : StoreViewModel<DailyForecastState, DailyForecastIntent, DailyForecastAction>() {
     override val store =
         configuredStore(initial = DailyForecastState.Loading, name = "DailyForecast") {
@@ -36,7 +36,7 @@ class DailyForecastViewModel internal constructor(
 
     private suspend fun PipelineContext<DailyForecastState, DailyForecastIntent, DailyForecastAction>.loadDay() {
         updateState { DailyForecastState.Loading }
-        val day = forecastRepository.getDailyWeather(date)
+        val day = getDailyWeatherUseCase(date)
         updateState {
             if (day == null) DailyForecastState.Error("No forecast for $date") else DailyForecastState.Content(day)
         }

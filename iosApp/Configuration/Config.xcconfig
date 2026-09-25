@@ -3,8 +3,6 @@ TEAM_ID=
 PRODUCT_NAME=Kmpshowcase
 // Name shown on the home screen
 INFOPLIST_KEY_CFBundleDisplayName=KMP Showcase
-// Shown in the location permission dialog
-INFOPLIST_KEY_NSLocationWhenInUseUsageDescription=KMP Showcase uses your approximate location to show the weather where you are.
 PRODUCT_BUNDLE_IDENTIFIER=com.igorwojda.showcase.Kmpshowcase$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1

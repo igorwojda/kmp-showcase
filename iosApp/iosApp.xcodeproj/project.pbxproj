@@ -39,13 +39,6 @@
 			);
 			target = D0893C615006C37C05642F5C /* iosApp */;
 		};
-		F0A1B2C3D4E5F60000000004 /* Exceptions for "permission" folder in "iosApp" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				CLAUDE.md,
-			);
-			target = D0893C615006C37C05642F5C /* iosApp */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -74,15 +67,6 @@
 			path = ../feature/forecast/src/iosMain/swift;
 			sourceTree = "<group>";
 		};
-		F0A1B2C3D4E5F60000000003 /* permission */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F0A1B2C3D4E5F60000000004 /* Exceptions for "permission" folder in "iosApp" target */,
-			);
-			name = permission;
-			path = ../feature/permission/src/iosMain/swift;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,7 +88,6 @@
 				33AA92F8E7B8E0E08F14EA5C /* Configuration */,
 				65577DFE0ACE5993767067E8 /* iosApp */,
 				F0A1B2C3D4E5F60000000001 /* forecast */,
-				F0A1B2C3D4E5F60000000003 /* permission */,
 				565703E6B8E683C1EB3C2DD1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -137,7 +120,6 @@
 				33AA92F8E7B8E0E08F14EA5C /* Configuration */,
 				65577DFE0ACE5993767067E8 /* iosApp */,
 				F0A1B2C3D4E5F60000000001 /* forecast */,
-				F0A1B2C3D4E5F60000000003 /* permission */,
 			);
 			name = iosApp;
 			packageProductDependencies = (

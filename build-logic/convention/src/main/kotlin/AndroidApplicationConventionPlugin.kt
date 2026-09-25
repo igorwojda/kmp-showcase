@@ -57,7 +57,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             dependencies {
                 "implementation"(project(":feature:forecast"))
-                "implementation"(project(":feature:permission"))
 
                 // Jetpack Compose UI
                 "implementation"(platform(libs.lib("androidx-compose-bom")))

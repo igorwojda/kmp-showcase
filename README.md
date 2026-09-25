@@ -30,7 +30,7 @@ flowchart LR
 
     subgraph shared["<div style='text-align:center'>Shared Logic<br/>(Kotlin Multiplatform)</div>"]
         presentation["Presentation layer<br/>(ViewModels, state)"]
-        domain["Domain layer<br/>(business logic, models)"]
+        domain["Domain layer<br/>(use cases, models)"]
         data["Data layer<br/>(repositories, networking)"]
     end
 
@@ -69,10 +69,14 @@ flowchart LR
 
 * [/feature/base](./feature/base/src) holds code shared by all feature modules, e.g. `StoreViewModel`.
 
-* [/feature/permission](./feature/permission/src) is the permission feature with the `LocationPermissionScreen`
-  (Compose and SwiftUI). The apps show it before the forecast (see [Location Permission](#location-permission)).
-
 ## Design Decisions
+
+### ViewModels Use Use Cases
+
+ViewModels never touch repositories directly; they call use cases from the
+[`domain/usecase`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/domain/usecase) package
+(`GetForecastUseCase`, `GetDailyWeatherUseCase`). Each use case exposes a single `operator fun invoke` and is
+registered with `factoryOf` in the feature's Koin module.
 
 ### Consuming Common ViewModels
 
@@ -139,7 +143,7 @@ module's build script only declares what's specific to it:
 
 | Plugin | Class | Used by | Adds |
 |--------|-------|---------|------|
-| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, Android Lint (`showcase.android.lint`), all app dependencies (`:feature:forecast`, `:feature:permission`, Jetpack Compose, lifecycle, Navigation 3) |
+| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, Android Lint (`showcase.android.lint`), all app dependencies (`:feature:forecast`, Jetpack Compose, lifecycle, Navigation 3) |
 | `showcase.android.lint` | [`AndroidLintConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidLintConventionPlugin.kt) | `:androidApp` (applied by `showcase.android.application`) | Android Lint with warnings as errors, plus `lintCheck` / `lintApply` aliases for AGP's `lint` / `lintFix` (see [Linters](#linters)) |
 | `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
 | `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
@@ -169,8 +173,8 @@ feature/forecast/src/
 - **Android** is a normal KMP `androidMain` source set. The Compose compiler and Compose dependencies come from the
   `showcase.feature` [convention plugin](#convention-plugins), so feature build scripts don't repeat them.
 - **iOS** Swift can't be compiled by Gradle, so the files are compiled by the Xcode app target through one
-  synchronized folder per module in `iosApp.xcodeproj` (`forecast` → `feature/forecast/src/iosMain/swift`,
-  `permission` → `feature/permission/src/iosMain/swift`). New files there are picked up automatically. All folders
+  synchronized folder per module in `iosApp.xcodeproj` (`forecast` → `feature/forecast/src/iosMain/swift`).
+  New files there are picked up automatically. All folders
   compile into one Swift module, so type names must be unique across them.
 - **Feature modules don't apply SKIE.** SKIE is applied only to `:iosBridge`, the module that builds the framework,
   and it bundles Swift only from that module. So the features' `src/iosMain/swift` files stay out of the Kotlin
@@ -196,17 +200,13 @@ UI layer decides where to go.
   load its own data on its own, e.g. after process death.
 - **One ViewModel per destination.** Each opened day gets its own `DailyForecastViewModel`, which is cleared when
   the screen is popped, on both platforms.
-- **The start destination depends on the location permission.** Without it the app starts on `LocationPermissionScreen`.
-  When the permission is granted, the screen is replaced by the forecast, so Back doesn't return to it. If the
-  permission is lost later, the app goes back to the permission screen: Android checks on every resume
-  (`LifecycleResumeEffect` in `App`), iOS follows `CLLocationManager` authorization changes in `iOSApp`.
+- **`WeeklyForecastScreen` is the start destination** on both platforms.
 
 ## Dependency Injection
 
 [Koin](https://insert-koin.io) is used for dependency injection. All definitions live in shared code, one Koin module per Gradle module
 ([`baseModule`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/di/BaseModule.kt),
-[`featureForecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/FeatureForecastModule.kt),
-[`featurePermissionModule`](./feature/permission/src/commonMain/kotlin/com/igorwojda/showcase/feature/permission/di/FeaturePermissionModule.kt)),
+[`featureForecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/FeatureForecastModule.kt)),
 so both platforms resolve the same instances.
 
 Only the composition roots start Koin, because only they know which features the app ships. They pass the features'
@@ -241,20 +241,13 @@ flowchart LR
         screens["WeeklyForecastScreen<br/>DailyForecastScreen"]
     end
 
-    subgraph permission[":feature:permission"]
-        featurePermissionModule["featurePermissionModule"]
-        permissionScreen["LocationPermissionScreen"]
-    end
-
     koin[("Koin container")]
 
-    application -- "listOf(featureForecastModule, featurePermissionModule)<br/>androidLogger(), androidContext()" --> initializeKoin
+    application -- "listOf(featureForecastModule)<br/>androidLogger(), androidContext()" --> initializeKoin
     initializeKoin -- "startKoin" --> koin
     baseModule -. "loaded" .-> koin
     featureForecastModule -. "loaded" .-> koin
-    featurePermissionModule -. "loaded" .-> koin
     screens -- "koinViewModel()" --> koin
-    permissionScreen -- "koinViewModel()" --> koin
 
     classDef root fill:#DECDFF,stroke:#8C4FFF,stroke-width:3px,color:#222222;
     classDef ui fill:#C2E6FC,stroke:#38ADFA,stroke-width:3px,color:#222222;
@@ -262,19 +255,18 @@ flowchart LR
     classDef container fill:#FFF3C4,stroke:#F2C94C,stroke-width:3px,color:#222222;
 
     class application root;
-    class screens,permissionScreen ui;
-    class initializeKoin,baseModule,featureForecastModule,featurePermissionModule code;
+    class screens ui;
+    class initializeKoin,baseModule,featureForecastModule code;
     class koin container;
 
     style androidApp fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
     style base fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
     style forecast fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
-    style permission fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
 ```
 
 The app module is the composition root.
 [`KMPShowcaseApplication.onCreate()`](./androidApp/src/main/kotlin/com/igorwojda/showcase/KMPShowcaseApplication.kt)
-calls `initializeKoin(listOf(featureForecastModule, featurePermissionModule)) { androidLogger(); androidContext(...) }`. Composables get their
+calls `initializeKoin(listOf(featureForecastModule)) { androidLogger(); androidContext(...) }`. Composables get their
 ViewModel with `koinViewModel()`; `DailyForecastScreen` passes its date with `koinViewModel { parametersOf(date) }`.
 
 **Adding a feature:** depend on it in
@@ -287,7 +279,7 @@ and add its Koin module to the list in `KMPShowcaseApplication`.
 flowchart LR
     subgraph swift["Swift (iosApp Xcode target)"]
         iosApp["iOSApp.init()"]
-        swiftScreens["WeeklyForecastScreen<br/>DailyForecastScreen<br/>LocationPermissionScreen"]
+        swiftScreens["WeeklyForecastScreen<br/>DailyForecastScreen"]
     end
 
     subgraph framework["iosBridge.framework"]
@@ -305,24 +297,16 @@ flowchart LR
             accessors["provideWeeklyForecastViewModel()<br/>provideDailyForecastViewModel(date)"]
         end
 
-        subgraph permission[":feature:permission"]
-            featurePermissionModule["featurePermissionModule"]
-            permissionAccessors["provideLocationPermissionViewModel()"]
-        end
-
         koin[("Koin container")]
     end
 
     iosApp --> bridgeInit
-    bridgeInit -- "listOf(featureForecastModule, featurePermissionModule)" --> initializeKoin
+    bridgeInit -- "listOf(featureForecastModule)" --> initializeKoin
     initializeKoin -- "startKoin" --> koin
     baseModule -. "loaded" .-> koin
     featureForecastModule -. "loaded" .-> koin
-    featurePermissionModule -. "loaded" .-> koin
     swiftScreens --> accessors
-    swiftScreens --> permissionAccessors
     accessors -- "get()" --> koin
-    permissionAccessors -- "get()" --> koin
 
     classDef root fill:#DECDFF,stroke:#8C4FFF,stroke-width:3px,color:#222222;
     classDef ui fill:#C2E6FC,stroke:#38ADFA,stroke-width:3px,color:#222222;
@@ -331,7 +315,7 @@ flowchart LR
 
     class bridgeInit root;
     class swiftScreens ui;
-    class iosApp,initializeKoin,baseModule,featureForecastModule,featurePermissionModule,accessors,permissionAccessors code;
+    class iosApp,initializeKoin,baseModule,featureForecastModule,accessors code;
     class koin container;
 
     style swift fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
@@ -339,7 +323,6 @@ flowchart LR
     style iosBridge fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
     style base fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
     style forecast fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
-    style permission fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
 ```
 
 [`:iosBridge`](./iosBridge) is the composition root. Every Kotlin framework carries its own copy of the Kotlin runtime
@@ -366,79 +349,19 @@ but in 1.2.1 definitions from another Gradle module are invisible on Kotlin/Nati
 missing-dependency error (`HttpClient` from `:feature:base`,
 [koin-compiler-plugin#113](https://github.com/InsertKoinIO/koin-compiler-plugin/issues/113)).
 
-## Location Permission
+## Location
 
-[`LocationPermissionScreen`](./feature/permission/src) explains why the app needs the location, asks for it and handles
-the answer. The forecast is shown only with the permission (see [Navigation](#navigation)). Only approximate location
-is requested (`ACCESS_COARSE_LOCATION`, iOS "when in use"); that's enough for weather.
-
-The OS permission APIs are UI APIs (Android Activity Result API, iOS `CLLocationManager`), so each platform's screen
-talks to them through a platform helper:
-[`LocationPermissionRequester`](./feature/permission/src/androidMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/LocationPermissionRequester.kt)
-on Android,
-[`LocationAuthorization`](./feature/permission/src/iosMain/swift/presentation/location/LocationAuthorization.swift)
-on iOS. The shared
-[`LocationPermissionViewModel`](./feature/permission/src/commonMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/LocationPermissionViewModel.kt)
-gets every status as `LocationPermissionIntent.StatusChanged`, keeps the screen state and emits the actions
-(show the dialog, open Settings, permission granted). No permission library is used.
-
-| Case | Android | iOS | Screen |
-|------|---------|-----|--------|
-| Never asked | not granted, no rationale, nothing stored | `.notDetermined` | Allow |
-| Denied once | `shouldShowRequestPermissionRationale` is true | n/a, iOS asks only once | Try again |
-| Permanently denied | second denial; stored, so it's shown right after a restart | `.denied` | Open Settings |
-| Dialog dismissed without an answer | no rationale before or after the request | n/a | Allow (not a denial) |
-| Denied outside the app (Settings) | answer arrives faster than a person could react (< 500 ms): the dialog wasn't shown | `.denied` | Open Settings |
-| Blocked by policy / parental controls | `PackageManager.isPermissionRevokedByPolicy` | `.restricted` | message only |
-| Location Services off | doesn't affect the permission | `.denied` + `locationServicesEnabled() == false` | Open Settings |
-| Granted in Settings | re-checked on resume | authorization change callback | forecast |
-| Revoked, one-time grant expired, auto-reset | re-checked on resume, back stack reset | authorization change callback | permission screen |
-
-- **Android can't tell "never asked", "dismissed" and "permanently denied" apart** (all are "not granted, no
-  rationale"), so
-  [`LocationPermissionChecker`](./feature/permission/src/androidMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/LocationPermission.kt)
-  stores earlier denials and dismissals in `SharedPreferences`, and measures how fast the request is answered.
-  The decision is made by the pure
-  [`DeniedLocationPermissionResolver`](./feature/permission/src/androidMain/kotlin/com/igorwojda/showcase/feature/permission/presentation/location/DeniedLocationPermissionResolver.kt),
-  covered by host tests.
-- **Rotation and process death while the dialog is open.** `LocationPermissionRequester` keeps the rationale flag
-  and launch time in `rememberSaveable` (not in the shared ViewModel: only Android needs them), and the Activity
-  Result API redelivers the answer. A second request while the dialog is open
-  is ignored, because Android would answer it "not granted" without asking.
-
-**Known limitations:**
-- Dismissing the dialog twice in a row reads as a permanent denial. The user can still allow it in Settings.
-- `Restricted` has no way forward: the user can't change it, and the forecast requires the permission.
-
-### Device Location
-
-The forecast is downloaded for the device location.
-[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepositoryImpl.kt) reads it
-from [`LocationRepository`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/domain/repository/LocationRepository.kt), a
-shared interface implemented by `LocationRepositoryImpl` with each platform's API:
-
-| Platform | API | Fallback |
-|----------|-----|----------|
-| Android | `LocationManager.getCurrentLocation` (fused, network or GPS provider, the first one enabled) | last known location of that provider |
-| iOS | `CLLocationManager.requestLocation()` (kilometer accuracy) | none, the error is shown |
-
-- **No Google Play services.** The platform `LocationManager` is enough for weather and adds no dependency.
-- **Platform Koin module.** `featureForecastModule` includes `featureForecastPlatformModule` (`expect`/`actual`), which
-  binds `LocationRepository` to the platform implementation.
-- The permission is granted before the forecast opens (see [Navigation](#navigation)). If it's missing anyway, or no
-  location is available, the forecast shows an error.
+The forecast is always for Warsaw. The coordinates are hardcoded in
+[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/repository/ForecastRepositoryImpl.kt),
+so the app needs no location permission.
 
 ## Caching
 
-[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/ForecastRepositoryImpl.kt)
-keeps the latest forecast in an in-memory cache (guarded by a `Mutex`). The first request reads the
-[device location](#device-location) and hits the network; `DailyForecastViewModel` then reads the day from the cache.
-`WeeklyForecastIntent.Reload` bypasses the cache (`forceRefresh = true`), reads the location again and replaces the cached
+[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/repository/ForecastRepositoryImpl.kt)
+keeps the latest forecast in an in-memory cache (guarded by a `Mutex`). The first request hits the network; `DailyForecastViewModel` then reads the day from the cache (via `GetDailyWeatherUseCase`).
+`WeeklyForecastIntent.Reload` bypasses the cache (`forceRefresh = true`) and replaces the cached
 value. The cached forecast expires after 15 minutes (wall clock) and is re-downloaded on the next request; the cache itself
 lives as long as the process.
-
-**Trade-off:** the location is read only on download, so after the user moves the forecast is for the old place until
-it expires or is reloaded. Reading the location on every request would slow down each screen that only needs the cache.
 
 ## Naming Conventions
 
@@ -470,7 +393,6 @@ Open project in [Android Studio](https://developer.android.com/studio), select p
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 - iOS tests: `./gradlew :feature:forecast:iosSimulatorArm64Test`
-- Android host tests: `./gradlew :feature:permission:testAndroidHostTest`
 
 Test setup (`kotlin-test` in `commonTest`, `withHostTest {}` on the KMP Android target) lives in
 `FeatureConventionPlugin`, so every feature module gets it.

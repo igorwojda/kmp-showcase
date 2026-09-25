@@ -1,7 +1,7 @@
 package com.igorwojda.showcase.presentation.weeklyforecast
 
 import com.igorwojda.showcase.domain.model.ForecastModel
-import com.igorwojda.showcase.domain.repository.ForecastRepository
+import com.igorwojda.showcase.domain.usecase.GetForecastUseCase
 import com.igorwojda.showcase.feature.base.presentation.flowmvi.StoreViewModel
 import com.igorwojda.showcase.feature.base.presentation.flowmvi.configuredStore
 import pro.respawn.flowmvi.api.MVIAction
@@ -13,7 +13,7 @@ import pro.respawn.flowmvi.plugins.recover
 import pro.respawn.flowmvi.plugins.reduce
 
 class WeeklyForecastViewModel internal constructor(
-    private val forecastRepository: ForecastRepository,
+    private val getForecastUseCase: GetForecastUseCase,
 ) : StoreViewModel<WeeklyForecastState, WeeklyForecastIntent, WeeklyForecastAction>() {
     override val store =
         configuredStore(initial = WeeklyForecastState.Loading, name = "WeeklyForecast") {
@@ -38,7 +38,7 @@ class WeeklyForecastViewModel internal constructor(
         forceRefresh: Boolean = false,
     ) {
         updateState { WeeklyForecastState.Loading }
-        val forecast = forecastRepository.getForecast(forceRefresh = forceRefresh)
+        val forecast = getForecastUseCase(forceRefresh = forceRefresh)
         updateState { WeeklyForecastState.Content(forecast) }
     }
 }
