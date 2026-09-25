@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme; Compose draws the UI. Dark variant in values-night, so launch matches the system setting. -->
+    <style name="Theme.Showcase" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
