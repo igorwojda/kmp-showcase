@@ -3,7 +3,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.kotlin.dsl.configure
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
@@ -27,7 +26,7 @@ class BaseFeatureConventionPlugin : Plugin<Project> {
                     minSdk = libs.version("android-minSdk").toInt()
 
                     compilerOptions {
-                        jvmTarget.set(JvmTarget.JVM_11)
+                        jvmTarget.set(libs.jvmTarget)
                     }
                 }
             }

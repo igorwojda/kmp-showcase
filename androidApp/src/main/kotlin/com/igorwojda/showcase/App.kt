@@ -1,6 +1,9 @@
 package com.igorwojda.showcase
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -8,8 +11,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.igorwojda.showcase.presentation.dailyforecast.DailyForecastScreen
-import com.igorwojda.showcase.presentation.weeklyforecast.WeeklyForecastScreen
+import com.igorwojda.showcase.feature.forecast.presentation.dailyforecast.DailyForecastScreen
+import com.igorwojda.showcase.feature.forecast.presentation.weeklyforecast.WeeklyForecastScreen
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
@@ -29,7 +32,8 @@ private data class DailyForecastRoute(
 fun App() {
     val backStack = rememberNavBackStack(WeeklyForecastRoute)
 
-    MaterialTheme {
+    // Follows the system light / dark setting, like the iOS app.
+    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()) {
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },

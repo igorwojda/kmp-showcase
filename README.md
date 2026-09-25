@@ -1,25 +1,37 @@
 # 💎 KMP Showcase
 
 A [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html) sample application 
-demonstrating how to share code for Android and iOS. The data, domain and presentation logic live in a common Kotlin 
-module, the UI is native on each platform.
+demonstrating how to share code for Android and iOS. The data, domain and presentation logic live in common Kotlin 
+feature modules, the UI is native on each platform.
 
 - [💎 KMP Showcase](#-kmp-showcase)
   - [Application Scope](#application-scope)
   - [Tech-Stack](#tech-stack)
   - [Architecture](#architecture)
-  - [Design Decisions](#design-decisions)
-    - [Consuming Common ViewModels](#consuming-common-viewmodels)
-    - [Shared Store Setup](#shared-store-setup)
+    - [Feature Module Structure](#feature-module-structure)
+      - [Presentation Layer](#presentation-layer)
+      - [Domain Layer](#domain-layer)
+      - [Data Layer](#data-layer)
+      - [Common Module Components](#common-module-components)
+  - [Gradle Config](#gradle-config)
+    - [Dependency Management](#dependency-management)
     - [Convention Plugins](#convention-plugins)
+    - [Type Safe Project Accessors](#type-safe-project-accessors)
+    - [Unified Version Configuration](#unified-version-configuration)
+      - [Java/JVM Version Configuration](#javajvm-version-configuration)
+      - [Version Catalog Access in `build-logic`](#version-catalog-access-in-build-logic)
+  - [Design Decisions](#design-decisions)
+    - [UI State Management via Flow MVI](#ui-state-management-via-flow-mvi)
+      - [Consuming Common ViewModels](#consuming-common-viewmodels)
+      - [Shared Store Setup](#shared-store-setup)
     - [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)
     - [Navigation](#navigation)
-  - [Dependency Injection](#dependency-injection)
+    - [Dependency Injection](#dependency-injection)
   - [Caching](#caching)
   - [Naming Conventions](#naming-conventions)
     - [Screens vs Components](#screens-vs-components)
   - [Linters](#linters)
-  - [CI](#ci)
+  - [CI Pipeline](#ci-pipeline)
   - [Debugging FlowMVI](#debugging-flowmvi)
 
 ## Application Scope
@@ -30,7 +42,7 @@ local caching, navigation, and state management.
 
 **Features:**
 - **Weekly Forecast** - display weekly weather forecast with daily summary and temperature range; pull to refresh
-- **Daily Forecast** - display detailed daily weather forecast with hourly temperature and precipitation
+- **Daily Forecast** - display detailed daily weather forecast with hourly temperature, precipitation, wind and sunrise / sunset
 
 <p>
   <img src="misc/image/weekly_forecast.webp" width="250" />
@@ -52,7 +64,7 @@ project structure stability and production-readiness.
 
 **Kotlin-Swift Interop:**
 - **[SKIE](https://skie.touchlab.co)** - Kotlin Native compiler plugin that improves Kotlin-Swift interoperability
-  (`Flow` → `AsyncSequence` / `Observing`, `sealed class` → exhaustive Swift enum (`onEnum(of:)`), `suspend` → `async`,
+  (`Flow` → `AsyncSequence` / `Observing`, `sealed` class / interface → exhaustive Swift enum (`onEnum(of:)`), `suspend` → `async`,
   default arguments, etc.)
 - **[KMP-ObservableViewModel](https://github.com/rickclephas/KMP-ObservableViewModel)** - Share Kotlin ViewModels
   between Android and iOS. Makes Kotlin state changes observable by SwiftUI and clears `viewModelScope` when the view
@@ -114,7 +126,7 @@ project structure stability and production-readiness.
   (`KMPObservableViewModelSwiftUI`)
 
 **GitHub Actions:**
-- **[Check](.github/workflows/check.yml)** - CI pipeline building both apps and running all linters (see [CI](#ci))
+- **[Check](.github/workflows/check.yml)** - CI pipeline building both apps and running all linters (see [CI Pipeline](#ci-pipeline))
 
 **Gradle Plugins:**
 - **[Android Application](https://developer.android.com/build/releases/gradle-plugin)** (`com.android.application`) -
@@ -136,7 +148,7 @@ project structure stability and production-readiness.
 ```mermaid
 flowchart LR
     subgraph native["Native UI"]
-        android["androidApp<br/>()Jetpack Compose)"]
+        android["androidApp<br/>(Jetpack Compose)"]
         ios["iosApp<br/>(SwiftUI)"]
     end
 
@@ -167,28 +179,246 @@ flowchart LR
     style shared fill:#F5F7FA,stroke:#B8C2CC,color:#222222;
 ```
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. Feature SwiftUI code lives in the feature modules (see below).
+* [/iosApp](./iosApp/iosApp) contains the iOS application entry point. Feature SwiftUI code lives in the feature
+  modules (see below).
 
 * [/iosBridge](./iosBridge) builds the single framework the iOS app links (`import iosBridge`). It exports
   every feature module and starts Koin for iOS (see [Dependency Injection](#dependency-injection)).
 
 * [/feature/forecast](./feature/forecast/src) is the forecast feature shared between app targets in the project.
   The most important subfolder is [commonMain](./feature/forecast/src/commonMain/kotlin).
-  [androidMain](./feature/forecast/src/androidMain/kotlin) holds the Jetpack Compose UI in the [presentation](./feature/forecast/src/androidMain/kotlin/com/igorwojda/showcase/presentation) package (`WeeklyForecastScreen`, `DailyForecastScreen`).
+  [androidMain](./feature/forecast/src/androidMain/kotlin) holds the Jetpack Compose UI in the [presentation](./feature/forecast/src/androidMain/kotlin/com/igorwojda/showcase/feature/forecast/presentation) package (`WeeklyForecastScreen`, `DailyForecastScreen`).
   [iosMain/swift](./feature/forecast/src/iosMain/swift) holds the SwiftUI UI in the same `presentation` layout
   (see [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)).
 
 * [/feature/base](./feature/base/src) holds code shared by all feature modules, e.g. `StoreViewModel`.
 
-## Getting Started
+### Feature Module Structure
 
-1. Clone the repository `git clone https://github.com/igorwojda/kmp-showcase.git`
-2. Open project in Android Studio `File -> Open -> Select cloned directory`
+`Clean Architecture` is implemented at the module level - each feature module contains its own set of Clean
+Architecture layers. The shared layers live in `commonMain`; only the view code is platform-specific:
+
+```
+feature/forecast/src/
+├── commonMain/kotlin/com/igorwojda/showcase/feature/forecast/
+│   ├── presentation/   ViewModels, State, Intent, Action (shared)
+│   ├── domain/
+│   │   ├── model/      domain models
+│   │   ├── repository/ repository interfaces
+│   │   └── usecase/    use cases
+│   ├── data/
+│   │   ├── model/      network request / response models
+│   │   └── repository/ repository implementations
+│   └── di/             Koin module
+├── androidMain/kotlin/…/presentation/  Jetpack Compose screens and components
+├── iosMain/kotlin/…/di/                Koin accessors for Swift
+└── iosMain/swift/presentation/         SwiftUI screens and components
+```
+
+> `:feature:base` doesn't follow this structure. It holds code shared by all feature modules (`StoreViewModel`,
+> `configuredStore`, `HttpClient`, Koin start-up).
+
+#### Presentation Layer
+
+This layer is closest to what the user sees on the screen.
+
+The `presentation` layer mixes `MVVM` and `MVI` patterns (see
+[UI State Management via Flow MVI](#ui-state-management-via-flow-mvi)):
+
+- `MVVM` - a shared ViewModel (`StoreViewModel`) encapsulates a `common UI state`. It exposes the `state` via an
+  observable state holder (`Kotlin Flow`)
+- `MVI` - an `intent` modifies the `common UI state` and emits a new state to a view via `Kotlin Flow`
+
+> The `common state` is a single source of truth for each view. This solution derives from
+> [Unidirectional Data Flow](https://en.wikipedia.org/wiki/Unidirectional_Data_Flow_(computer_science)) and [Redux
+> principles](https://redux.js.org/introduction/three-principles).
+
+The ViewModel and its state are written once in `commonMain`; each platform only renders the state (see
+[Consuming Common ViewModels](#consuming-common-viewmodels)).
+
+Components:
+
+- **Screen** - a Jetpack Compose (`androidMain`) or SwiftUI (`iosMain/swift`) view. Observes the common state, renders
+  it and passes user interactions to the `ViewModel` as intents. Views are hard to test, so they should be as simple
+  as possible.
+- **ViewModel** - shared across platforms. Owns a FlowMVI store, which handles intents and emits state changes and
+  one-off actions to the view.
+- **State** - sealed common state for a single view (e.g. `Loading` / `Content` / `Error`).
+- **Intent** - user interaction sent from the view to the `ViewModel` (e.g. `Reload`).
+- **Action** - one-off side effect sent from the `ViewModel` to the view (e.g. show a toast).
+
+#### Domain Layer
+
+This is the core layer of the application. Notice that the `domain` layer is independent of any other layers. This
+allows making domain models and business logic independent from other layers. In other words, changes in other layers
+will not affect the `domain` layer eg. changing the API (`data` layer) or screen UI (`presentation` layer) ideally will
+not result in any code change within the `domain` layer.
+
+Components:
+
+- **UseCase** - contains business logic. Exposes a single `operator fun invoke` (e.g. `GetForecastUseCase`).
+- **DomainModel** - defines the core structure of the data that will be used within the application. This is the source
+  of truth for application data (e.g. `ForecastModel`).
+- **Repository interface** - required to keep the `domain` layer independent from
+  the `data layer` ([Dependency inversion](https://en.wikipedia.org/wiki/Dependency_inversion_principle)).
+
+#### Data Layer
+
+Encapsulates application data. Provides the data to the `domain` layer eg. retrieves data from the internet and caches
+it in memory (see [Caching](#caching)).
+
+Components:
+
+- **Repository** - exposes data to the `domain` layer. It fetches data from the `Data Source`, keeps it in the cache and
+  maps it into `domain` models (e.g. `ForecastRepositoryImpl`).
+- **Mapper** - maps `data model` to `domain model` (to keep `domain` layer independent from the `data` layer). Mappers
+  are private extension functions next to the repository (e.g. `ForecastResponseModel.toForecast()`).
+
+This application has one `Data Source` - `Ktor` (network access to the [Open-Meteo API](https://open-meteo.com/)). It
+consists of multiple classes:
+
+- **Ktor HttpClient** - shared client configured in `:feature:base`, with the platform engine (Android / Darwin)
+- **Request Model** - a [Ktor Resources](https://ktor.io/docs/client-resources.html) `@Resource` class defining the
+  endpoint, path and query parameters (e.g. `ForecastRequestModel`)
+- **Response Model** - definition of the network objects for a given endpoint (e.g. `ForecastResponseModel`, with
+  sub-objects such as `DailyResponseModel`)
+
+`Response Models` are annotated with `@Serializable`, so `kotlinx.serialization` understands how to parse the data into
+objects.
+
+#### Common Module Components
+
+Each feature module contains several standard items that provide essential functionality and configuration:
+
+Components:
+- **Gradle Build Script** - `build.gradle.kts` applying the `showcase.feature` [convention plugin](#convention-plugins)
+  plus the module's own dependencies.
+- **Koin DI Module** - dependency injection configuration in `commonMain` (e.g. `featureForecastModule`), plus Swift
+  accessors in `iosMain` (see [Dependency Injection](#dependency-injection)).
+- **Tests** - `commonTest` source set with `kotlin-test`, run on the Android host and the iOS simulator (set up by the
+  convention plugin; no tests yet).
+
+## Gradle Config
+
+### Dependency Management
+
+Gradle [version catalog](https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog)
+([libs.versions.toml](gradle/libs.versions.toml)) is used for centralized dependency management. Third-party
+dependency coordinates (group, artifact, version) are shared across all modules and `build-logic`.
+
+The version catalog consists of a few major sections:
+
+- `[versions]` - declare versions that can be referenced by all dependencies
+- `[libraries]` - declare the aliases to library coordinates
+- `[plugins]` - declare Gradle plugin dependencies (including the project's own convention plugins)
+
+Each module applies a convention plugin, so common dependencies are shared without the need to add them explicitly in
+each module.
+
+### Convention Plugins
+
+[Convention plugins](https://docs.gradle.org/current/samples/sample_convention_plugins.html) in
+[build-logic](./build-logic/convention/src/main/kotlin) standardize build configuration across modules, so each
+module's build script only declares what's specific to it:
+
+| Plugin | Class | Used by | Adds |
+|--------|-------|---------|------|
+| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, Android Lint (`showcase.android.lint`), Jetpack Compose, lifecycle and Navigation 3 dependencies |
+| `showcase.android.lint` | [`AndroidLintConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidLintConventionPlugin.kt) | `:androidApp` (applied by `showcase.android.application`) | Android Lint with warnings as errors, plus `lintCheck` / `lintApply` aliases for AGP's `lint` / `lintFix` (see [Linters](#linters)) |
+| `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
+| `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything in `showcase.basefeature`, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
+| `showcase.iosbridge` | [`IosBridgeConventionPlugin`](./build-logic/convention/src/main/kotlin/IosBridgeConventionPlugin.kt) | `:iosBridge` | KMP + [SKIE](https://skie.touchlab.co) plugins, static `iosBridge` framework for `iosArm64` / `iosSimulatorArm64`, export of every `commonMain` `api` dependency, `kotlinx-datetime` (exported), SKIE configuration |
+| `showcase.spotless` | [`SpotlessConventionPlugin`](./build-logic/convention/src/main/kotlin/SpotlessConventionPlugin.kt) | root project | [Spotless](https://github.com/diffplug/spotless) running ktlint + [Compose rules](https://mrmans0n.github.io/compose-rules/) over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
+| `showcase.detekt` | [`DetektConventionPlugin`](./build-logic/convention/src/main/kotlin/DetektConventionPlugin.kt) | root project | [Detekt](https://detekt.dev) `detektCheck` / `detektApply` tasks over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
+
+- The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
+  It is also the module's Kotlin package root, so packages of different features never collide.
+- A new feature module needs only `alias(libs.plugins.showcase.feature)` plus its own dependencies.
+
+### Type Safe Project Accessors
+
+[Type-safe project accessors](https://docs.gradle.org/current/userguide/declaring_dependencies_basics.html#sec:type-safe-project-accessors)
+are enabled in [settings.gradle.kts](settings.gradle.kts) (`enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")`), so
+module build scripts reference other modules by generated, compile-checked accessors instead of error-prone string
+paths:
+
+```kotlin
+// Before
+implementation(project(":feature:forecast"))
+
+// After
+implementation(projects.feature.forecast)
+```
+
+- Used in [androidApp/build.gradle.kts](androidApp/build.gradle.kts) (the features the app ships) and
+  [iosBridge/build.gradle.kts](iosBridge/build.gradle.kts) (`api(...)` of every feature, which
+  `showcase.iosbridge` exports to Swift).
+- Accessors are generated only for the main build's scripts, not for `build-logic` sources, so
+  `FeatureConventionPlugin` still uses `project(":feature:base")`.
+
+### Unified Version Configuration
+
+All dependency and Gradle plugin versions are defined in the TOML version catalog file
+([libs.versions.toml](gradle/libs.versions.toml)). This includes the Android SDK levels (`android-compileSdk`,
+`android-minSdk`, `android-targetSdk`), which the convention plugins read, so every module targets the same SDKs.
+
+#### Java/JVM Version Configuration
+
+The Java/JVM version is defined once, as the `java` entry in [libs.versions.toml](gradle/libs.versions.toml). The
+convention plugins read it through `javaVersion` / `jvmTarget` helpers in
+[VersionCatalogExt.kt](build-logic/convention/src/main/kotlin/VersionCatalogExt.kt), so Java and Kotlin in every
+module (Android app and KMP libraries) always target the same bytecode version:
+
+```kotlin
+compileOptions {
+    sourceCompatibility = libs.javaVersion
+    targetCompatibility = libs.javaVersion
+}
+
+compilerOptions {
+    jvmTarget.set(libs.jvmTarget)
+}
+```
+
+This is the bytecode target only. The JDK that runs Gradle is set separately by the Gradle daemon JVM criteria
+([gradle-daemon-jvm.properties](gradle/gradle-daemon-jvm.properties)).
+
+#### Version Catalog Access in `build-logic`
+
+[build-logic/settings.gradle.kts](build-logic/settings.gradle.kts) imports the same catalog
+(`versionCatalogs { create("libs") { from(files("../gradle/libs.versions.toml")) } }`), so `build-logic`'s own build
+script uses type-safe `libs.*` accessors, e.g. for the Android and Kotlin Gradle plugins.
+
+Convention plugin sources can't use the generated accessors, so they look entries up by name through small helpers in
+[VersionCatalogExt.kt](build-logic/convention/src/main/kotlin/VersionCatalogExt.kt):
+
+```kotlin
+implementation(libs.lib("androidx-compose-runtime"))
+compileSdk = libs.version("android-compileSdk").toInt()
+pluginManager.apply(libs.pluginId("composeCompiler"))
+```
 
 ## Design Decisions
 
-### Consuming Common ViewModels
+### UI State Management via Flow MVI
+
+Screens are driven by [FlowMVI](https://github.com/respawn-llc/FlowMVI) stores, owned by shared ViewModels. Each screen
+has one immutable `State`, a set of `Intent`s (user events) and `Action`s (one-off side effects, e.g. a toast).
+
+- **Unidirectional data flow.** The UI sends intents and renders state, and only the store changes state. It's easy
+  to follow what happened and why.
+- **One state per screen.** A sealed `State` (`Loading` / `Content` / `Error`) can't represent impossible combinations,
+  and SKIE turns it into an exhaustive Swift enum.
+- **Written once, used on both platforms.** State, intents and business rules live in `commonMain`; Compose and
+  SwiftUI only render.
+- **Plugins instead of boilerplate.** Loading (`init`), intent handling (`reduce`) and error handling (`recover`) are
+  small reusable plugins, so ViewModels contain little more than the feature logic.
+- **Thread-safe state updates.** `updateState` is serialized by the store, so parallel coroutines can't overwrite each
+  other's changes.
+- **Built-in tooling.** Logging and [remote debugging](#debugging-flowmvi) come as plugins, installed once for every
+  store.
+
+#### Consuming Common ViewModels
 
 ViewModels extend [`StoreViewModel`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/flowmvi/StoreViewModel.kt),
 which owns a FlowMVI `store` (built with [`configuredStore`](#shared-store-setup)). Each platform consumes it through a different API:
@@ -221,7 +451,7 @@ automatically with the SwiftUI task.
 **Trade-off:** a screen that collects both flows holds two subscriptions. That's fine with the default
 `ActionShareBehavior.Distribute`, but `ActionShareBehavior.Restrict` (one subscription per store) would throw.
 
-### Shared Store Setup
+#### Shared Store Setup
 
 Every store is built with
 [`configuredStore`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/presentation/flowmvi/ConfiguredStore.kt)
@@ -245,26 +475,6 @@ override val store = configuredStore(initial = WeeklyForecastState.Loading, name
 **Known issue:** `debuggable` is hardcoded to `true`, so logging and remote debugging also run in release builds. The
 fix is to take a debug flag from the app and install both only when it's set. `enableRemoteDebugging` throws on
 a non-debuggable store, so both must change together.
-
-### Convention Plugins
-
-Shared Gradle setup for the app and KMP modules lives in [build-logic](./build-logic/convention/src/main/kotlin), so each
-module's build script only declares what's specific to it:
-
-| Plugin | Class | Used by | Adds |
-|--------|-------|---------|------|
-| `showcase.android.application` | [`AndroidApplicationConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt) | `:androidApp` | Android application + Compose compiler plugins, `compileSdk` / `minSdk` / `targetSdk`, JVM target, release build type, Android Lint (`showcase.android.lint`), all app dependencies (`:feature:forecast`, Jetpack Compose, lifecycle, Navigation 3) |
-| `showcase.android.lint` | [`AndroidLintConventionPlugin`](./build-logic/convention/src/main/kotlin/AndroidLintConventionPlugin.kt) | `:androidApp` (applied by `showcase.android.application`) | Android Lint with warnings as errors, plus `lintCheck` / `lintApply` aliases for AGP's `lint` / `lintFix` (see [Linters](#linters)) |
-| `showcase.basefeature` | [`BaseFeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/BaseFeatureConventionPlugin.kt) | `:feature:base` | KMP + Android-KMP library plugins, `iosArm64` / `iosSimulatorArm64` targets, Android `compileSdk` / `minSdk` / JVM target |
-| `showcase.feature` | [`FeatureConventionPlugin`](./build-logic/convention/src/main/kotlin/FeatureConventionPlugin.kt) | every `:feature:*` module | everything above, plus `api(project(":feature:base"))`, Compose compiler and Jetpack Compose + `koin-androidx-compose` in `androidMain`, `kotlin-test` in `commonTest`, Android host tests (`withHostTest {}`) |
-| `showcase.spotless` | [`SpotlessConventionPlugin`](./build-logic/convention/src/main/kotlin/SpotlessConventionPlugin.kt) | root project | [Spotless](https://github.com/diffplug/spotless) running ktlint + [Compose rules](https://mrmans0n.github.io/compose-rules/) over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
-| `showcase.detekt` | [`DetektConventionPlugin`](./build-logic/convention/src/main/kotlin/DetektConventionPlugin.kt) | root project | [Detekt](https://detekt.dev) `detektCheck` / `detektApply` tasks over every `*.kt` / `*.kts` file (see [Linters](#linters)) |
-
-- `:iosBridge` has no convention plugin. It's the only module that builds an iOS framework, so the framework and
-  SKIE setup live in its own build script.
-- The Android namespace is derived from the module path: `:feature:forecast` → `com.igorwojda.showcase.feature.forecast`.
-- Versions come from the shared [version catalog](./gradle/libs.versions.toml), which `build-logic` reads too.
-- A new feature module needs only `alias(libs.plugins.showcase.feature)` plus its own dependencies.
 
 ### Feature UI Lives in the Feature Module
 
@@ -312,11 +522,11 @@ UI layer decides where to go.
   the screen is popped, on both platforms.
 - **`WeeklyForecastScreen` is the start destination** on both platforms.
 
-## Dependency Injection
+### Dependency Injection
 
 [Koin](https://insert-koin.io) is used for dependency injection. All definitions live in shared code, one Koin module per Gradle module
 ([`baseModule`](./feature/base/src/commonMain/kotlin/com/igorwojda/showcase/feature/base/di/BaseModule.kt),
-[`featureForecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/di/FeatureForecastModule.kt)),
+[`featureForecastModule`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/feature/forecast/di/FeatureForecastModule.kt)),
 so both platforms resolve the same instances.
 
 Only the composition roots start Koin, because only they know which features the app ships. They pass the features'
@@ -327,7 +537,7 @@ they don't depend on each other.
 
 ## Caching
 
-[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/data/repository/ForecastRepositoryImpl.kt)
+[`ForecastRepositoryImpl`](./feature/forecast/src/commonMain/kotlin/com/igorwojda/showcase/feature/forecast/data/repository/ForecastRepositoryImpl.kt)
 keeps the latest forecast in an in-memory cache (guarded by a `Mutex`). The first request hits the network; `DailyForecastViewModel` then reads the day from the cache (via `GetDailyWeatherUseCase`).
 Pull-to-refresh (`WeeklyForecastIntent.Refresh`) bypasses the cache (`forceRefresh = true`) and replaces the cached
 value; if it fails, the current forecast stays on screen and a toast shows the error. The cached forecast expires after 15 minutes (wall clock) and is re-downloaded on the next request; the cache itself
@@ -335,7 +545,7 @@ lives as long as the process.
 
 ## Naming Conventions
 
-### Screens vs Components.
+### Screens vs Components
 
 UI types are named by role, consistently on both platforms:
 
@@ -393,7 +603,7 @@ swiftlint lint --strict           # Run SwiftLint Check (warnings fail, same as 
 - SwiftLint rules: [.swiftlint.yml](./.swiftlint.yml), on top of the SwiftLint defaults. It runs from the root and
   covers the iOS app plus every feature's `src/iosMain/swift` folder.
 
-## CI
+## CI Pipeline
 
 [GitHub Actions](./.github/workflows/check.yml) run on every pull request and push to `main`:
 

@@ -67,7 +67,7 @@ jobs:
           key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
           restore-keys: konan-${{ runner.os }}-
 
-      # Simulator build: no signing needed. The Kotlin framework only has the iosSimulatorArm64 target.
+      # Simulator build: no signing needed. ARCHS=arm64 builds only the iosSimulatorArm64 slice of the Kotlin framework.
       - name: Build App
         run: >
           xcodebuild build

@@ -1,16 +1,14 @@
 import com.android.build.api.dsl.ApplicationExtension
-import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 /**
  * Android application with Jetpack Compose UI: SDK versions, JVM target, release build type, Android Lint (see
- * [AndroidLintConventionPlugin]) and all app dependencies (feature modules, Compose, Navigation 3). The app module
- * declares only its identity (namespace, application id, version).
+ * [AndroidLintConventionPlugin]) and the Compose, lifecycle and Navigation 3 dependencies. The app module declares
+ * only its identity (namespace, application id, version) and the feature modules it ships.
  */
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) =
@@ -21,7 +19,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             extensions.configure<KotlinAndroidProjectExtension> {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_11)
+                    jvmTarget.set(libs.jvmTarget)
                 }
             }
 
@@ -47,8 +45,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     }
                 }
                 compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_11
-                    targetCompatibility = JavaVersion.VERSION_11
+                    sourceCompatibility = libs.javaVersion
+                    targetCompatibility = libs.javaVersion
                 }
                 buildFeatures {
                     compose = true
@@ -56,8 +54,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             }
 
             dependencies {
-                "implementation"(project(":feature:forecast"))
-
                 // Jetpack Compose UI
                 "implementation"(platform(libs.lib("androidx-compose-bom")))
                 "implementation"(libs.lib("androidx-activity-compose"))
