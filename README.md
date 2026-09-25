@@ -8,6 +8,11 @@ module, the UI is native on each platform.
   - [Application Scope](#application-scope)
   - [Tech-Stack](#tech-stack)
   - [Architecture](#architecture)
+    - [Feature Module Structure](#feature-module-structure)
+      - [Presentation Layer](#presentation-layer)
+      - [Domain Layer](#domain-layer)
+      - [Data Layer](#data-layer)
+      - [Common Module Components](#common-module-components)
   - [Getting Started](#getting-started)
   - [Design Decisions](#design-decisions)
     - [UI State Management via Flow MVI](#ui-state-management-via-flow-mvi)
@@ -21,7 +26,7 @@ module, the UI is native on each platform.
   - [Naming Conventions](#naming-conventions)
     - [Screens vs Components](#screens-vs-components)
   - [Linters](#linters)
-  - [CI](#ci)
+  - [CI-Pipeline](#ci-pipeline)
   - [Debugging FlowMVI](#debugging-flowmvi)
 
 ## Application Scope
@@ -182,6 +187,111 @@ flowchart LR
   (see [Feature UI Lives in the Feature Module](#feature-ui-lives-in-the-feature-module)).
 
 * [/feature/base](./feature/base/src) holds code shared by all feature modules, e.g. `StoreViewModel`.
+
+### Feature Module Structure
+
+`Clean Architecture` is implemented at the module level - each feature module contains its own set of Clean
+Architecture layers. The shared layers live in `commonMain`; only the view code is platform-specific:
+
+```
+feature/forecast/src/
+├── commonMain/kotlin/com/igorwojda/showcase/
+│   ├── presentation/   ViewModels, State, Intent, Action (shared)
+│   ├── domain/
+│   │   ├── model/      domain models
+│   │   ├── repository/ repository interfaces
+│   │   └── usecase/    use cases
+│   ├── data/
+│   │   ├── model/      network request / response models
+│   │   └── repository/ repository implementations
+│   └── di/             Koin module
+├── androidMain/kotlin/…/presentation/  Jetpack Compose screens and components
+├── iosMain/kotlin/…/di/                Koin accessors for Swift
+└── iosMain/swift/presentation/         SwiftUI screens and components
+```
+
+> `:feature:base` doesn't follow this structure. It holds code shared by all feature modules (`StoreViewModel`,
+> `configuredStore`, `HttpClient`, Koin start-up).
+
+#### Presentation Layer
+
+This layer is closest to what the user sees on the screen.
+
+The `presentation` layer mixes `MVVM` and `MVI` patterns (see
+[UI State Management via Flow MVI](#ui-state-management-via-flow-mvi)):
+
+- `MVVM` - a shared ViewModel (`StoreViewModel`) encapsulates a `common UI state`. It exposes the `state` via an
+  observable state holder (`Kotlin Flow`)
+- `MVI` - an `intent` modifies the `common UI state` and emits a new state to a view via `Kotlin Flow`
+
+> The `common state` is a single source of truth for each view. This solution derives from
+> [Unidirectional Data Flow](https://en.wikipedia.org/wiki/Unidirectional_Data_Flow_(computer_science)) and [Redux
+> principles](https://redux.js.org/introduction/three-principles).
+
+The ViewModel and its state are written once in `commonMain`; each platform only renders the state (see
+[Consuming Common ViewModels](#consuming-common-viewmodels)).
+
+Components:
+
+- **Screen** - a Jetpack Compose (`androidMain`) or SwiftUI (`iosMain/swift`) view. Observes the common state, renders
+  it and passes user interactions to the `ViewModel` as intents. Views are hard to test, so they should be as simple
+  as possible.
+- **ViewModel** - shared across platforms. Owns a FlowMVI store, which handles intents and emits state changes and
+  one-off actions to the view.
+- **State** - sealed common state for a single view (e.g. `Loading` / `Content` / `Error`).
+- **Intent** - user interaction sent from the view to the `ViewModel` (e.g. `Reload`).
+- **Action** - one-off side effect sent from the `ViewModel` to the view (e.g. show a toast).
+
+#### Domain Layer
+
+This is the core layer of the application. Notice that the `domain` layer is independent of any other layers. This
+allows making domain models and business logic independent from other layers. In other words, changes in other layers
+will not affect the `domain` layer eg. changing the API (`data` layer) or screen UI (`presentation` layer) ideally will
+not result in any code change within the `domain` layer.
+
+Components:
+
+- **UseCase** - contains business logic. Exposes a single `operator fun invoke` (e.g. `GetForecastUseCase`).
+- **DomainModel** - defines the core structure of the data that will be used within the application. This is the source
+  of truth for application data (e.g. `ForecastModel`).
+- **Repository interface** - required to keep the `domain` layer independent from
+  the `data layer` ([Dependency inversion](https://en.wikipedia.org/wiki/Dependency_inversion_principle)).
+
+#### Data Layer
+
+Encapsulates application data. Provides the data to the `domain` layer eg. retrieves data from the internet and caches
+it in memory (see [Caching](#caching)).
+
+Components:
+
+- **Repository** - exposes data to the `domain` layer. It fetches data from the `Data Source`, keeps it in the cache and
+  maps it into `domain` models (e.g. `ForecastRepositoryImpl`).
+- **Mapper** - maps `data model` to `domain model` (to keep `domain` layer independent from the `data` layer). Mappers
+  are private extension functions next to the repository (e.g. `ForecastResponseModel.toForecast()`).
+
+This application has one `Data Source` - `Ktor` (network access to the [Open-Meteo API](https://open-meteo.com/)). It
+consists of multiple classes:
+
+- **Ktor HttpClient** - shared client configured in `:feature:base`, with the platform engine (Android / Darwin)
+- **Request Model** - a [Ktor Resources](https://ktor.io/docs/client-resources.html) `@Resource` class defining the
+  endpoint, path and query parameters (e.g. `ForecastRequestModel`)
+- **Response Model** - definition of the network objects for a given endpoint (e.g. `ForecastResponseModel`, with
+  sub-objects such as `DailyResponseModel`)
+
+`Response Models` are annotated with `@Serializable`, so `kotlinx.serialization` understands how to parse the data into
+objects.
+
+#### Common Module Components
+
+Each feature module contains several standard items that provide essential functionality and configuration:
+
+Components:
+- **Gradle Build Script** - `build.gradle.kts` applying the `showcase.feature` [convention plugin](#convention-plugins)
+  plus the module's own dependencies.
+- **Koin DI Module** - dependency injection configuration in `commonMain` (e.g. `featureForecastModule`), plus Swift
+  accessors in `iosMain` (see [Dependency Injection](#dependency-injection)).
+- **Tests** - `commonTest` source set with `kotlin-test`, run on the Android host and the iOS simulator (set up by the
+  convention plugin; no tests yet).
 
 ## Getting Started
 
@@ -398,7 +508,7 @@ swiftlint lint --strict           # Run SwiftLint Check (warnings fail, same as 
 - SwiftLint rules: [.swiftlint.yml](./.swiftlint.yml), on top of the SwiftLint defaults. It runs from the root and
   covers the iOS app plus every feature's `src/iosMain/swift` folder.
 
-## CI
+## CI Pipeline
 
 [GitHub Actions](./.github/workflows/check.yml) run on every pull request and push to `main`:
 
