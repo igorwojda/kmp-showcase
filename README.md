@@ -124,6 +124,8 @@ project structure stability and production-readiness.
   (see [Convention Plugins](#convention-plugins))
 - **[Swift Package Manager](https://www.swift.org/documentation/package-manager/)** - iOS dependencies
   (`KMPObservableViewModelSwiftUI`)
+- **[Renovate](https://docs.renovatebot.com/)** - Automated dependency update PRs (see
+  [Dependency Management](#dependency-management))
 
 **GitHub Actions:**
 - **[Check](.github/workflows/check.yml)** - CI pipeline building both apps and running all linters (see [CI Pipeline](#ci-pipeline))
@@ -314,6 +316,10 @@ The version catalog consists of a few major sections:
 
 Each module applies a convention plugin, so common dependencies are shared without the need to add them explicitly in
 each module.
+
+[Renovate](https://docs.renovatebot.com/) ([renovate.json](renovate.json)) opens pull requests for new versions of the
+version catalog entries, the Gradle wrapper and GitHub Actions. Kotlin is capped at `2.4.10` until SKIE supports newer
+versions; raise the cap in `renovate.json` together with the `skie` version.
 
 ### Convention Plugins
 

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "description": "SKIE 0.10.14 supports Kotlin up to 2.4.10 and refuses to build on anything newer. Raise together with SKIE.",
+      "matchPackageNames": ["/^org\\.jetbrains\\.kotlin[.:]/"],
+      "allowedVersions": "<=2.4.10"
+    }
+  ]
+}
