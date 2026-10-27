@@ -14,7 +14,7 @@ koin = "4.2.2"
 kotlin = "2.4.10"
 
 # Swift-friendly API on top of the Kotlin/Native framework (sealed enums, flows as AsyncSequence).
-skie = "0.10.14"
+skie = "0.10.15"
 coroutinesVersion = "1.11.0"
 ktorVersion = "3.6.0"
 
