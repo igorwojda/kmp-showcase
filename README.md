@@ -4,6 +4,10 @@ A [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev
 demonstrating how to share code for Android and iOS. The data, domain and presentation logic live in common Kotlin 
 feature modules, the UI is native on each platform.
 
+Ths app uses [Gradle](https://gradle.org/) as build system. 
+The [Kotlin Toolchain](https://kotlin-toolchain.org/latest/) equivalent can be found in
+[kmp-showcase-kotlin-toolchain](https://github.com/igorwojda/kmp-showcase-kotlin-toolchain) repository.
+
 - [💎 KMP Showcase](#-kmp-showcase)
   - [Application Scope](#application-scope)
   - [Tech-Stack](#tech-stack)
