@@ -322,7 +322,8 @@ Each module applies a convention plugin, so common dependencies are shared witho
 each module.
 
 [Renovate](https://docs.renovatebot.com/) ([renovate.json](renovate.json)) opens pull requests for new versions of the
-version catalog entries, the Gradle wrapper and GitHub Actions. Kotlin is capped at `2.4.10` until SKIE supports newer
+version catalog entries, the Gradle wrapper and GitHub Actions. Minor and patch updates merge automatically once CI
+passes; major updates need a manual merge. Kotlin is capped at `2.4.10` until SKIE supports newer
 versions; raise the cap in `renovate.json` together with the `skie` version.
 
 ### Convention Plugins
