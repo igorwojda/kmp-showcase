@@ -27,7 +27,7 @@ flowmvi = "3.3.0-alpha03"
 spotless = "8.10.2"
 ktlint = "1.8.0"
 # Jetpack Compose ktlint rules, run by Spotless next to the standard ktlint rules
-composeRules = "0.6.7"
+composeRules = "0.6.8"
 # Held at 1.23.8: latest stable, 2.x is still in alpha.
 detekt = "1.23.8"
 
