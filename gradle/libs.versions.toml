@@ -8,7 +8,7 @@ java = "17"
 androidx-activity = "1.13.0"
 androidx-composeBom = "2026.09.00"
 androidx-lifecycle = "2.11.0"
-androidx-navigation3 = "1.1.7"
+androidx-navigation3 = "1.2.0"
 koin = "4.2.2"
 # Held at 2.4.10: SKIE 0.10.14 supports Kotlin 2.0.0 – 2.4.10 and refuses to build on anything newer.
 kotlin = "2.4.10"
