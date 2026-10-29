@@ -16,7 +16,7 @@ kotlin = "2.4.10"
 # Swift-friendly API on top of the Kotlin/Native framework (sealed enums, flows as AsyncSequence).
 skie = "0.10.16"
 coroutinesVersion = "1.11.0"
-ktorVersion = "3.6.0"
+ktorVersion = "3.6.1"
 
 # Allows you to use AndroidX/Kotlin ViewModels with SwiftUI
 kmpObservableViewModel = "1.1.0"
