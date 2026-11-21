@@ -6,7 +6,7 @@ android-targetSdk = "37"
 # Java/JVM bytecode target for every module (Java compileOptions and Kotlin jvmTarget), read by the convention plugins
 java = "17"
 androidx-activity = "1.13.0"
-androidx-composeBom = "2026.09.00"
+androidx-composeBom = "2026.11.01"
 androidx-lifecycle = "2.11.1"
 androidx-navigation3 = "1.2.2"
 koin = "4.2.2"
